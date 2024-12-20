@@ -1,0 +1,5 @@
+restore
+
+mkdir /mnt/system /mnt/usb
+
+sudo rsync -aAXv --delete --exclude="lost+found" /backup /system
