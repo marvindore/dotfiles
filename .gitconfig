@@ -1,0 +1,44 @@
+# This is Git's per-user configuration file.
+[user]
+	name = <name>
+	email = <email>
+
+[interactive]
+    diffFilter = delta --color-only
+
+[merge]
+    tool = nvimdiff
+    conflictstyle = diff3
+
+[mergetool]
+    keepBackup = false
+    prompt = false
+
+[mergetool "nvimdiff"]
+# Gives you meld, with three comparison tabs. Assuming you're merging others changes into
+# your branch, this shows you:
+# - 1st tab: yours|merged result|theirs (do the merge here into the middle pane)
+# - 2nd tab: base vs your changes (look at just your changes)
+# - 3rd tab: base vs their changes (look at just their changes)
+    keepBackup = false
+    cmd = nvim -d -c "\"wincmd l\" -c \"norm ]c\" \"$LOCAL\" \"$MERGED\" \"$REMOTE\""
+
+[diff]
+    tool = difftastic
+
+[difftool "difftastic"]
+    prompt = false
+	cmd = difft "$LOCAL" "$REMOTE"
+
+[pager]
+    difftool = true
+
+[delta]
+	side-by-side = true
+
+[core]
+	pager = delta --line-numbers --dark
+
+# User different gitconfig based on directory
+[includeIf "gitdir:~/company/"]
+    path = .gitconfig-company

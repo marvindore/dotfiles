@@ -1,0 +1,10 @@
+Arch Linux:
+// Don't forget the microcde for your processor
+pacstrap /mnt base base-devel linux linux-firmware vim man-db man-pages inetutils netctl dhcpcd amd-ucode
+//later
+pacman -S nvidia-utils nvidia-lts refind-efi efibootmgr networkmanager wireless_tools wpa_supplicant
+//
+Xorg-server nvidia nvidia-lts nvidia-utils
+Plasma dolphin konsole sddm
+
+pulseaudio pulseaudio-alsa 

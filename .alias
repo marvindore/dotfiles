@@ -1,0 +1,28 @@
+#Linux set sudo path to user path
+#https://stackoverflow.com/questions/12996397/command-not-found-when-using-sudo
+alias mudo='sudo -E env "PATH=$PATH"'
+
+alias wezterm='flatpak run org.wezfurlong.wezterm'
+alias copyq='flatpak run com.github.hluk.copyq'
+alias flatseal='flatpak run com.github.tchx84.Flatseal'
+alias bat='batcat'
+alias flameshot='env QT_SCREEN_SCALE_FACTORS="1;1.5;" flatpak run org.flameshot.Flameshot gui'
+alias upgradedistrobox='curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh -s -- --next'
+
+#git
+
+#Php
+alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
+
+# Python
+alias py="python3"
+#alias python="python3"
+
+# Vim
+alias vd="nvim -d"
+alias nv="nvim"
+alias sv="sudo nvim"
+alias v="nvim"
+
+
+alias wiki="nvim ~/vimwiki/index.md"
