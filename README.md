@@ -2,8 +2,11 @@
 ## MACOS
 First run `xcode-select --install`
 
-- Install nix package manager
-    > https://nixos.org/download/#nix-install-macos
+- Install nix
+    > https://zero-to-nix.com/
+- Or install brew and run the `macos-setup.sh script` and skip all nix steps
+- If brew not found on command line add it to your path: 
+    - `echo "export PATH=/opt/homebrew/bin:$PATH" >> ~/.zshrc`
 
 ** Install nix-darwin**
 ```bash
