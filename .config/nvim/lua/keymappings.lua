@@ -204,6 +204,17 @@ end
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead of term://*
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
 
+-- Iron Repl
+wk.add({
+	{ "<leader>r", group = "Repl" },
+})
+map("n", "<leader>rr", ":IronRepl<cr>", { desc= "Repl start"} )
+map("n", "<leader>rs", ":IronRepl<cr>", { desc= "Repl restart"} )
+map("n", "<leader>rf",":lua require('iron.core').send_file()<cr>", {desc = "Repl send file"})
+map("v", "<leader>rv",":lua require('iron.core').mark_visual()<cr>", {desc = "Repl mark visual"})
+map("v", "<leader>rm",":lua require('iron.core').send_mark()<cr>", {desc = "Repl send mark"})
+map("n", "<leader>ru",":lua require('iron.core').send_until_cursor()<cr>", {desc = "Repl send until cursor"})
+
 -- nv-nvim-tree
 keymap("n", "<leader>nR", ":NvimTreeRefresh<CR>", { desc = "Tree refresh" })
 keymap("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Tree togle" })

@@ -57,3 +57,8 @@ command -v zsh | sudo tee -a /etc/shells
 sudo chsh -s $(which zsh) $USER
 ```
 
+Setup Vale on MacOS
+```bash
+cp ~/dotfiles/.config/vale/.vale.ini "~/Library/Application Support/vale/"
+~/.local/share/nvim/mason/packages/vale/vale --config="$HOME/Library/Application Support/vale/.vale.ini" sync
+```
