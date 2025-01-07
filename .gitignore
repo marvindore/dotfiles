@@ -1,1 +1,35 @@
 DS_store
+
+# Zsh history
+.zsh_history
+.zsh_sessions/
+
+# Zsh configuration files (optional)
+.zshrc.local
+.zshenv.local
+
+# General
+*.log
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+
+# macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+Thumbs.db
+
+# macOS System files
+._*
+
+# Neovim swap files
+*.swp
+*.swo
+*.swn
+*.un~
+# Neovim session files
+.session

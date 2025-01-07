@@ -11,10 +11,12 @@ set -u # Treat unset variables as an error.
 # Function to remove all items from the Dock.
 # ------------------------------------------------------------------------------
 
-remove_from_dock() {
+configure_personal_settings() {
   echo "Removing all items from the Dock..."
   defaults write com.apple.dock persistent-apps -array
   killall Dock
+  echo "Disabling click wallpaper to shoow desktop..."
+  defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
 }
 
 # ------------------------------------------------------------------------------
@@ -40,9 +42,13 @@ install_brew_packages() {
   )
 
   local casks=(
+    "datagrip"
+    "docker"
     "hammerspoon"
+    "intellij-idea"
     "google-chrome"
     "raycast"
+    "rider"
     "wezterm@nightly"
   )
   
@@ -85,7 +91,7 @@ install_neovim_nightly() {
 
 main() {
   # Step 1: Remove all items from the Dock.
-  remove_from_dock
+  configure_personal_settings
   
   # Step 2: Install necessary packages using Homebrew.
   install_brew_packages

@@ -46,6 +46,7 @@
         "tree-sitter"
         ];
         casks = [
+            "docker"
             "hammerspoon"
             "google-chrome"
             "raycast"
