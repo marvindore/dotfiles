@@ -3,9 +3,6 @@
 	name = <name>
 	email = <email>
 
-[interactive]
-    diffFilter = delta --color-only
-
 [merge]
     tool = nvimdiff
     conflictstyle = diff3
@@ -23,21 +20,35 @@
     keepBackup = false
     cmd = nvim -d -c "\"wincmd l\" -c \"norm ]c\" \"$LOCAL\" \"$MERGED\" \"$REMOTE\""
 
+[alias]
+    # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
+    dlog = -c diff.external=difft log --ext-diff
+    dshow = -c diff.external=difft show --ext-diff
+    ddiff = -c diff.external=difft diff
+    # `git log` with patches shown with difftastic.
+    dl = -c diff.external=difft log -p --ext-diff
+    # Show the most recent commit with difftastic.
+    ds = -c diff.external=difft show --ext-diff
+    # `git diff` with difftastic.
+    dft = -c diff.external=difft diff
+
+[difftool]
+    # Run the difftool immediately, don't ask 'are you sure' each time.
+    prompt = false
+
+[pager]
+    # Use a pager if the difftool output is larger than one screenful,
+    # consistent with the behaviour of `git diff`.
+    difftool = true
+
 [diff]
+    # Set difftastic as the default difftool, so we don't need to specify
+    # `-t difftastic` every time.
     tool = difftastic
 
 [difftool "difftastic"]
     prompt = false
 	cmd = difft "$LOCAL" "$REMOTE"
-
-[pager]
-    difftool = true
-
-[delta]
-	side-by-side = true
-
-[core]
-	pager = delta --line-numbers --dark
 
 # User different gitconfig based on directory
 [includeIf "gitdir:~/company/"]

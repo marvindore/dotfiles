@@ -9,6 +9,10 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     exit
 }
 
+# Setup dotfiles
+# TODO
+
+
 # List of apps to check and install
 $scoopApps = @(
     'git',
@@ -22,7 +26,6 @@ $scoopApps = @(
     'ripgrep',
     'nmap',
     'fzf',
-    'delta',
     'bottom'
 )
 

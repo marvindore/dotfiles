@@ -29,11 +29,13 @@ install_brew_packages() {
   # List of packages to install
   local packages=(
     "asdf"
+    "difftastic"
     "tree-sitter"
     "bat"
     "fzf"
     "git"
     "gnupg"
+    "httpie"
     "logseq"
     "ripgrep"
     "stow"
@@ -54,7 +56,7 @@ install_brew_packages() {
   
   # Iterate through each package and install it if not already installed.
   for pkg in "${packages[@]}"; do
-    if ! brew list "$pkg" &>/dev/null; then
+    if ! command -v "$pkg" &>/dev/null && ! brew list "$pkg" &>/dev/null; then
       echo "Installing $pkg..."
       brew install "$pkg"
     else
@@ -64,7 +66,7 @@ install_brew_packages() {
 
   # Iterate through casks and install it if not already installed.
   for csk in "${casks[@]}"; do
-    if ! brew list "$csk" &>/dev/null; then
+    if ! command -v "$csk" &>/dev/null && ! brew list "$csk" &>/dev/null; then
       echo "Installing $csk..."
       brew install --cask "$csk"
     else

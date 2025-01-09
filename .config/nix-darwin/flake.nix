@@ -24,9 +24,11 @@
             pkgs.aerospace
             pkgs.asdf-vm
             pkgs.bat
+            pkgs.difftastic
             pkgs.fzf
             pkgs.git
             pkgs.gnupg
+            pkgs.httpie
             pkgs.logseq
             pkgs.mkalias
             inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
