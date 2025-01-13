@@ -56,6 +56,7 @@ local current_os = vim.loop.os_uname().sysname:lower()
 local unix = { "darwin", "linux" }
 local hasMacos = vim.fn.has('macunix')
 -- local osName = lua print(vim.loop.os_uname().sysname)
+--
 M.isWindows = vim.fn.has('win32') == 1
 M.home = M.isWindows and os.getenv("USERPROFILE") or os.getenv('HOME')
 M.neovim_home = M.isWindows and M.home .. '/AppData/Local/nvim-data' or M.home .. '/.local/share/nvim'

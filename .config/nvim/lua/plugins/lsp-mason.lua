@@ -531,7 +531,7 @@ return { -- LSP Configuration & Plugins
       "lemminx",
       "lua_ls",
       "sqlls",
-      --"yamlls",
+      "yamlls",
     }
 
     if utils.enableCsharp then
@@ -539,7 +539,7 @@ return { -- LSP Configuration & Plugins
         "csharpier",
         "netcoredbg",
       }
-      print("Hello java")
+
       for _, value in ipairs(cSharp_addons) do
         table.insert(ensure_installed, value)
       end
@@ -550,8 +550,8 @@ return { -- LSP Configuration & Plugins
         "gopls",
         "delve",
       }
+
       local go_servers = { "gopls" }
-      print("Hello java")
       for _, value in ipairs(go_servers) do
         table.insert(lsp_servers, value)
       end
@@ -565,7 +565,7 @@ return { -- LSP Configuration & Plugins
         "jdtls",
       }
       local java_servers = { "jdtls" }
-      print("Hello java")
+
       for _, value in ipairs(java_servers) do
         table.insert(lsp_servers, value)
       end
@@ -589,7 +589,7 @@ return { -- LSP Configuration & Plugins
         "js-debug-adapter",
         "ts_ls",
       }
-      print("ok its true")
+
       for _, value in ipairs(javascript_servers) do
         table.insert(lsp_servers, value)
       end
@@ -606,7 +606,7 @@ return { -- LSP Configuration & Plugins
         "flake8",
         "pyright",
       }
-      print("Hello java")
+
       for _, value in ipairs(python_servers) do
         table.insert(lsp_servers, value)
       end
