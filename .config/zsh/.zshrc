@@ -11,6 +11,9 @@ export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
 export PATH="$HOME/.executables:$PATH"
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
+# Macos Paths
+export PATH="/opt/homebrew/bin:$PATH"
+
 # Environment variables set everywhere
 export EDITOR="nvim"
 export VISUAL="$EDITOR"

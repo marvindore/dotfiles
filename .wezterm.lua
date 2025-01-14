@@ -24,6 +24,7 @@ wezterm.on("gui-startup", function(cmd)
 	window:gui_window():maximize()
 end)
 
+config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 2000 }
 config.window_decorations = "TITLE|RESIZE|MACOS_FORCE_DISABLE_SHADOW"
 
 -- This is where you actually apply your config choices

@@ -38,10 +38,9 @@ if [[ -n "$SSH_CONNECTION" ]]; then
   HOSTNAME=$(hostname) # Get the remote machine's hostname
   PROMPT="%B%{$fg[green]%}[%{$fg[white]%}%n@%{$fg[red]%}$HOSTNAME%{$fg[green]%}] %(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )%{$fg[cyan]%}%c%{$reset_color%}"
 else
-  # For local machine, show the local machine's hostname
-  HOSTNAME=$(hostname) # Get the local machine's hostname
-  PROMPT="%B%{$fg[blue]%}[%{$fg[white]%}%n@%{$fg[red]%}$HOSTNAME%{$fg[blue]%}] %(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )%{$fg[cyan]%}%c%{$reset_color%}"
+  PROMPT="%B%{$fg[blue]%} [%{$fg[white]%}%n%{$fg[red]%}%{$fg[blue]%}] %(?:%{$fg_bold[green]%}➜ :%{$fg_bold[red]%}➜ )%{$fg[cyan]%}%c%{$reset_color%}"
 fi
 
 # Append the version control system info to the prompt
 PROMPT+="\$vcs_info_msg_0_ "
+RPROMPT="%3~"
