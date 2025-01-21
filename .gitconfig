@@ -1,7 +1,7 @@
 # This is Git's per-user configuration file.
 [user]
-	name = <name>
-	email = <email>
+	name = Marvin Dore
+	email = hi@marvindore.com
 
 [merge]
     tool = nvimdiff
@@ -46,5 +46,5 @@
 	cmd = difft "$LOCAL" "$REMOTE"
 
 # User different gitconfig based on directory
-[includeIf "gitdir:~/company/"]
+[includeIf "gitdir:~/ukg/"]
     path = .gitconfig-company
