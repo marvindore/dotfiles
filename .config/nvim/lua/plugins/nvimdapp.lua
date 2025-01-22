@@ -180,7 +180,7 @@ return {
 		--
 		-- DotNet
 		local exe = isWindows and neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
-			or home .. "/mason/bin/netcoredbg"
+			or neovim_home .. "/mason/bin/netcoredbg"
 
 		adapters.netcoredbg = {
 			type = "executable",

@@ -37,4 +37,4 @@
 
 # User different gitconfig based on directory
 [includeIf "gitdir:~/ukg/"]
-    path = .gitconfig-company
+    path = .gitconfig-work
