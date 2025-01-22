@@ -48,6 +48,7 @@ install_brew_packages() {
     "docker"
     "hammerspoon"
     "intellij-idea"
+    "font-jetbrains-mono"
     "google-chrome"
     "raycast"
     "rider"

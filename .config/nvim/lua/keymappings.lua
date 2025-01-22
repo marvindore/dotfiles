@@ -88,13 +88,13 @@ keymap("v", "<C-v>", 'c<ESC>"+p', { silent = true })
 keymap("v", "<C-V>", '<ESC>"+pa', { silent = true })
 
 -- Wrap selection
-keymap("v", ",cb", [[c{ <c-r>" }<esc>]], { silent = true }) -- surround curly braces
-keymap("v", ",bt", [[c`<c-r>"`<esc>]], { silent = true }) -- surround back ticks
-keymap("v", ",ss", [[c <c-r>" <esc>]], { silent = true }) -- surround single space
-keymap("v", ",dq", [[c"<c-r>""<esc>]], { silent = true }) -- surround double quotes
-keymap("v", ",sq", [[c'<c-r>"'<esc>]], { silent = true }) -- surround single quotes
-keymap("v", ",sp", [[c(<c-r>")<esc>]], { silent = true }) -- surround single parentheses
-keymap("v", ",sb", [[c[<c-r>"]<esc>]], { silent = true }) -- surround square brackets
+keymap("v", ",b", [[c{ <c-r>" }<esc>]], { silent = true }) -- surround curly braces
+keymap("v", ",B", [[c[<c-r>"]<esc>]], { silent = true }) -- surround square brackets
+keymap("v", ",t", [[c`<c-r>"`<esc>]], { silent = true }) -- surround back ticks
+keymap("v", ",s", [[c <c-r>" <esc>]], { silent = true }) -- surround single space
+keymap("v", ",q", [[c'<c-r>"'<esc>]], { silent = true }) -- surround single quotes
+keymap("v", ",Q", [[c"<c-r>""<esc>]], { silent = true }) -- surround double quotes
+keymap("v", ",p", [[c(<c-r>")<esc>]], { silent = true }) -- surround single parentheses
 
 -- Copilot
 wk.add({
@@ -216,14 +216,14 @@ map("v", "<leader>rm",":lua require('iron.core').send_mark()<cr>", {desc = "Repl
 map("n", "<leader>ru",":lua require('iron.core').send_until_cursor()<cr>", {desc = "Repl send until cursor"})
 
 -- nv-nvim-tree
-keymap("n", "<leader>nR", ":NvimTreeRefresh<CR>", { desc = "Tree refresh" })
+--keymap("n", "<leader>nR", ":NvimTreeRefresh<CR>", { desc = "Tree refresh" })
 keymap("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Tree togle" })
-keymap("n", "<leader>nF", ":NvimTreeFindFile<CR>", { desc = "Tree find file" })
+--keymap("n", "<leader>nF", ":NvimTreeFindFile<CR>", { desc = "Tree find file" })
 
 -- neogen
-map("n", "<leader>nc", ":lua require('neogen').generate({type = 'class'})<CR>", { desc = "Neogen Generate Class" })
-map("n", "<leader>nf", ":lua require('neogen').generate({type = 'func'})<CR>", { desc = "Neogen Generate Func" })
-map("n", "<leader>nt", ":lua require('neogen').generate({type = 'type'})<CR>", { desc = "Neogen Generate Type" })
+-- map("n", "<leader>nc", ":lua require('neogen').generate({type = 'class'})<CR>", { desc = "Neogen Generate Class" })
+-- map("n", "<leader>nf", ":lua require('neogen').generate({type = 'func'})<CR>", { desc = "Neogen Generate Func" })
+-- map("n", "<leader>nt", ":lua require('neogen').generate({type = 'type'})<CR>", { desc = "Neogen Generate Type" })
 
 -- dap debugging
 wk.add({
@@ -237,7 +237,6 @@ map("n", "<F11>", ":lua require('dap').step_into()<CR>", { desc = "Debug step in
 map("n", "<F10>", ":lua require('dap').step_over()<CR>", { desc = "Debug step over" })
 map("n", "<S-F12>", ":lua require('dap').step_out()<CR>", { desc = "Debug step out" })
 
-map("n", "<leader>dw", ":lua require('dapui').float_element('watches')<CR>", { desc = "Dap float watch" })
 map("n", "<leader>db", ":lua require'dap'.toggle_breakpoint()<CR>", { desc = "Debug toggle breakpoint" })
 map("n", "<leader>dr", ":lua require'dap'.restart()<cr>", { desc = "Debug restart" })
 map("n", "<leader>ds", ":lua require'dap'.stop()<cr>", { desc = "Debug stop" })
@@ -276,22 +275,17 @@ map(
 	":lua require('dap').set_breakpoint({ nil, nil, vim.fn.input('Log point message: ') })<CR>",
 	{ desc = "Debug breakpoint with message" }
 )
-map("n", "<leader>da", ":lua require'debugHelper'.attach()<CR>", { desc = "Debug attach" })
-map("n", "<leader>dA", ":lua require'debugHelper'.attachToRemote()<CR>", { desc = "Debug attach remote" })
+--map("n", "<leader>da", ":lua require'debugHelper'.attach()<CR>", { desc = "Debug attach" })
+--map("n", "<leader>dA", ":lua require'debugHelper'.attachToRemote()<CR>", { desc = "Debug attach remote" })
 
--- dap-ui
-map("n", "<leader>dh", ":lua require'dap.ui.variables'.hover()<CR>", { desc = "Debug ui hover" })
-map("v", "<leader>dv", ":lua require'dap.ui.variables'.visual_hover()<CR>", { desc = "Debug ui visual hover" })
-map("n", "<leader>d?", ":lua require'dap.ui.variables'.scopes()<CR>", { desc = "Debug scopes" })
-map("n", "<leader>dui", ":lua require('dapui').toggle()<CR>", { desc = "Debug ui toggle" })
-map("n", "<leader>duh", "<cmd>lua require'dap.ui.widgets'.hover()<CR>", { desc = "Debug ui widget hover" })
-map(
-	"n",
-	"<leader>duf",
-	"<cmd>lua local widgets=require'dap.ui.widgets';widgets.centered_float(widgets.scopes)<CR>",
-	{ desc = "Debug widgets and scope" }
-)
-map("n", "<F4>", ":lua require('dapui').toggle()<CR>", { desc = "Debug ui toggle" })
+-- dapview
+vim.keymap.set("n", "<leader>dv", function()
+    require("dap-view").toggle()
+end, { desc = "Toggle nvim-dap-view" })
+vim.keymap.set("n", "<leader>da", function()
+    require("dap-view").add_expr()
+end, { desc = "Dapview add expression" })
+map("n", "<leader>dw", ":DapViewWatch<cr>", {desc = "Dapview Watch"})
 
 -- symbols
 keymap("n", "<LocalLeader>s", ":Outline<cr>", { desc = "Symbols outline" })
@@ -419,7 +413,7 @@ map("n", "<leader>dtf", ":Telescope dap frames<CR>", { desc = "Telescope dap fra
 map("n", "<leader>dtc", ":Telescope dap commands<CR>", { desc = "Telescope dap commands" })
 map("n", "<leader>dto", ":Telescope dap configurations<CR>", { desc = "Telescope dap configuration" })
 map("n", "<leader>dlb", ":Telescope dap list_breakpoints<CR>", { desc = "Telescope dap breakpoints" })
-map("n", "<leader>dv", ":Telescope dap variables<CR>", { desc = "Telescope dap variables" })
+map("n", "<leader>dtv", ":Telescope dap variables<CR>", { desc = "Telescope dap variables" })
 
 -- git
 --vim.api.nvim_set_keymap("n", "<leader>lg", "<cmd>lua _lazygit_toggle()<CR>", {noremap = true, silent = true})
@@ -447,7 +441,7 @@ end, { desc = "[/] Fuzzily search in current buffer]" })
 -- Spring
 local spring_run_mvn = "mvn spring-boot:run -Dspring-boot.run.properties=local"
 local command = ':lua require("toggleterm").exec("' .. spring_run_mvn .. '")<CR>'
-map("n", "<leader>sr", command)
+map("n", "<leader>jsr", command)
 map("n", "<leader>jtc", ':lua require("java").test.run_current_class()<CR>', { desc = "Java test class" })
 map("n", "<leader>jtd", ':lua require("java").test.debug_current_class()<CR>', { desc = "Java Debug Test Class" })
 map("n", "<leader>jtm", ':lua require("java").test.run_current_method()<CR>', { desc = "Java Test Method" })
