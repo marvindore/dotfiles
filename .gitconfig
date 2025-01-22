@@ -1,4 +1,3 @@
-# This is Git's per-user configuration file.
 [user]
 	name = Marvin Dore
 	email = hi@marvindore.com
@@ -8,17 +7,10 @@
     conflictstyle = diff3
 
 [mergetool]
+    tool = nvimdiff
+    conflictstyle = diff3
     keepBackup = false
     prompt = false
-
-[mergetool "nvimdiff"]
-# Gives you meld, with three comparison tabs. Assuming you're merging others changes into
-# your branch, this shows you:
-# - 1st tab: yours|merged result|theirs (do the merge here into the middle pane)
-# - 2nd tab: base vs your changes (look at just your changes)
-# - 3rd tab: base vs their changes (look at just their changes)
-    keepBackup = false
-    cmd = nvim -d -c "\"wincmd l\" -c \"norm ]c\" \"$LOCAL\" \"$MERGED\" \"$REMOTE\""
 
 [alias]
     # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
@@ -28,12 +20,10 @@
     dlp = -c diff.external=difft log -p --ext-diff
 
 [difftool]
-    # Run the difftool immediately, don't ask 'are you sure' each time.
+    difftool = true
     prompt = false
 
 [pager]
-    # Use a pager if the difftool output is larger than one screenful,
-    # consistent with the behaviour of `git diff`.
     difftool = true
 
 [diff]
