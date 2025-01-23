@@ -106,7 +106,23 @@ return { -- LSP Configuration & Plugins
 	},
 	dependencies = {
 		-- Automatically install LSPs to stdpath for neovim
-		"williamboman/mason.nvim",
+		{
+			"williamboman/mason.nvim",
+			opts = {
+				ui = {
+					icons = {
+						package_installed = "✓",
+						package_pending = "➜",
+						package_uninstalled = "✗",
+					},
+				},
+				registries = {
+					"github:nvim-java/mason-registry",
+					"github:mason-org/mason-registry",
+				},
+			},
+			-- dont due this because nvim-java require("mason").setup(conf) https://github.com/nvim-java/nvim-java/wiki/Troubleshooting#no_entry-mason-failed-to-install-jdtls---cannot-find-package-xxxxx
+		},
 		"williamboman/mason-lspconfig.nvim",
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 		-- LSP
@@ -132,18 +148,43 @@ return { -- LSP Configuration & Plugins
 				"MunifTanjim/nui.nvim",
 				"neovim/nvim-lspconfig",
 				"mfussenegger/nvim-dap",
-				{
-					"williamboman/mason.nvim",
-					opts = {
-						registries = {
-							"github:nvim-java/mason-registry",
-							"github:mason-org/mason-registry",
-						},
-					},
-				},
 			},
 			config = function()
-				require("java").setup()
+				require("java").setup({
+					jdk = {
+						auto_install = false,
+					},
+					root_markers = {
+						"settings.gradle",
+						"settings.gradle.kts",
+						"pom.xml",
+						"build.gradle",
+						"mvnw",
+						"gradlew",
+						"build.gradle",
+						"build.gradle.kts",
+					},
+					lombok = {
+						version = "nightly",
+					},
+					jdtls = {
+						version = "v1.43.0",
+					},
+					java_test = {
+						enable = true,
+						version = "0.43.0",
+					},
+					-- load java debugger plugins
+					java_debug_adapter = {
+						enable = true,
+						version = "0.58.1",
+					},
+
+					spring_boot_tools = {
+						enable = true,
+						version = "1.59.0",
+					},
+				})
 				local lspconfig = require("lspconfig")
 				local home = require("utils").home
 				lspconfig.jdtls.setup({
@@ -163,12 +204,12 @@ return { -- LSP Configuration & Plugins
 				})
 			end,
 		},
-    {
-      "yioneko/nvim-vtsls", -- typescript
-    }
+		{
+			"yioneko/nvim-vtsls", -- typescript
+		},
 	},
 	event = { "BufReadPre", "BufNewFile" },
-	config = function()
+	config = function(_, opts)
 		local home = require("utils").home
 		local util = require("lspconfig.util")
 		local pid = vim.fn.getpid()
@@ -501,17 +542,6 @@ return { -- LSP Configuration & Plugins
 		local lsp_status = require("lsp-status")
 		lsp_status.register_progress()
 
-		-- Setup mason so it can manage external tooling
-		require("mason").setup({
-			ui = {
-				icons = {
-					package_installed = "✓",
-					package_pending = "➜",
-					package_uninstalled = "✗",
-				},
-			},
-		})
-
 		local ensure_installed = {
 			"bashls",
 			"cspell",
@@ -567,12 +597,17 @@ return { -- LSP Configuration & Plugins
 				"java-debug-adapter",
 				"java-test",
 				"jdtls",
+				"ktlint",
+				"kotlin-debug-adapter",
 			}
 			for _, value in ipairs(java_addons) do
 				table.insert(ensure_installed, value)
 			end
 
-			local java_servers = { "jdtls" }
+			local java_servers = {
+				"jdtls",
+				"kotlin_language_server",
+			}
 			for _, value in ipairs(java_servers) do
 				table.insert(lsp_servers, value)
 			end
@@ -587,7 +622,7 @@ return { -- LSP Configuration & Plugins
 				"prettier",
 				"js-debug-adapter",
 				--"ts_ls",
-				"vtsls"
+				"vtsls",
 			}
 			for _, value in ipairs(javascript_addons) do
 				table.insert(ensure_installed, value)
@@ -600,7 +635,7 @@ return { -- LSP Configuration & Plugins
 				"eslint",
 				"jsonls",
 				"tailwindcss",
-				"vtsls"
+				"vtsls",
 			}
 			for _, value in ipairs(javascript_servers) do
 				table.insert(lsp_servers, value)
@@ -619,7 +654,7 @@ return { -- LSP Configuration & Plugins
 				"flake8",
 				"pyright",
 			}
-			for _, value in ipairs(pytonn_addons) do
+			for _, value in ipairs(python_addons) do
 				table.insert(ensure_installed, value)
 			end
 

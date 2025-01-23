@@ -34,3 +34,4 @@ Thumbs.db
 # Neovim session files
 .session
 
+lazy-lock.json
