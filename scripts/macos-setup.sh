@@ -17,6 +17,8 @@ configure_personal_settings() {
   killall Dock
   echo "Disabling click wallpaper to shoow desktop..."
   defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+  defaults write com.apple.dock appswitcher-all-displays -bool true # Show app switcher on all displays
+  Killall Dock
 }
 
 # ------------------------------------------------------------------------------
@@ -44,6 +46,7 @@ install_brew_packages() {
   )
 
   local casks=(
+    "azure-data-studio"
     "datagrip"
     "docker"
     "hammerspoon"
