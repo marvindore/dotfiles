@@ -105,130 +105,17 @@ return { -- LSP Configuration & Plugins
 		--inlay_hints = { enabled = true },
 	},
 	dependencies = {
-		-- Automatically install LSPs to stdpath for neovim
-		{
-			"williamboman/mason.nvim",
-			opts = {
-				ui = {
-					icons = {
-						package_installed = "✓",
-						package_pending = "➜",
-						package_uninstalled = "✗",
-					},
-				},
-				registries = {
-					"github:nvim-java/mason-registry",
-					"github:mason-org/mason-registry",
-				},
-			},
-			-- dont due this because nvim-java require("mason").setup(conf) https://github.com/nvim-java/nvim-java/wiki/Troubleshooting#no_entry-mason-failed-to-install-jdtls---cannot-find-package-xxxxx
-		},
-		"williamboman/mason-lspconfig.nvim",
-		"WhoIsSethDaniel/mason-tool-installer.nvim",
+    "williamboman/mason.nvim",
 		-- LSP
-		{
-			"seblj/roslyn.nvim",
-			enabled = utils.enableCsharp,
-		},
 		"nvim-lua/lsp-status.nvim",
 		{
 			"j-hui/fidget.nvim",
 			tag = "legacy",
 			event = "LspAttach",
 		},
-		{
-			"nvim-java/nvim-java",
-			event = { "BufEnter *.java" },
-			enabled = utils.enableJava,
-			dependencies = {
-				"nvim-java/lua-async-await",
-				"nvim-java/nvim-java-core",
-				"nvim-java/nvim-java-test",
-				"nvim-java/nvim-java-dap",
-				"MunifTanjim/nui.nvim",
-				"neovim/nvim-lspconfig",
-				"mfussenegger/nvim-dap",
-			},
-			config = function()
-				require("java").setup({
-					jdk = {
-						auto_install = false,
-					},
-					root_markers = {
-						"settings.gradle",
-						"settings.gradle.kts",
-						"pom.xml",
-						"build.gradle",
-						"mvnw",
-						"gradlew",
-						"build.gradle",
-						"build.gradle.kts",
-					},
-					lombok = {
-						version = "nightly",
-					},
-					jdtls = {
-						version = "v1.43.0",
-					},
-					java_test = {
-						enable = true,
-						version = "0.43.0",
-					},
-					-- load java debugger plugins
-					java_debug_adapter = {
-						enable = true,
-						version = "0.58.1",
-					},
-
-					spring_boot_tools = {
-						enable = true,
-						version = "1.59.0",
-					},
-				})
-				local lspconfig = require("lspconfig")
-				local home = require("utils").home
-				lspconfig.jdtls.setup({
-					settings = {
-						java = {
-							configuration = {
-								runtimes = {
-									{
-										name = "JavaSE-21",
-										path = home .. "/.asdf/installs/java/zulu-21.38.21",
-										default = true,
-									},
-								},
-							},
-						},
-					},
-				})
-			end,
-		},
-		{
-			"yioneko/nvim-vtsls", -- typescript
-		},
 	},
 	event = { "BufReadPre", "BufNewFile" },
-	config = function(_, opts)
-		local home = require("utils").home
-		local util = require("lspconfig.util")
-		local pid = vim.fn.getpid()
-
-		-- lsp_signature
-		local on_attach_lsp_signature = function(client, bufnr)
-			-- https://github.com/ray-x/lsp_signature.nvim#full-configuration-with-default-values
-			require("lsp_signature").on_attach({
-				bind = true, -- This is mandatory, otherwise border config won't get registered.
-				floating_window = true,
-				handler_opts = {
-					border = "single",
-				},
-				zindex = 99, -- <100 so that it does not hide completion popup.
-				fix_pos = false, -- Let signature window change its position when needed, see GH-53
-				toggle_key = "<M-x>", -- Press <Alt-x> to toggle signature on and off.
-			})
-		end
-
+	config = function()
 		-- Specify how the border looks like
 		local border = {
 			{ "┌", "FloatBorder" },
@@ -246,14 +133,6 @@ return { -- LSP Configuration & Plugins
 			["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = border }),
 			["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = border }),
 		}
-
-		-- Add border to the diagnostic popup window
-		-- vim.diagnostic.config({
-		-- 	virtual_text = {
-		-- 		prefix = "■ ", -- Could be '●', '▎', 'x', '■', , 
-		-- 	},
-		-- 	float = { border = border },
-		-- })
 
 		-------------------------------------------
 		--- diagnostics: linting and formatting ---
@@ -350,7 +229,7 @@ return { -- LSP Configuration & Plugins
 					vim.tbl_extend("force", bufopts, { desc = "✨lsp toggle diagnostics" })
 				)
 				---
-				on_attach_lsp_signature(client, bufnr)
+				--on_attach_lsp_signature(client, bufnr)
 
 				vim.keymap.set("n", "K", "<cmd>lua vim.lsp.buf.hover()<cr>", { buffer = 0 })
 				vim.keymap.set(
@@ -531,8 +410,7 @@ return { -- LSP Configuration & Plugins
 					roslyn_setup_keymaps()
 				end
 			end
-		end
-		-- Mason path ~/.local/share/nvim/mason/bin
+		end -- end on_attach
 		-- END Keymaps to work outside of LSP
 		local pid = vim.fn.getpid()
 		local root_pattern = require("lspconfig.util").root_pattern

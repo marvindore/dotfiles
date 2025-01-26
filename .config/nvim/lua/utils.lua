@@ -1,10 +1,10 @@
 local M = {}
 --- Enable languages
-M.enableJavascript = false
-M.enableJava = false
+M.enableJavascript = true
+M.enableJava = true
 M.enableCsharp = false
 M.enableGo = false
-M.enablePython = false
+M.enablePython = true
 ---
 M.keymap = function(mode, lhs, rhs, opts)
   vim.api.nvim_set_keymap(

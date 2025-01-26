@@ -1,6 +1,6 @@
 return {
   "ray-x/lsp_signature.nvim",
-  --  event = "VeryLazy",
+  event = "InsertEnter",
   opts = {},
   config = function()
     require 'lsp_signature'.setup({
@@ -63,6 +63,7 @@ return {
 
       select_signature_key = nil, -- cycle to next signature, e.g. '<M-n>' function overloading
       move_cursor_key = nil,  -- imap, use nvim_set_current_win to move cursor between current win and floating
+      cursorhold_update = false
     })
   end
 }
