@@ -9,6 +9,8 @@
 -- {Marks}
 -- create mark m<register>
 -- go to mark '<register>
+-- :delmarks! will delete all lowercase marks
+-- lowercase marks relate to file, uppercase marks are global
 
 -- buffer of messages
 -- :redir > messages.txt
@@ -304,7 +306,7 @@ wk.add({
 })
 local harpoon = require("harpoon")
 map("n", "<leader>hl", ":Telescope harpoon marks<CR>", { desc = "Harpoon list marks" })
-vim.keymap.set("n", "<leader>hm", function()
+vim.keymap.set("n", "<leader>ha", function()
 	harpoon:list():add()
 end, { desc = "Harpoon add mark file" })
 
@@ -328,12 +330,16 @@ vim.keymap.set("n", ";4", function()
 	harpoon:list():select(4)
 end, { desc = "Harpoon select file 4" })
 
--- marks https://github.com/chentoast/marks.nvim
-map("n", "mm", ":lua require('marks').set_next()<CR>", { desc = "Marks set" })
-map("n", "mn", ":lua require('marks').next()<CR>", { desc = "Marks next" })
-map("n", "ml", ":MarksListAll<CR>", { desc = "Marks list" })
-map("n", "m-", ":lua require('marks').delete_buf()<CR>", { desc = "Marks delete buffer" })
+vim.keymap.set("n", "<leader>hn", function()
+	harpoon:list():next()
+end, { desc = "Harpoon next" })
+
+vim.keymap.set("n", "<leader>hp", function()
+	harpoon:list():next()
+end, { desc = "Harpoon previous" })
+
 map("n", "<leader>ml", ":Telescope marks<CR>", { desc = "Marks telescope" })
+map("n", "<leader>md", ":delm! | delm A-Z0-9<CR>", { desc = "Marks delete all"})
 
 -- fzf-lua
 wk.add({
