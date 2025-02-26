@@ -62,3 +62,7 @@ Setup Vale on MacOS
 cp ~/dotfiles/.config/vale/.vale.ini "~/Library/Application Support/vale/"
 ~/.local/share/nvim/mason/packages/vale/vale --config="$HOME/Library/Application Support/vale/.vale.ini" sync
 ```
+Linux
+```
+vale --config="$HOME/.config/vale/.vale.ini" sync
+```

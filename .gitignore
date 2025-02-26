@@ -36,3 +36,5 @@ Thumbs.db
 
 lazy-lock.json
 .tool-versions
+
+.config/vale/*
