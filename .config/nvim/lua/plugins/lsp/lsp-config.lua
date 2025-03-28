@@ -231,7 +231,7 @@ return { -- LSP Configuration & Plugins
 				---
 				--on_attach_lsp_signature(client, bufnr)
 
-				vim.keymap.set("n", "K", "<cmd>lua vim.lsp.buf.hover()<cr>", { buffer = 0 })
+				vim.keymap.set("n", "K", "<cmd>lua vim.lsp.buf.hover({ border = 'rounded'})<cr>", { buffer = 0 })
 				vim.keymap.set(
 					"n",
 					"gd",
@@ -445,6 +445,10 @@ return { -- LSP Configuration & Plugins
 			"yamlls",
 		}
 
+		if utils.isWindows then
+		  table.insert(lsp_servers, "powershell_es")
+		end
+
 		if utils.enableCsharp then
 			local cSharp_addons = {
 				"csharpier",
@@ -553,6 +557,7 @@ return { -- LSP Configuration & Plugins
 		-- Ensure the servers above are installed
 		require("mason-lspconfig").setup({
 			ensure_installed = lsp_servers,
+			automatic_installation = false,
 		})
 
 		-- nvim-cmp supports additional completion capabilities, broadcast that to servers

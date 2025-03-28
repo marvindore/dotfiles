@@ -1,11 +1,15 @@
 local M = {}
---- Enable languages
-M.enableJavascript = true
-M.enableJava = true
+--- Enable languages/Features
+M.enableJavascript = false
+M.enableJava = false
 M.enableCsharp = false
 M.enableGo = false
-M.enablePython = true
+M.enablePython = false
+M.enableAvante = false
+M.enableCopilot = false
+M.enableCodeium = false
 ---
+
 M.keymap = function(mode, lhs, rhs, opts)
   vim.api.nvim_set_keymap(
     mode,
@@ -21,36 +25,16 @@ function _G.dump(...)
     return ...
 end
 
-function map(mode, lhs, rhs, opts)
-  local options = {noremap = true}
-  if opts then options = vim.tbl_extend('force', options, opts) end
-  vim.api.nvim_set_keymap(mode, lhs, rhs, options)
-end
-
--- nvim-dap
--- function attach()
---   print('attaching')
---   dap.run({
---       type = 'node2',
---       request = 'attach',
---       cwd = vim.fn.getcwd(),
---       sourceMaps = true,
---       protocol = 'inspector',
---       skipFiles = {'<node_internals>/**/*.js'},
---       })
+-- function map(mode, lhs, rhs, opts)
+--   local options = {noremap = true}
+--   if opts then options = vim.tbl_extend('force', options, opts) end
+--   vim.api.nvim_set_keymap(mode, lhs, rhs, options)
 -- end
-
--- local function lsp_keymaps(bufnr)
---   local opts = { noremap = true, silent = true }
---   vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
--- end
-
--- M.on_attach = function(client, bufnr)
---   if client.name == "tsserver" then
---     client.resolved_capabilities.document_formatting = false
---   end
---   lsp_keymaps(bufnr)
--- end
+function map(mode, l, r, opts)
+      local options = {noremap = true}
+      if opts then options = vim.tbl_extend('force', options, opts) end
+      vim.keymap.set(mode, l, r, opts)
+    end
 
 local current_os = vim.loop.os_uname().sysname:lower()
 local unix = { "darwin", "linux" }

@@ -1,22 +1,4 @@
--- echo v:lua.vim.uv.os_name().sysname -- lua print(vim.uv.os_uname().sysname)
--- Go to previous location Ctrl + o
--- Go to next location Ctrl + 
--- Go to next method, change, diagnostic [] m|c|d
--- Increment Decrement number Ctrl-A Ctrl-X
--- substitue in block <,>s/old/new/g
--- jump to matching brace %
-
--- {Marks}
--- create mark m<register>
--- go to mark '<register>
--- :delmarks! will delete all lowercase marks
--- lowercase marks relate to file, uppercase marks are global
-
--- buffer of messages
--- :redir > messages.txt
--- :messages
--- :redir END
--- :e messages.txt
+local utils = require("utils")
 
 -- variables
 local keymap = require("utils").keymap
@@ -98,25 +80,36 @@ keymap("v", ",q", [[c'<c-r>"'<esc>]], { silent = true }) -- surround single quot
 keymap("v", ",Q", [[c"<c-r>""<esc>]], { silent = true }) -- surround double quotes
 keymap("v", ",p", [[c(<c-r>")<esc>]], { silent = true }) -- surround single parentheses
 
--- Copilot
-wk.add({
-	{ "<leader>c", group = "Copilot" },
-})
-map("n", "<leader>cc", "<cmd>CopilotChatToggle<CR>", { desc = "Copilot Chat Toggle" })
-map("v", "<leader>cf", "<cmd>CopilotChatFix<CR>", { desc = "Copilot Chat Fix" })
-map("v", "<leader>co", "<cmd>CopilotChatOptimize<CR>", { desc = "Copilot Chat Optimize" })
-map("v", "<leader>ce", "<cmd>CopilotCharExplain<CR>", { desc = "Copilot Chat Explain" })
-map("v", "<leader>ct", "<cmd>CopilotChatTests<CR>", { desc = "Copilot Chat Tests" })
-map("v", "<leader>cr", "<cmd>CopilotChatReview<CR>", { desc = "Copilot Chat Review" })
-
-map("n", "<leader>ca", "<cmd>Copilot auth<CR>", { desc = "Copilot auth" })
-
 -- Avante
-map("n", "<LocalLeader>aa", "<cmd>AvanteToggle<CR>", { desc = "Avante Ask" })
-map("n", "<LocalLeader>ab", "<cmd>AvanteBuild<cr>", { desc = "Avante Build" })
-map("n", "<LocalLeader>ac", "<cmd>Avante Chat<cr>", { desc = "Avante Chat" })
-map("n", "<LocalLeader>ar", "<cmd>AvanteRefresh<cr>", { desc = "Avante Refresh" })
-map("n", "<LocalLeader>ae", "<cmd>AvanteEdit<cr>", { desc = "Avante Edit" })
+if utils.enableAvante then
+  map("n", "<LocalLeader>aa", "<cmd>AvanteToggle<CR>", { desc = "Avante Ask" })
+  map("n", "<LocalLeader>ab", "<cmd>AvanteBuild<cr>", { desc = "Avante Build" })
+  map("n", "<LocalLeader>ac", "<cmd>Avante Chat<cr>", { desc = "Avante Chat" })
+  map("n", "<LocalLeader>ar", "<cmd>AvanteRefresh<cr>", { desc = "Avante Refresh" })
+  map("n", "<LocalLeader>ae", "<cmd>AvanteEdit<cr>", { desc = "Avante Edit" })
+end
+
+-- Codeium
+if utils.enableCodeium then
+ map("n", "<leader>ca", "<cmd>Codeium Auth<cr>", {desc = "Codeium Auth"})
+ map("n", "<leader>cc", "<cmd>Codeium Chat<cr>", {desc = "Codeium Chat"})
+end
+
+-- Copilot
+if utils.enableCopilot then
+  wk.add({
+    { "<leader>c", group = "Copilot" },
+  })
+  map("n", "<leader>cc", "<cmd>CopilotChatToggle<CR>", { desc = "Copilot Chat Toggle" })
+  map("v", "<leader>cf", "<cmd>CopilotChatFix<CR>", { desc = "Copilot Chat Fix" })
+  map("v", "<leader>co", "<cmd>CopilotChatOptimize<CR>", { desc = "Copilot Chat Optimize" })
+  map("v", "<leader>ce", "<cmd>CopilotCharExplain<CR>", { desc = "Copilot Chat Explain" })
+  map("v", "<leader>ct", "<cmd>CopilotChatTests<CR>", { desc = "Copilot Chat Tests" })
+  map("v", "<leader>cr", "<cmd>CopilotChatReview<CR>", { desc = "Copilot Chat Review" })
+
+  map("n", "<leader>ca", "<cmd>Copilot auth<CR>", { desc = "Copilot auth" })
+  map("n", "<leader>cs", "<cmd>Copilot suggestions<CR>", { desc = "Copilot suggestions" })
+end
 
 -- Dbee
 wk.add({
@@ -126,7 +119,6 @@ map("n", "<LocalLeader>do", "<cmd>lua require('dbee').open()<CR>", { desc = "Dbe
 map("n", "<LocalLeader>dc", "<cmd>lua require('dbee').close()<CR>", { desc = "Dbee Close" })
 map("n", "<LocalLeader>dd", "<cmd>lua require('dbee').toggle()<CR>", { desc = "Dbee Toggle" })
 
-map("n", "<leader>cs", "<cmd>Copilot suggestions<CR>", { desc = "Copilot suggestions" })
 
 -- Better indenting
 keymap("v", "<", "<gv")
@@ -370,12 +362,12 @@ end
 
 map("n", "<S-h>", ":Telescope buffers sort_mru=true sort_lastused=true initial_mode=normal theme=ivy<cr>", {desc = "Telescope open buffers"})
 
-vim.keymap.set("n", "<Leader>ff", ":lua require('telescope.builtin').find_files()<CR>", { desc = "[f]ind [f]iles" })
+vim.keymap.set("n", "<Leader>fi", ":lua require('telescope.builtin').find_files()<CR>", { desc = "[f]ind [f]iles" })
 vim.keymap.set('n', '<leader>fo', function() search_files_in_opened_directory() end, { desc=  "[F]ind [O]pen directory"})
 map(
 	"n",
-	"<Leader>fi",
-	"<cmd>lua require('telescope.builtin').find_files({find_command= {'rg','--no-ignore','--hidden','--files','-g','!**/node_modules/*','-g','!**/.git/*'},})",
+	"<Leader>ff",
+	"<cmd>lua require('telescope.builtin').find_files({find_command= {'rg','--no-ignore','--hidden','--files','-g','!**/node_modules/*','-g','!**/.git/*'},})<cr>",
 	{ desc = "Find ignored files" }
 )
 --vim.keymap.set("n", "<Leader>fF", ":lua require('telescope.builtin').find_files({})<CR>", { desc = '[f]ind [f]iles Exact Name' })
@@ -401,16 +393,16 @@ map(
 	{ desc = "Telescope grep open files" }
 )
 map("n", "<Leader>fp", ":Telescope projects<CR>", { desc = "Telescope projects" })
-map("n", "<Leader>gs", ":Telescope git_status<CR>", { desc = "Telescope git status" })
-map("n", "<Leader>gf", ":Telescope git_files<CR>", { desc = "Telescope git files" })
+map("n", "<Leader>tgs", ":Telescope git_status<CR>", { desc = "Telescope git status" })
+map("n", "<Leader>tgf", ":Telescope git_files<CR>", { desc = "Telescope git files" })
 map(
 	"n",
-	"<Leader>gc",
+	"<Leader>tgc",
 	":lua require('telescope.builtin').git_commits({ git_command = {'git', 'log', '--pretty=reference'} })<cr>",
 	{ desc = "Telescope git commits" }
 )
-map("n", "<Leader>gt", ":Telescope git_stash<CR>", { desc = "Telescope git stash" })
-map("n", "<Leader>gb", ":Telescope git_branches<CR>", { desc = "Telescope git branches" })
+map("n", "<Leader>tgt", ":Telescope git_stash<CR>", { desc = "Telescope git stash" })
+map("n", "<Leader>tgb", ":Telescope git_branches<CR>", { desc = "Telescope git branches" })
 vim.keymap.set("n", "<leader>sd", require("telescope.builtin").diagnostics, { desc = "[S]earch [D]iagnostics" })
 vim.keymap.set("n", "<leader>sh", require("telescope.builtin").help_tags, { desc = "[S]earch [H]elp" })
 
@@ -424,6 +416,20 @@ map("n", "<leader>dtv", ":Telescope dap variables<CR>", { desc = "Telescope dap 
 -- git
 --vim.api.nvim_set_keymap("n", "<leader>lg", "<cmd>lua _lazygit_toggle()<CR>", {noremap = true, silent = true})
 --map("n", "<leader>lg", ":LazyGit<CR>", { desc = "Lazy git" })
+local gitsigns = require('gitsigns')
+map("n", "<leader>gs", ":lua require('neogit').open({ kind = 'vsplit'})<cr>", {desc = "Neogit Open"})
+map("n", "<leader>gg", ":lua require('neogit').open({ kind = 'floating'})<cr>", {desc = "Neogit Open"})
+map("n", "<leader>ghn", ":lua require('gitsigns').nav_hunk('next')<cr>", {desc = "Git Next Hunk"})
+map("n", "<leader>ghp", ":lua require('gitsigns').nav_hunk('prev')<cr>", {desc = "Git Previous Hunk"})
+map("n", "<leader>ghs", ":lua require('gitsigns').stage_hunk<cr>", {desc = "Git Stage Hunk"})
+map("n", "<leader>ghr", ":lua require('gitsigns').reset_hunk<cr>", {desc = "Git Reset Hunk"})
+map('v', '<leader>ghs', function()
+      gitsigns.stage_hunk({ vim.fn.line('.'), vim.fn.line('v') })
+    end)
+map('v', '<leader>ghr', function()
+      gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') })
+    end)
+
 map("n", "<LocalLeader>gb", ":BlameToggle<cr>", { desc = "Git Blame" })
 -- Merge conflicts
 vim.keymap.set("n", "<leader>1", ":diffget LOCAL<CR>", { desc = "Diffget LOCAL" })
@@ -486,3 +492,8 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	group = highlight_group,
 	pattern = "*",
 })
+
+local home = vim.loop.os_homedir()  -- Get the home directory dynamically
+local notes_path = home .. "/dotfiles/cheatsheets"  -- Append the notes directory
+
+vim.keymap.set("n", "<leader>N", ":e " .. notes_path .. "<CR>", { noremap = true, silent = true })

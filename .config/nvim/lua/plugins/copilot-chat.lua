@@ -17,9 +17,12 @@ local prompts = {
   Concise = "Please rewrite the following text to make it more concise.",
 }
 
+local utils = require("utils")
+
 return {
   "CopilotC-Nvim/CopilotChat.nvim",
   cmd = "CopilotChatToggle",
+  enabled = utils.enableCopilot,
   branch = "canary",
   -- tag = "v2.6.2",
   -- cmd = "CopilotChat",

@@ -10,12 +10,35 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
 }
 
 # Setup dotfiles
-# TODO
+$symlinks = @(
+    @{source="$HOME\dotfiles\.config\nvim"; target="$HOME\AppData\Local\nvim"},
+    @{source="$HOME\dotfiles\.wezterm.lua"; target="$HOME\.wezterm.lua"},
+    @{source="$HOME\dotfiles\.ideavimrc"; target="$HOME\.ideavimrc"}
+)
 
+foreach ($link in $symlinks) {
+    $sourcePath = $link.source
+    $targetPath = $link.target
+
+    if (Test-Path $targetPath) {
+        $response = Read-Host "Directory '$($targetPath)' already exists. Do you want to delete and replace with symlink? (Y/N)"
+        if ($response -eq 'Y' -or $response -eq 'Yes') {
+            Remove-Item -Recurse -Force $targetPath
+            New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath
+            Write-Host "Symbolic link created successfully for $targetPath."
+        } else {
+            Write-Host "Operation cancelled for $targetPath."
+        }
+    } else {
+        New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath
+        Write-Host "Symbolic link created successfully for $targetPath."
+    }
+}
 
 # List of apps to check and install
 $scoopApps = @(
     'git',
+    'lazygit'
     'logseq',
     'wezterm',
     'nvm',
@@ -30,6 +53,7 @@ $scoopApps = @(
 )
 
 $wingetApps = @(
+    'GitHub.cli',
     'Postman.Postman',
     'JetBrains.IntelliJIDEA.Ultimate',
     'JetBrains.Rider',

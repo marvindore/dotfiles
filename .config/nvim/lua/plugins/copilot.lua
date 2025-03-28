@@ -1,7 +1,9 @@
+local utils = require("utils")
 return {
   "zbirenbaum/copilot.lua",
   cmd = "Copilot",
   event = "InsertEnter",
+  enabled = utils.enableCopilot,
   dependencies = {
     "zbirenbaum/copilot-cmp"
   },
