@@ -10,6 +10,17 @@ local is_darwin = function()
 	return wezterm.target_triple:find("darwin") ~= nil
 end
 
+-- windows path
+local zoxide_path = ""
+
+if is_darwin() then
+  zoxide_path = "/opt/homebrew/bin/zoxide"
+end
+
+if is_linux() then
+  zoxide_path = "/usr/bin/zoxide"
+end
+
 -- This table will hold the configuration.
 local config = {}
 
@@ -23,6 +34,15 @@ wezterm.on("gui-startup", function(cmd)
 	local tab, pane, window = mux.spawn_window(cmd or {})
 	window:gui_window():maximize()
 end)
+
+-- print workspace name at the upper right
+wezterm.on("update-right-status", function(window, pane)
+  window:set_right_status(window:active_workspace())
+end)
+-- load plugin
+local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
+-- set path to zoxide
+workspace_switcher.zoxide_path = zoxide_path
 
 config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 2000 }
 config.window_decorations = "TITLE|RESIZE|MACOS_FORCE_DISABLE_SHADOW"
@@ -39,7 +59,7 @@ local profile = userProfile:gsub("\\", "\\\\")
 -- config.default_domain = 'WSL:Ubuntu'
 if os.getenv("OS") == "Windows_NT" then
 	config.default_prog = { profile .. "\\scoop\\apps\\pwsh\\current\\pwsh.exe" }
-  config.default_domain = 'WSL:Ubuntu'
+  -- config.default_domain = 'WSL:Ubuntu'
 end
 config.color_scheme = "MaterialDarker"
 -- tmux
@@ -51,20 +71,28 @@ config.color_scheme = "MaterialDarker"
 
 config.keys = {
 	-- tmux defaults
+	{ mods = "LEADER", key = "v", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ mods = "LEADER", key = "h", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ mods = "LEADER", key = "c", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
 	{ mods = "LEADER", key = "x", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
-	{ mods = "LEADER", key = "b", action = wezterm.action.ActivateTabRelative(-1) },
-	{ mods = "LEADER", key = "n", action = wezterm.action.ActivateTabRelative(1) },
-	{ mods = "LEADER", key = "v", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	{ mods = "LEADER", key = "-", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
-	{ mods = "LEADER", key = "h", action = wezterm.action.ActivatePaneDirection("Left") },
-	{ mods = "LEADER", key = "j", action = wezterm.action.ActivatePaneDirection("Down") },
-	{ mods = "LEADER", key = "k", action = wezterm.action.ActivatePaneDirection("Up") },
-	{ mods = "LEADER", key = "l", action = wezterm.action.ActivatePaneDirection("Right") },
+	{ mods = "SHIFT", key = "LeftArrow", action = wezterm.action.ActivateTabRelative(-1) },
+	{ mods = "SHIFT", key = "RightArrow", action = wezterm.action.ActivateTabRelative(1) },
+	{ mods = "CTRL", key = "LeftArrow", action = wezterm.action.ActivatePaneDirection("Left") },
+	{ mods = "CTRL", key = "DownArrow", action = wezterm.action.ActivatePaneDirection("Down") },
+	{ mods = "CTRL", key = "UpArrow", action = wezterm.action.ActivatePaneDirection("Up") },
+	{ mods = "CTRL", key = "RightArrow", action = wezterm.action.ActivatePaneDirection("Right") },
 	{ mods = "LEADER", key = "LeftArrow", action = wezterm.action.AdjustPaneSize({ "Left", 5 }) },
 	{ mods = "LEADER", key = "RightArrow", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
 	{ mods = "LEADER", key = "DownArrow", action = wezterm.action.AdjustPaneSize({ "Down", 5 }) },
 	{ mods = "LEADER", key = "UpArrow", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
+  { mods = "LEADER", key = "Space", action = wezterm.action.RotatePanes "Clockwise" },
+  { mods = "LEADER", key = "0", action = wezterm.action.PaneSelect { mode = "SwapWithActive" }},
+
+  -- session management
+  { mods = "CTRL|SHIFT", key = "s", action = workspace_switcher.switch_workspace()},
+  { mods = "CTRL|SHIFT", key = "t", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES"})},
+  { mods = "CTRL|SHIFT", key = "[", action = act.SwitchWorkspaceRelative(1)},
+  { mods = "CTRL|SHIFT", key = "]", action = act.SwitchWorkspaceRelative(-1)},
 
 	-- paste from clipboard
 	{ key = "V", mods = "CTRL", action = act.PasteFrom("Clipboard") },

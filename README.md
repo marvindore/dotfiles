@@ -66,3 +66,8 @@ Linux
 ```
 vale --config="$HOME/.config/vale/.vale.ini" sync
 ```
+
+### Tmux
+Install tpm
+`git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`
+then reload envionment `Ctrl-I`

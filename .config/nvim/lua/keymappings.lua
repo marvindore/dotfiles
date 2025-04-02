@@ -136,18 +136,18 @@ keymap("i", t("<C-e>"), "<C-o>$")
 keymap("i", t("<C-a>"), "<C-o>0")
 
 -- Scroll
-keymap("n", "<S-left>", "10zh")
-keymap("n", "<S-right>", "10zl")
+keymap("n", "<C-left>", "10zh")
+keymap("n", "<C-right>", "10zl")
 
 -- Move selected block in visual mode
 keymap("x", "K", ":move '<-2<CR>gv-gv")
 keymap("x", "J", ":move '>+1<CR>gv-gv")
 
--- resize with arrows
-keymap("n", "<C-Up>", ":resize +2<cr>")
-keymap("n", "<C-Down>", ":resize -2<cr>")
-keymap("n", "<C-Left>", ":vertical resize -2<cr>")
-keymap("n", "<C-Right>", ":vertical resize +2<cr>")
+-- resize with arrows terminal not recognizing as unique sequence, use mouse instead
+-- keymap("n", "<C-S-U>", ":resize +2<cr>")
+-- keymap("n", "<C-S-Down>", ":resize -2<cr>")
+-- keymap("n", "<C-S-Left>", ":vertical resize -2<cr>")
+-- keymap("n", "<C-S-Right>", ":vertical resize +2<cr>")
 
 -- Curl
 wk.add({
