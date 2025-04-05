@@ -1,6 +1,9 @@
 return {
-  'hoob3rt/lualine.nvim',
-  dependencies = { 'nvim-tree/nvim-web-devicons', opt = true },
+  'nvim-lualine/lualine.nvim',
+  dependencies = { 
+    {'nvim-tree/nvim-web-devicons', opt = true},
+    { 'dokwork/lualine-ex' },
+  },
   event = "VeryLazy",
   config = function()
     local lualine = require("lualine")
@@ -106,9 +109,22 @@ return {
       sections = {
         lualine_a = { mode },
         lualine_b = { filename, branch, diff, diagnostics },
-        lualine_c = {},
+        lualine_c = { "lsp_progress" },
         -- lualine_x = { "encoding", "fileformat", "filetype" },
-        lualine_x = { spaces, "encoding", fileformat, filetype },
+        lualine_x = { spaces, "encoding", fileformat, filetype, {
+      'ex.lsp.all',
+
+      -- Extends options from the `ex.lsp.single`
+
+      -- If true then only clients attached to the current buffer will be shown:
+      only_attached = false,
+
+      -- If true then every closed client will be echoed:
+      notify_enabled = true,
+      
+      -- The name of highlight group which should be used in echo:
+      notify_hl = 'Comment'
+    } },
         lualine_y = { location, progress },
         lualine_z = {},
       },

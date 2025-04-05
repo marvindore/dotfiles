@@ -1,8 +1,10 @@
-local utils = require("utils")
-
 -- variables
-local keymap = require("utils").keymap
 local wk = require("which-key")
+
+local map = function(mode, keys, func, desc)
+	if not desc then desc = "Not Set" end
+	vim.keymap.set(mode, keys, func, { silent = true, desc = "K: " .. desc })
+end
 
 -- Escape termcodes
 local function t(str)
@@ -18,14 +20,14 @@ vim.keymap.set("c", "%%", function()
 	end
 end, { expr = true })
 
-keymap("n", "<Space>", "<NOP>")
+--map("n", "<Space>", "<NOP>", )
 
 -- Format on all files not just LSP
 map(
 	"n",
 	"<leader>F",
 	":lua require('conform').format({ lsp_fallback = true, async = false, timeout_ms= 1000})<CR>",
-	{ desc = "Format" }
+"Format"
 )
 
 -- * then cgn multi-cursor (TODO Remap not working)
@@ -35,24 +37,24 @@ map(
 -- end
 -- vim.api.nvim_set_keymap('n', '*', ':keepjumps normal! mi*`i<CR>' ,{noremap = true, silent = true, desc= "Use start without jumping to next word or adding to jump list"})
 
-keymap("n", "<leader>W", ":WhichKey<cr>")
+map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 
 -- Remap for dealing with word wrap
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- oil
-keymap("n", "-", ':lua require("oil").open()<cr>', { desc = "Open parent directory" })
-keymap("n", "_", ':lua require("oil").close()<cr>', { desc = "Close parent directory" })
+map("n", "-", ':lua require("oil").open()<cr>', "Open parent directory")
+map("n", "_", ':lua require("oil").close()<cr>', "Close parent directory")
 
 -- Allow gf to open non-existent files
-keymap("n", "gf", ":edit <cfile><CR>", { desc = "Open filename under cursor" })
+map("n", "gf", ":edit <cfile><CR>", "Open filename under cursor")
 
 -- better window movement
-keymap("n", "<C-h>", "<C-w>h", { desc = "Switch window left" })
-keymap("n", "<C-j>", "<C-w>j", { desc = "Switch window down" })
-keymap("n", "<C-k>", "<C-w>k", { desc = "Swith window up" })
-keymap("n", "<C-l>", "<C-w>l", { desc = "Switch window right" })
+map("n", "<C-h>", "<C-w>h", "Switch window left")
+map("n", "<C-j>", "<C-w>j", "Switch window down")
+map("n", "<C-k>", "<C-w>k", "Swith window up")
+map("n", "<C-l>", "<C-w>l", "Switch window right")
 
 -- Clear search
 vim.api.nvim_create_user_command("C", 'let @/=""', {})
@@ -66,82 +68,82 @@ vim.keymap.set("v", "<C-\\>", function()
 end, { noremap = true, silent = true })
 
 -- Copy and paste
-keymap("v", "<C-c>", '"+yi', { silent = true })
-keymap("v", "<C-x>", '"+c', { silent = true })
-keymap("v", "<C-v>", 'c<ESC>"+p', { silent = true })
-keymap("v", "<C-V>", '<ESC>"+pa', { silent = true })
+map("v", "<C-c>", '"+yi', "Copy global")
+map("v", "<C-x>", '"+c', "Cut global")
+map("v", "<C-v>", 'c<ESC>"+p', "Paste global")
+map("v", "<C-V>", '<ESC>"+pa', "Paste no copy")
 
 -- Wrap selection
-keymap("v", ",b", [[c{ <c-r>" }<esc>]], { silent = true }) -- surround curly braces
-keymap("v", ",B", [[c[<c-r>"]<esc>]], { silent = true }) -- surround square brackets
-keymap("v", ",t", [[c`<c-r>"`<esc>]], { silent = true }) -- surround back ticks
-keymap("v", ",s", [[c <c-r>" <esc>]], { silent = true }) -- surround single space
-keymap("v", ",q", [[c'<c-r>"'<esc>]], { silent = true }) -- surround single quotes
-keymap("v", ",Q", [[c"<c-r>""<esc>]], { silent = true }) -- surround double quotes
-keymap("v", ",p", [[c(<c-r>")<esc>]], { silent = true }) -- surround single parentheses
+map("v", ",b", [[c{ <c-r>" }<esc>]], "Wrap in curly braces") -- surround curly braces
+map("v", ",B", [[c[<c-r>"]<esc>]], "Wrap in square brackets") -- surround square brackets
+map("v", ",t", [[c`<c-r>"`<esc>]], "Wrap in back ticks") -- surround back ticks
+map("v", ",s", [[c <c-r>" <esc>]], "Wrap in single space") -- surround single space
+map("v", ",q", [[c'<c-r>"'<esc>]], "Wrap in single quotes") -- surround single quotes
+map("v", ",Q", [[c"<c-r>""<esc>]], "Wrap in double quotes") -- surround double quotes
+map("v", ",p", [[c(<c-r>")<esc>]], "Wrap in single parentheses") -- surround single parentheses
 
 -- Avante
-if utils.enableAvante then
-  map("n", "<LocalLeader>aa", "<cmd>AvanteToggle<CR>", { desc = "Avante Ask" })
-  map("n", "<LocalLeader>ab", "<cmd>AvanteBuild<cr>", { desc = "Avante Build" })
-  map("n", "<LocalLeader>ac", "<cmd>Avante Chat<cr>", { desc = "Avante Chat" })
-  map("n", "<LocalLeader>ar", "<cmd>AvanteRefresh<cr>", { desc = "Avante Refresh" })
-  map("n", "<LocalLeader>ae", "<cmd>AvanteEdit<cr>", { desc = "Avante Edit" })
+if vim.g.enableAvante then
+  map("n", "<LocalLeader>aa", "<cmd>AvanteToggle<CR>", "Avante Ask")
+  map("n", "<LocalLeader>ab", "<cmd>AvanteBuild<cr>", "Avante Build")
+  map("n", "<LocalLeader>ac", "<cmd>Avante Chat<cr>", "Avante Chat")
+  map("n", "<LocalLeader>ar", "<cmd>AvanteRefresh<cr>", "Avante Refresh")
+  map("n", "<LocalLeader>ae", "<cmd>AvanteEdit<cr>", "Avante Edit")
 end
 
 -- Codeium
-if utils.enableCodeium then
- map("n", "<leader>ca", "<cmd>Codeium Auth<cr>", {desc = "Codeium Auth"})
- map("n", "<leader>cc", "<cmd>Codeium Chat<cr>", {desc = "Codeium Chat"})
+if vim.g.enableCodeium then
+ map("n", "<leader>ca", "<cmd>Codeium Auth<cr>", "Codeium Auth")
+ map("n", "<leader>cc", "<cmd>Codeium Chat<cr>", "Codeium Chat")
 end
 
 -- Copilot
-if utils.enableCopilot then
+if vim.g.enableCopilot then
   wk.add({
     { "<leader>c", group = "Copilot" },
   })
-  map("n", "<leader>cc", "<cmd>CopilotChatToggle<CR>", { desc = "Copilot Chat Toggle" })
-  map("v", "<leader>cf", "<cmd>CopilotChatFix<CR>", { desc = "Copilot Chat Fix" })
-  map("v", "<leader>co", "<cmd>CopilotChatOptimize<CR>", { desc = "Copilot Chat Optimize" })
-  map("v", "<leader>ce", "<cmd>CopilotCharExplain<CR>", { desc = "Copilot Chat Explain" })
-  map("v", "<leader>ct", "<cmd>CopilotChatTests<CR>", { desc = "Copilot Chat Tests" })
-  map("v", "<leader>cr", "<cmd>CopilotChatReview<CR>", { desc = "Copilot Chat Review" })
+  map("n", "<leader>cc", "<cmd>CopilotChatToggle<CR>", "Copilot Chat Toggle")
+  map("v", "<leader>cf", "<cmd>CopilotChatFix<CR>", "Copilot Chat Fix")
+  map("v", "<leader>co", "<cmd>CopilotChatOptimize<CR>", "Copilot Chat Optimize")
+  map("v", "<leader>ce", "<cmd>CopilotCharExplain<CR>", "Copilot Chat Explain")
+  map("v", "<leader>ct", "<cmd>CopilotChatTests<CR>", "Copilot Chat Tests")
+  map("v", "<leader>cr", "<cmd>CopilotChatReview<CR>", "Copilot Chat Review")
 
-  map("n", "<leader>ca", "<cmd>Copilot auth<CR>", { desc = "Copilot auth" })
-  map("n", "<leader>cs", "<cmd>Copilot suggestions<CR>", { desc = "Copilot suggestions" })
+  map("n", "<leader>ca", "<cmd>Copilot auth<CR>", "Copilot auth")
+  map("n", "<leader>cs", "<cmd>Copilot suggestions<CR>", "Copilot suggestions")
 end
 
 -- Dbee
 wk.add({
 	{ "<LocalLeader>d", group = "Dbee" },
 })
-map("n", "<LocalLeader>do", "<cmd>lua require('dbee').open()<CR>", { desc = "Dbee Open" })
-map("n", "<LocalLeader>dc", "<cmd>lua require('dbee').close()<CR>", { desc = "Dbee Close" })
-map("n", "<LocalLeader>dd", "<cmd>lua require('dbee').toggle()<CR>", { desc = "Dbee Toggle" })
+map("n", "<LocalLeader>do", "<cmd>lua require('dbee').open()<CR>", "Dbee Open")
+map("n", "<LocalLeader>dc", "<cmd>lua require('dbee').close()<CR>", "Dbee Close")
+map("n", "<LocalLeader>dd", "<cmd>lua require('dbee').toggle()<CR>", "Dbee Toggle")
 
 
 -- Better indenting
-keymap("v", "<", "<gv")
-keymap("v", ">", ">gv")
+map("v", "<", "<gv", "Indent right")
+map("v", ">", ">gv", "Indent left")
 
 -- Move while insert mode
-keymap("i", "<C-l>", "<Right>")
-keymap("i", "<C-h>", "<Left>")
-keymap("i", "<C-j>", "<Down>")
-keymap("i", "<C-k>", "<Up>")
+map("i", "<C-l>", "<Right>", "Move right")
+map("i", "<C-h>", "<Left>", "Move left")
+map("i", "<C-j>", "<Down>", "Move down")
+map("i", "<C-k>", "<Up>", "Move up")
 
 -- Moving to start or end of line (insert mode)
 -- <C-o> switches vim to insert mode for one command
-keymap("i", t("<C-e>"), "<C-o>$")
-keymap("i", t("<C-a>"), "<C-o>0")
+map("i", t("<C-e>"), "<C-o>$", "")
+map("i", t("<C-a>"), "<C-o>0", "")
 
 -- Scroll
-keymap("n", "<C-left>", "10zh")
-keymap("n", "<C-right>", "10zl")
+map("n", "<C-left>", "10zh", "")
+map("n", "<C-right>", "10zl", "")
 
 -- Move selected block in visual mode
-keymap("x", "K", ":move '<-2<CR>gv-gv")
-keymap("x", "J", ":move '>+1<CR>gv-gv")
+map("x", "K", ":move '<-2<CR>gv-gv", "")
+map("x", "J", ":move '>+1<CR>gv-gv", "")
 
 -- resize with arrows terminal not recognizing as unique sequence, use mouse instead
 -- keymap("n", "<C-S-U>", ":resize +2<cr>")
@@ -182,8 +184,8 @@ vim.keymap.set("n", "<LocalLeader>fgc", function()
 end, { desc = "Choose a global collection and open it" })
 
 -- toggleterm
-keymap("n", "<LocalLeader>th", ":ToggleTerm size=20 direction=horizontal<CR>", { desc = "Terminal horizontal" })
-keymap("n", "<LocalLeader>tV", ":ToggleTerm size=110 direction=vertical<CR>", { desc = "Terminal vertical" })
+map("n", "<LocalLeader>th", ":ToggleTerm size=20 direction=horizontal<CR>", "Terminal horizontal")
+map("n", "<LocalLeader>tV", ":ToggleTerm size=110 direction=vertical<CR>", "Terminal vertical")
 
 function _G.set_terminal_keymaps()
 	local opts = { buffer = 0 }
@@ -202,16 +204,16 @@ vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
 wk.add({
 	{ "<leader>r", group = "Repl" },
 })
-map("n", "<leader>rr", ":IronRepl<cr>", { desc= "Repl start"} )
-map("n", "<leader>rs", ":IronRepl<cr>", { desc= "Repl restart"} )
-map("n", "<leader>rf",":lua require('iron.core').send_file()<cr>", {desc = "Repl send file"})
-map("v", "<leader>rv",":lua require('iron.core').mark_visual()<cr>", {desc = "Repl mark visual"})
-map("v", "<leader>rm",":lua require('iron.core').send_mark()<cr>", {desc = "Repl send mark"})
-map("n", "<leader>ru",":lua require('iron.core').send_until_cursor()<cr>", {desc = "Repl send until cursor"})
+map("n", "<leader>rr", ":IronRepl<cr>","Repl start")
+map("n", "<leader>rs", ":IronRepl<cr>","Repl restart")
+map("n", "<leader>rf",":lua require('iron.core').send_file()<cr>","Repl send file")
+map("v", "<leader>rv",":lua require('iron.core').mark_visual()<cr>","Repl mark visual")
+map("v", "<leader>rm",":lua require('iron.core').send_mark()<cr>","Repl send mark")
+map("n", "<leader>ru",":lua require('iron.core').send_until_cursor()<cr>","Repl send until cursor")
 
 -- nv-nvim-tree
 --keymap("n", "<leader>nR", ":NvimTreeRefresh<CR>", { desc = "Tree refresh" })
-keymap("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Tree togle" })
+map("n", "<leader>e", ":NvimTreeToggle<CR>","Tree togle")
 --keymap("n", "<leader>nF", ":NvimTreeFindFile<CR>", { desc = "Tree find file" })
 
 -- neogen
@@ -223,51 +225,51 @@ keymap("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Tree togle" })
 wk.add({
 	{ "<leader>d", group = "Dap" },
 })
-map("n", "<leader>dn", ":lua require('osv').launch({port = 5677})<CR>", { desc = "Debug Neovim-kind" })
-map("n", "<F5>", ":lua require('dap').continue()<CR>", { desc = "Debug continue" })
-map("n", "<S-F5>", ":lua require'dap'.close()<cr>", { desc = "Debug stop" })
+map("n", "<leader>dn", ":lua require('osv').launch({port = 5677})<CR>","Debug Neovim-kind")
+map("n", "<F5>", ":lua require('dap').continue()<CR>","Debug continue")
+map("n", "<S-F5>", ":lua require'dap'.close()<cr>","Debug stop")
 
-map("n", "<F11>", ":lua require('dap').step_into()<CR>", { desc = "Debug step into" })
-map("n", "<F10>", ":lua require('dap').step_over()<CR>", { desc = "Debug step over" })
-map("n", "<S-F12>", ":lua require('dap').step_out()<CR>", { desc = "Debug step out" })
+map("n", "<F11>", ":lua require('dap').step_into()<CR>","Debug step into")
+map("n", "<F10>", ":lua require('dap').step_over()<CR>","Debug step over")
+map("n", "<S-F12>", ":lua require('dap').step_out()<CR>","Debug step out")
 
-map("n", "<leader>db", ":lua require'dap'.toggle_breakpoint()<CR>", { desc = "Debug toggle breakpoint" })
-map("n", "<leader>dr", ":lua require'dap'.restart()<cr>", { desc = "Debug restart" })
-map("n", "<leader>ds", ":lua require'dap'.stop()<cr>", { desc = "Debug stop" })
-map("n", "<leader>dT", ":lua require'dap'.terminate()<cr>", { desc = "Debug terminate" })
-map("n", "<leader>dC", ":lua require'dap'.clear_breakpoints()<CR>", { desc = "Debug clear breakpoints" })
-map("n", "<leader>dX", ":lua require'dap'.close()<CR>", { desc = "Debug close" })
-map("n", "<leader>dc", ":lua require'dap'.continue()<CR>", { desc = "Debug continue" })
-map("n", "<leader>dU", ":lua require'dap'.up()<CR>", { desc = "Debug up" })
-map("n", "<leader>dD", ":lua require'dap'.down()<CR>", { desc = "Debug down" })
+map("n", "<leader>db", ":lua require'dap'.toggle_breakpoint()<CR>","Debug toggle breakpoint")
+map("n", "<leader>dr", ":lua require'dap'.restart()<cr>","Debug restart")
+map("n", "<leader>ds", ":lua require'dap'.stop()<cr>","Debug stop")
+map("n", "<leader>dT", ":lua require'dap'.terminate()<cr>","Debug terminate")
+map("n", "<leader>dC", ":lua require'dap'.clear_breakpoints()<CR>","Debug clear breakpoints")
+map("n", "<leader>dX", ":lua require'dap'.close()<CR>","Debug close")
+map("n", "<leader>dc", ":lua require'dap'.continue()<CR>","Debug continue")
+map("n", "<leader>dU", ":lua require'dap'.up()<CR>","Debug up")
+map("n", "<leader>dD", ":lua require'dap'.down()<CR>","Debug down")
 map(
 	"n",
 	"<leader>d_",
 	":lua require'dap'.disconnect();require'dap'.stop();require'dap'.run_last()<CR>",
-	{ desc = "Debug stop run last" }
+	"Debug stop run last"
 )
 
-map("n", "<leader>dR", ":lua require'dap'.repl.toggle({}, 'vsplit')<CR><C-w>l", { desc = "Debug toggle REPL" })
-map("n", "<Leader>dro", ":lua require('dap').repl.open()<CR>", { desc = "Debug open REPL" })
-map("n", "<Leader>drl", ":lua require('dap').repl.run_last()<CR>", { desc = "Debug run last REPL" })
+map("n", "<leader>dR", ":lua require'dap'.repl.toggle({}, 'vsplit')<CR><C-w>l","Debug toggle REPL")
+map("n", "<Leader>dro", ":lua require('dap').repl.open()<CR>","Debug open REPL")
+map("n", "<Leader>drl", ":lua require('dap').repl.run_last()<CR>","Debug run last REPL")
 
 map(
 	"n",
 	"<leader>de",
 	":lua require'dap'.set_exception_breakpoints({'all'})<CR>",
-	{ desc = "Debug execution breakpoint" }
+	"Debug execution breakpoint"
 )
 map(
 	"n",
 	"<Leader>dbc",
 	":lua require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
-	{ desc = "Debug condition breakpoint" }
+	"Debug condition breakpoint"
 )
 map(
 	"n",
 	"<Leader>dbm",
 	":lua require('dap').set_breakpoint({ nil, nil, vim.fn.input('Log point message: ') })<CR>",
-	{ desc = "Debug breakpoint with message" }
+	"Debug breakpoint with message"
 )
 --map("n", "<leader>da", ":lua require'debugHelper'.attach()<CR>", { desc = "Debug attach" })
 --map("n", "<leader>dA", ":lua require'debugHelper'.attachToRemote()<CR>", { desc = "Debug attach remote" })
@@ -279,25 +281,25 @@ end, { desc = "Toggle nvim-dap-view" })
 vim.keymap.set("n", "<leader>da", function()
     require("dap-view").add_expr()
 end, { desc = "Dapview add expression" })
-map("n", "<leader>dw", ":DapViewWatch<cr>", {desc = "Dapview Watch"})
+map("n", "<leader>dw", ":DapViewWatch<cr>", "Dapview Watch")
 
 -- symbols
-keymap("n", "<LocalLeader>s", ":Outline<cr>", { desc = "Symbols outline" })
+map("n", "<LocalLeader>s", ":Outline<cr>","Symbols outline")
 
 -- change list
-map("n", "<leader>Cl", ":changes<CR>", { desc = "Change list" })
+map("n", "<leader>Cl", ":changes<CR>","Change list")
 
 -- quickfix list
-map("n", "<leader>qfo", "<cmd>copen<CR>", { desc = "Quickfix open" })
-map("n", "<leader>qfc", "<cmd>cclose<CR>", { desc = "Quickfix close" })
-map("n", "<leader>qfd", "<cmd>cexpr []<CR>", { desc = "Quickfix delete" })
+map("n", "<leader>qfo", "<cmd>copen<CR>","Quickfix open")
+map("n", "<leader>qfc", "<cmd>cclose<CR>","Quickfix close")
+map("n", "<leader>qfd", "<cmd>cexpr []<CR>","Quickfix delete")
 
 -- harpoon
 wk.add({
 	{ "<leader>h", group = "Harpoon" },
 })
 local harpoon = require("harpoon")
-map("n", "<leader>hl", ":Telescope harpoon marks<CR>", { desc = "Harpoon list marks" })
+map("n", "<leader>hl", ":Telescope harpoon marks<CR>","Harpoon list marks")
 vim.keymap.set("n", "<leader>ha", function()
 	harpoon:list():add()
 end, { desc = "Harpoon add mark file" })
@@ -330,20 +332,20 @@ vim.keymap.set("n", "<leader>hp", function()
 	harpoon:list():next()
 end, { desc = "Harpoon previous" })
 
-map("n", "<leader>ml", ":Telescope marks<CR>", { desc = "Marks telescope" })
-map("n", "<leader>md", ":delm! | delm A-Z0-9<CR>", { desc = "Marks delete all"})
+map("n", "<leader>ml", ":Telescope marks<CR>","Marks telescope")
+map("n", "<leader>md", ":delm! | delm A-Z0-9<CR>","Marks delete all")
 
 -- fzf-lua
 wk.add({
 	{ "<LocalLeader>f", group = "Fuzzy Find" },
 })
-map("n", "<LocalLeader>ff", ":lua require('fzf-lua').files()<CR>", { desc = "Fzf Files" })
-map("n", "<LocalLeader>fr", ":lua require('fzf-lua').resume()<CR>", { desc = "Fzf Resume" })
-map("n", "<LocalLeader>fg", ":lua require('fzf-lua').grep_project()<CR>", { desc = "Fzf Grep" })
-map("n", "<LocalLeader>fG", ":lua require('fzf-lua').live_grep_glob()<CR>", { desc = "Fzf rg --glob" })
-map("n", "<LocalLeader>fl", ":lua require('fzf-lua').live_grep()<CR>", { desc = "Fzf Live Grep Current Project" })
-map("n", "<LocalLeader>fc", ":lua require('fzf-lua').lgrep_curbuf()<CR>", { desc = "Fzf Live Grep Current Buffer" })
-map("n", "<LocalLeader>fu", ":lua require('fzf-lua').grep_cword()<CR>", { desc = "Fzf Grep Word Under Cursor" })
+map("n", "<LocalLeader>ff", ":lua require('fzf-lua').files()<CR>","Fzf Files")
+map("n", "<LocalLeader>fr", ":lua require('fzf-lua').resume()<CR>","Fzf Resume")
+map("n", "<LocalLeader>fg", ":lua require('fzf-lua').grep_project()<CR>","Fzf Grep")
+map("n", "<LocalLeader>fG", ":lua require('fzf-lua').live_grep_glob()<CR>","Fzf rg --glob")
+map("n", "<LocalLeader>fl", ":lua require('fzf-lua').live_grep()<CR>","Fzf Live Grep Current Project")
+map("n", "<LocalLeader>fc", ":lua require('fzf-lua').lgrep_curbuf()<CR>","Fzf Live Grep Current Buffer")
+map("n", "<LocalLeader>fu", ":lua require('fzf-lua').grep_cword()<CR>","Fzf Grep Word Under Cursor")
 
 
 --
@@ -360,7 +362,7 @@ local function search_files_in_opened_directory()
   require('telescope.builtin').find_files({ cwd = current_dir })
 end
 
-map("n", "<S-h>", ":Telescope buffers sort_mru=true sort_lastused=true initial_mode=normal theme=ivy<cr>", {desc = "Telescope open buffers"})
+map("n", "<S-h>", ":Telescope buffers sort_mru=true sort_lastused=true initial_mode=normal theme=ivy<cr>", "Telescope open buffers")
 
 vim.keymap.set("n", "<Leader>fi", ":lua require('telescope.builtin').find_files()<CR>", { desc = "[f]ind [f]iles" })
 vim.keymap.set('n', '<leader>fo', function() search_files_in_opened_directory() end, { desc=  "[F]ind [O]pen directory"})
@@ -368,61 +370,61 @@ map(
 	"n",
 	"<Leader>ff",
 	"<cmd>lua require('telescope.builtin').find_files({find_command= {'rg','--no-ignore','--hidden','--files','-g','!**/node_modules/*','-g','!**/.git/*'},})<cr>",
-	{ desc = "Find ignored files" }
+	"Find ignored files"
 )
 --vim.keymap.set("n", "<Leader>fF", ":lua require('telescope.builtin').find_files({})<CR>", { desc = '[f]ind [f]iles Exact Name' })
 map(
 	"n",
 	"<Leader>fb",
 	':lua require("telescope").extensions.file_browser.file_browser()<CR>',
-	{ desc = "Telescope extensions file browse" }
+	"Telescope extensions file browse"
 )
 map("n", "<Leader>fC", ":lua require('telescope.builtin').colorscheme()<CR>")
 vim.keymap.set("n", "<leader>?", require("telescope.builtin").oldfiles, { desc = "[?] Find recently opened files" })
 vim.keymap.set("n", "<leader><space>", "<cmd>e #<cr>", { desc = "Alternate Buffer" }) 
-map("n", "<Leader>fc", ":Telescope commands<CR>", { desc = "Telescope commands" })
-map("n", "<Leader>jl", ":Telescope jumplist<CR>", { desc = "Telescope jumplist" })
-map("n", "<Leader>fq", ":Telescope quickfix<CR>", { desc = "Telescope quickfix" })
-map("n", "<Leader>fh", ":Telescope quickfixhistory<CR>", { desc = "Telescope quick history" })
-map("n", "<Leader>fg", ":Telescope live_grep<CR>", { desc = "Telescope live grep" })
-map("n", "<Leader>fr", ":Telescope resume<CR>", { desc = "Telescope resume" })
+map("n", "<Leader>fc", ":Telescope commands<CR>","Telescope commands")
+map("n", "<Leader>jl", ":Telescope jumplist<CR>","Telescope jumplist")
+map("n", "<Leader>fq", ":Telescope quickfix<CR>","Telescope quickfix")
+map("n", "<Leader>fh", ":Telescope quickfixhistory<CR>","Telescope quick history")
+map("n", "<Leader>fg", ":Telescope live_grep<CR>","Telescope live grep")
+map("n", "<Leader>fr", ":Telescope resume<CR>","Telescope resume")
 map(
 	"n",
 	"<Leader>go",
 	":lua require('telescope.builtin').live_grep({grep_open_files=true})<CR>",
-	{ desc = "Telescope grep open files" }
+	"Telescope grep open files"
 )
-map("n", "<Leader>fp", ":Telescope projects<CR>", { desc = "Telescope projects" })
-map("n", "<Leader>tgs", ":Telescope git_status<CR>", { desc = "Telescope git status" })
-map("n", "<Leader>tgf", ":Telescope git_files<CR>", { desc = "Telescope git files" })
+map("n", "<Leader>fp", ":Telescope projects<CR>", "Telescope projects" )
+map("n", "<Leader>tgs", ":Telescope git_status<CR>", "Telescope git status" )
+map("n", "<Leader>tgf", ":Telescope git_files<CR>", "Telescope git files" )
 map(
 	"n",
 	"<Leader>tgc",
 	":lua require('telescope.builtin').git_commits({ git_command = {'git', 'log', '--pretty=reference'} })<cr>",
-	{ desc = "Telescope git commits" }
+	"Telescope git commits"
 )
-map("n", "<Leader>tgt", ":Telescope git_stash<CR>", { desc = "Telescope git stash" })
-map("n", "<Leader>tgb", ":Telescope git_branches<CR>", { desc = "Telescope git branches" })
+map("n", "<Leader>tgt", ":Telescope git_stash<CR>", "Telescope git stash" )
+map("n", "<Leader>tgb", ":Telescope git_branches<CR>", "Telescope git branches" )
 vim.keymap.set("n", "<leader>sd", require("telescope.builtin").diagnostics, { desc = "[S]earch [D]iagnostics" })
 vim.keymap.set("n", "<leader>sh", require("telescope.builtin").help_tags, { desc = "[S]earch [H]elp" })
 
 -- telescope-dap
-map("n", "<leader>dtf", ":Telescope dap frames<CR>", { desc = "Telescope dap frames" })
-map("n", "<leader>dtc", ":Telescope dap commands<CR>", { desc = "Telescope dap commands" })
-map("n", "<leader>dto", ":Telescope dap configurations<CR>", { desc = "Telescope dap configuration" })
-map("n", "<leader>dlb", ":Telescope dap list_breakpoints<CR>", { desc = "Telescope dap breakpoints" })
-map("n", "<leader>dtv", ":Telescope dap variables<CR>", { desc = "Telescope dap variables" })
+map("n", "<leader>dtf", ":Telescope dap frames<CR>", "Telescope dap frames" )
+map("n", "<leader>dtc", ":Telescope dap commands<CR>", "Telescope dap commands" )
+map("n", "<leader>dto", ":Telescope dap configurations<CR>", "Telescope dap configuration" )
+map("n", "<leader>dlb", ":Telescope dap list_breakpoints<CR>", "Telescope dap breakpoints" )
+map("n", "<leader>dtv", ":Telescope dap variables<CR>", "Telescope dap variables" )
 
 -- git
 --vim.api.nvim_set_keymap("n", "<leader>lg", "<cmd>lua _lazygit_toggle()<CR>", {noremap = true, silent = true})
 --map("n", "<leader>lg", ":LazyGit<CR>", { desc = "Lazy git" })
 local gitsigns = require('gitsigns')
-map("n", "<leader>gs", ":lua require('neogit').open({ kind = 'vsplit'})<cr>", {desc = "Neogit Open"})
-map("n", "<leader>gg", ":lua require('neogit').open({ kind = 'floating'})<cr>", {desc = "Neogit Open"})
-map("n", "<leader>ghn", ":lua require('gitsigns').nav_hunk('next')<cr>", {desc = "Git Next Hunk"})
-map("n", "<leader>ghp", ":lua require('gitsigns').nav_hunk('prev')<cr>", {desc = "Git Previous Hunk"})
-map("n", "<leader>ghs", ":lua require('gitsigns').stage_hunk<cr>", {desc = "Git Stage Hunk"})
-map("n", "<leader>ghr", ":lua require('gitsigns').reset_hunk<cr>", {desc = "Git Reset Hunk"})
+map("n", "<leader>gs", ":lua require('neogit').open({ kind = 'vsplit'})<cr>","Neogit Open")
+map("n", "<leader>gg", ":lua require('neogit').open({ kind = 'floating'})<cr>","Neogit Open")
+map("n", "<leader>ghn", ":lua require('gitsigns').nav_hunk('next')<cr>","Git Next Hunk")
+map("n", "<leader>ghp", ":lua require('gitsigns').nav_hunk('prev')<cr>","Git Previous Hunk")
+map("n", "<leader>ghs", ":lua require('gitsigns').stage_hunk<cr>","Git Stage Hunk")
+map("n", "<leader>ghr", ":lua require('gitsigns').reset_hunk<cr>","Git Reset Hunk")
 map('v', '<leader>ghs', function()
       gitsigns.stage_hunk({ vim.fn.line('.'), vim.fn.line('v') })
     end)
@@ -430,7 +432,7 @@ map('v', '<leader>ghr', function()
       gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') })
     end)
 
-map("n", "<LocalLeader>gb", ":BlameToggle<cr>", { desc = "Git Blame" })
+map("n", "<LocalLeader>gb", ":BlameToggle<cr>", "Git Blame" )
 -- Merge conflicts
 vim.keymap.set("n", "<leader>1", ":diffget LOCAL<CR>", { desc = "Diffget LOCAL" })
 vim.keymap.set("n", "<leader>2", ":diffget BASE<CR>", { desc = "Diffget BASE" })
@@ -454,33 +456,33 @@ end, { desc = "[/] Fuzzily search in current buffer]" })
 local spring_run_mvn = "mvn spring-boot:run -Dspring-boot.run.properties=local"
 local command = ':lua require("toggleterm").exec("' .. spring_run_mvn .. '")<CR>'
 map("n", "<leader>jsr", command)
-map("n", "<leader>jtc", ':lua require("java").test.run_current_class()<CR>', { desc = "Java test class" })
-map("n", "<leader>jtd", ':lua require("java").test.debug_current_class()<CR>', { desc = "Java Debug Test Class" })
-map("n", "<leader>jtm", ':lua require("java").test.run_current_method()<CR>', { desc = "Java Test Method" })
-map("n", "<leader>jtv", ":lua require('java').test.view_last_report()<CR>", { desc = "Java Test View" })
+map("n", "<leader>jtc", ':lua require("java").test.run_current_class()<CR>', "Java test class" )
+map("n", "<leader>jtd", ':lua require("java").test.debug_current_class()<CR>', "Java Debug Test Class" )
+map("n", "<leader>jtm", ':lua require("java").test.run_current_method()<CR>', "Java Test Method" )
+map("n", "<leader>jtv", ":lua require('java').test.view_last_report()<CR>", "Java Test View" )
 
 -- neotest
 wk.add({
 	{ "<leader>t", group = "Test" },
 })
-map("n", "<leader>tr", ':lua require("neotest").run.run()<CR>', { desc = "Test run under cursor" })
-map("n", "<leader>tf", ':lua require("neotest").run.run(vim.fn.expand("%"))<CR>', { desc = "Test run file" })
-map("n", "<leader>td", ':lua require("neotest").run.run({strategy = "dap"})<CR>', { desc = "Test debug" })
-map("n", "<leader>ts", ':lua require("neotest").run.stop()<CR>', { desc = "Test stop" })
-map("n", "<leader>ta", ':lua require("neotest").run.attach()<CR>', { desc = "Test attach" })
-map("n", "<leader>tt", ':lua require("neotest").summary.toggle()<CR>', { desc = "Test toggle summary" })
-map("n", "<leader>to", ':lua require("neotest").output.open()<CR>', { desc = "Test toggle summary output" })
-map("n", "<leader>tp", ':lua require("neotest").output_panel.toggle()<CR>', { desc = "Test toggle output panel" })
-map("n", "<leader>tw", ':lua require("neotest").watch.toggle()<CR>', { desc = "Test toggle watch" })
+map("n", "<leader>tr", ':lua require("neotest").run.run()<CR>', "Test run under cursor" )
+map("n", "<leader>tf", ':lua require("neotest").run.run(vim.fn.expand("%"))<CR>', "Test run file" )
+map("n", "<leader>td", ':lua require("neotest").run.run({strategy = "dap"})<CR>', "Test debug" )
+map("n", "<leader>ts", ':lua require("neotest").run.stop()<CR>', "Test stop" )
+map("n", "<leader>ta", ':lua require("neotest").run.attach()<CR>', "Test attach" )
+map("n", "<leader>tt", ':lua require("neotest").summary.toggle()<CR>', "Test toggle summary" )
+map("n", "<leader>to", ':lua require("neotest").output.open()<CR>', "Test toggle summary output" )
+map("n", "<leader>tp", ':lua require("neotest").output_panel.toggle()<CR>', "Test toggle output panel" )
+map("n", "<leader>tw", ':lua require("neotest").watch.toggle()<CR>', "Test toggle watch" )
 
 -- trouble
 wk.add({
 	{ "<leader>x", group = "Trouble" },
 })
-map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", { desc = "Toggle trouble" })
-map("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", { desc = "Trouble toggle quickfix" })
-map("n", "<leader>xl", "<cmd>Trouble loclist toggle<CR>", { desc = "Trouble toggle loclist" })
-map("n", "<leader>xr", "<cmd>Trouble lsp_references toggle<CR>", { desc = "Trouble toggle references" })
+map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", "Toggle trouble" )
+map("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", "Trouble toggle quickfix" )
+map("n", "<leader>xl", "<cmd>Trouble loclist toggle<CR>", "Trouble toggle loclist" )
+map("n", "<leader>xr", "<cmd>Trouble lsp_references toggle<CR>", "Trouble toggle references" )
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`

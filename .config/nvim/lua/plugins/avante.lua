@@ -1,11 +1,9 @@
-local isWindows = require('utils').isWindows
-local utils = require("utils")
 return {
   "yetone/avante.nvim",
   event = "VeryLazy",
   lazy = false,
   version = false, -- set this if you want to always pull the latest change
-  enabled = utils.enableAvante,
+  enabled = vim.g.enableAvante,
   opts = {
     -- add any opts here
        provider = "ollama", -- openai | ollama | copilot

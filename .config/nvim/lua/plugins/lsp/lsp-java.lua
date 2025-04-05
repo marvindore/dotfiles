@@ -1,8 +1,7 @@
-local utils = require("utils")
 return {
 	"nvim-java/nvim-java",
 	event = { "BufEnter *.java" },
-	enabled = utils.enableJava,
+	enabled = vim.g.enableJava,
 	dependencies = {
 		"nvim-java/lua-async-await",
 		"nvim-java/nvim-java-core",
@@ -50,7 +49,7 @@ return {
 			},
 		})
 		local lspconfig = require("lspconfig")
-		local home = require("utils").home
+
 		lspconfig.jdtls.setup({
 			settings = {
 				java = {
@@ -58,7 +57,7 @@ return {
 						runtimes = {
 							{
 								name = "JavaSE-21",
-								path = home .. "/.asdf/installs/java/zulu-21.38.21",
+								path = vim.g.homeDir .. "/.asdf/installs/java/zulu-21.38.21",
 								default = true,
 							},
 						},

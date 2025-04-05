@@ -6,10 +6,6 @@ local js_based_languages = {
 	"vue",
 }
 
-local home = require("utils").home
-local neovim_home = require("utils").neovim_home
-local isWindows = require("utils").isWindows
-
 return {
 	"mfussenegger/nvim-dap",
 	cmd = "DapContinue",
@@ -20,7 +16,7 @@ return {
     { "igorlfs/nvim-dap-view", opts = {} },
 		{
 			"microsoft/vscode-js-debug",
-			build = isWindows and "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && Move-Item -Path dist -Destination out" or "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out",
+			build = vim.g.isWindowsOs and "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && Move-Item -Path dist -Destination out" or "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out",
 		},
     {
       "leoluz/nvim-dap-go",
@@ -32,7 +28,6 @@ return {
 	},
 	config = function()
 		--https://alpha2phi.medium.com/neovim-dap-enhanced-ebc730ff498b
-		require("utils")
 		local dap = require("dap")
 		local configurations = dap.configurations
 		local adapters = dap.adapters
@@ -48,14 +43,14 @@ return {
 			type = "executable",
 			command = "node",
 			args = {
-				home .. "/projects/local-lua-debugger-vscode/extension/debugAdapter.js",
+				vim.g.homeDir .. "/projects/local-lua-debugger-vscode/extension/debugAdapter.js",
 			},
 			enrich_config = function(config, on_config)
 				if not config["extensionPath"] then
 					local c = vim.deepcopy(config)
 					-- 💀 If this is missing or wrong you'll see
 					-- "module 'lldebugger' not found" errors in the dap-repl when trying to launch a debug session
-					c.extensionPath = home .. "/projects/local-lua-debugger-vscode/"
+					c.extensionPath = vim.g.homeDir .. "/projects/local-lua-debugger-vscode/"
 					on_config(c)
 				else
 					on_config(config)
@@ -88,7 +83,7 @@ return {
 				name = "New instance (dotfiles)",
 				port = lua_port,
 				start_neovim = {
-					cwd = home .. "/dotfiles",
+					cwd = vim.g.homeDir .. "/dotfiles",
 					fname = "vim/.config/nvim/init.lua",
 				},
 			},
@@ -98,7 +93,7 @@ return {
 				name = "New instance (crate/crate)",
 				port = lua_port,
 				start_neovim = {
-					cwd = home .. "/dev/crate/crate",
+					cwd = vim.g.homeDir .. "/dev/crate/crate",
 					fname = "server/src/test/java/io/crate/planner/PlannerTest.java",
 				},
 			},
@@ -108,7 +103,7 @@ return {
 				name = "New instance (neovim/neovim)",
 				port = lua_port,
 				start_neovim = {
-					cwd = home .. "/dev/neovim/neovim",
+					cwd = vim.g.homeDir .. "/dev/neovim/neovim",
 					fname = "src/nvim/main.c",
 				},
 			},
@@ -125,7 +120,7 @@ return {
 		-- Python
 		adapters.python = {
 			type = "executable",
-			command = home .. "/.local/share/nvim/mason/packages/debugpy/venv/bin/python",
+			command = vim.g.homeDir .. "/.local/share/nvim/mason/packages/debugpy/venv/bin/python",
 			args = { "-m", "debugpy.adapter" },
 		}
 
@@ -156,7 +151,7 @@ return {
 					elseif vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
 						return cwd .. "/.venv/bin/python"
 					else
-						return home .. "/.asdf/shims/python3"
+						return vim.g.homeDir .. "/.asdf/shims/python3"
 					end
 				end,
 			},
@@ -179,8 +174,8 @@ return {
 		}
 		--
 		-- DotNet
-		local exe = isWindows and neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
-			or neovim_home .. "/mason/bin/netcoredbg"
+		local exe = vim.g.isWindowsOs and vim.g.neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
+			or vim.g.neovim_home .. "/mason/bin/netcoredbg"
 
 		adapters.netcoredbg = {
 			type = "executable",
@@ -276,8 +271,8 @@ return {
 		--
 		-- Typescript
 		--
-		local jsexe = isWindows and neovim_home .. "/mason/packages/netcoredbg/js-debug-adapter"
-			or neovim_home .. "/mason/bin/js-debug-adapter"
+		local jsexe = vim.g.isWindowsOs and vim.g.neovim_home .. "/mason/packages/netcoredbg/js-debug-adapter"
+			or vim.g.neovim_home .. "/mason/bin/js-debug-adapter"
 		for _, language in ipairs(js_based_languages) do
 			configurations[language] = {
 				{

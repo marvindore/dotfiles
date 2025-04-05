@@ -14,6 +14,8 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = '\\'
 
+require('globals')
+
 require("lazy").setup({
     spec = {
         { import = "plugins" },
@@ -23,6 +25,6 @@ require("lazy").setup({
     },
 })
 
-require('utils')
 require('settings')
 require('keymappings')
+
