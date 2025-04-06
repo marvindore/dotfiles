@@ -17,18 +17,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 		map("n", "]d", vim.diagnostic.goto_next, "Go to next diagnostic")
 		map("n", "<LocalLeader>do", vim.diagnostic.open_float, "Diagnostics open float")
 		map("n", "<leader>q", vim.diagnostic.setloclist, "Set loc list")
-
-		-- Goto Preview
-		map("n", "gpd", function() require("goto-preview").goto_preview_definition() end, "Definition - Goto preview")
-		map("n", "gpt", function() require("goto-preview").goto_preview_type_definition() end, "Type - Goto preview")
-		map("n", "gpi", function() require("goto-preview").goto_preview_implementation() end, "Implementation - Goto preview")
-		map("n", "gpD", function() require("goto-preview").goto_preview_declaration() end, "Declaration - Goto preview")
-		map("n", "gpc", function() require("goto-preview").close_all_win() end, "Close - Goto preview")
-		map("n", "gpr", function() require("goto-preview").goto_preview_references() end, "References - Goto preview")
-
-		-- if args and args.server_capabilities.inlayHintProvider and vim.lsp.inlay_hint then
-		-- 	map("<leader>th", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end, "[T]oggle Inlay [H]ints")
-		-- end
+		map("n", "<leader>th", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end, "[T]oggle Inlay [H]ints")
 
 		local function toggle_diagnostics()
 			if vim.g.diagnostics_visible then
@@ -39,6 +28,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
 				vim.diagnostic.enable()
 			end
 		end
+
+		map("n", "<leader>dh", toggle_diagnostics, "Toggle Diagnostics")
+
+		-- Goto Preview
+		map("n", "gpd", function() require("goto-preview").goto_preview_definition() end, "Definition - Goto preview")
+		map("n", "gpt", function() require("goto-preview").goto_preview_type_definition() end, "Type - Goto preview")
+		map("n", "gpi", function() require("goto-preview").goto_preview_implementation() end, "Implementation - Goto preview")
+		map("n", "gpD", function() require("goto-preview").goto_preview_declaration() end, "Declaration - Goto preview")
+		map("n", "gpc", function() require("goto-preview").close_all_win() end, "Close - Goto preview")
+		map("n", "gpr", function() require("goto-preview").goto_preview_references() end, "References - Goto preview")
+
 
 		-- server specific settings
 		for _, client in ipairs(vim.lsp.get_clients()) do
@@ -85,9 +85,16 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
-		--capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = true
+local capabilities = {
+  workspace = {
+    didChangeWatchedFiles = {
+      dynamicRegistration = true
+    }
+  }
+}
+
 vim.lsp.config("*", {
-	--capabilities = require("blink.cmp").get_lsp_capabilities()
+	capabilities = require("blink.cmp").get_lsp_capabilities(capabilities)
 })
 
 vim.lsp.enable("lua_ls")
