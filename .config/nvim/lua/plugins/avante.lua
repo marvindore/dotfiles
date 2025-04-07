@@ -34,7 +34,7 @@ return {
        },
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
-  build = isWindows and "pwsh -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" or "make",
+  build = vim.g.isWindowsOs and "pwsh -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" or "make",
   dependencies = {
     "stevearc/dressing.nvim",
     "nvim-lua/plenary.nvim",

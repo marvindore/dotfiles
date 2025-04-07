@@ -30,13 +30,6 @@ map(
 "Format"
 )
 
--- * then cgn multi-cursor (TODO Remap not working)
--- local function customAsterisk()
---   vim.api.nvim_command([[keepjumps normal! mi*`i]])
---   print('asterisk remapped')
--- end
--- vim.api.nvim_set_keymap('n', '*', ':keepjumps normal! mi*`i<CR>' ,{noremap = true, silent = true, desc= "Use start without jumping to next word or adding to jump list"})
-
 map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 
 -- Remap for dealing with word wrap
@@ -44,8 +37,11 @@ vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = tr
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- oil
-map("n", "-", ':lua require("oil").open()<cr>', "Open parent directory")
-map("n", "_", ':lua require("oil").close()<cr>', "Close parent directory")
+-- map("n", "-", ':lua require("oil").open()<cr>', "Open parent directory")
+-- map("n", "_", ':lua require("oil").close()<cr>', "Close parent directory")
+map("n", "<leader>e", ":lua MiniFiles.open()<cr>")
+map("n", "-", ':lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>', "Open parent directory")
+map("n", "_", ':lua MiniFiles.close()<cr>', "Close parent directory")
 
 -- Allow gf to open non-existent files
 map("n", "gf", ":edit <cfile><CR>", "Open filename under cursor")
@@ -58,14 +54,6 @@ map("n", "<C-l>", "<C-w>l", "Switch window right")
 
 -- Clear search
 vim.api.nvim_create_user_command("C", 'let @/=""', {})
-
--- Commenting code
-vim.keymap.set("n", "<C-_>", function()
-	require("Comment.api").toggle.linewise.current()
-end, { noremap = true, silent = true })
-vim.keymap.set("v", "<C-\\>", function()
-	require("Comment.api").toggle.blockwise.current()
-end, { noremap = true, silent = true })
 
 -- Copy and paste
 map("v", "<C-c>", '"+yi', "Copy global")
@@ -89,12 +77,6 @@ if vim.g.enableAvante then
   map("n", "<LocalLeader>ac", "<cmd>Avante Chat<cr>", "Avante Chat")
   map("n", "<LocalLeader>ar", "<cmd>AvanteRefresh<cr>", "Avante Refresh")
   map("n", "<LocalLeader>ae", "<cmd>AvanteEdit<cr>", "Avante Edit")
-end
-
--- Codeium
-if vim.g.enableCodeium then
- map("n", "<leader>ca", "<cmd>Codeium Auth<cr>", "Codeium Auth")
- map("n", "<leader>cc", "<cmd>Codeium Chat<cr>", "Codeium Chat")
 end
 
 -- Copilot
@@ -121,11 +103,6 @@ map("n", "<LocalLeader>do", "<cmd>lua require('dbee').open()<CR>", "Dbee Open")
 map("n", "<LocalLeader>dc", "<cmd>lua require('dbee').close()<CR>", "Dbee Close")
 map("n", "<LocalLeader>dd", "<cmd>lua require('dbee').toggle()<CR>", "Dbee Toggle")
 
-
--- Better indenting
-map("v", "<", "<gv", "Indent right")
-map("v", ">", ">gv", "Indent left")
-
 -- Move while insert mode
 map("i", "<C-l>", "<Right>", "Move right")
 map("i", "<C-h>", "<Left>", "Move left")
@@ -141,15 +118,6 @@ map("i", t("<C-a>"), "<C-o>0", "")
 map("n", "<C-left>", "10zh", "")
 map("n", "<C-right>", "10zl", "")
 
--- Move selected block in visual mode
-map("x", "K", ":move '<-2<CR>gv-gv", "")
-map("x", "J", ":move '>+1<CR>gv-gv", "")
-
--- resize with arrows terminal not recognizing as unique sequence, use mouse instead
--- keymap("n", "<C-S-U>", ":resize +2<cr>")
--- keymap("n", "<C-S-Down>", ":resize -2<cr>")
--- keymap("n", "<C-S-Left>", ":vertical resize -2<cr>")
--- keymap("n", "<C-S-Right>", ":vertical resize +2<cr>")
 
 -- Curl
 wk.add({
@@ -183,10 +151,6 @@ vim.keymap.set("n", "<LocalLeader>fgc", function()
       curl.pick_global_collection()
 end, { desc = "Choose a global collection and open it" })
 
--- toggleterm
-map("n", "<LocalLeader>th", ":ToggleTerm size=20 direction=horizontal<CR>", "Terminal horizontal")
-map("n", "<LocalLeader>tV", ":ToggleTerm size=110 direction=vertical<CR>", "Terminal vertical")
-
 function _G.set_terminal_keymaps()
 	local opts = { buffer = 0 }
 	vim.keymap.set("t", "<esc>", [[<C-\><C-n>]])
@@ -211,21 +175,11 @@ map("v", "<leader>rv",":lua require('iron.core').mark_visual()<cr>","Repl mark v
 map("v", "<leader>rm",":lua require('iron.core').send_mark()<cr>","Repl send mark")
 map("n", "<leader>ru",":lua require('iron.core').send_until_cursor()<cr>","Repl send until cursor")
 
--- nv-nvim-tree
---keymap("n", "<leader>nR", ":NvimTreeRefresh<CR>", { desc = "Tree refresh" })
-map("n", "<leader>e", ":NvimTreeToggle<CR>","Tree togle")
---keymap("n", "<leader>nF", ":NvimTreeFindFile<CR>", { desc = "Tree find file" })
-
--- neogen
--- map("n", "<leader>nc", ":lua require('neogen').generate({type = 'class'})<CR>", { desc = "Neogen Generate Class" })
--- map("n", "<leader>nf", ":lua require('neogen').generate({type = 'func'})<CR>", { desc = "Neogen Generate Func" })
--- map("n", "<leader>nt", ":lua require('neogen').generate({type = 'type'})<CR>", { desc = "Neogen Generate Type" })
-
 -- dap debugging
 wk.add({
 	{ "<leader>d", group = "Dap" },
 })
-map("n", "<leader>dn", ":lua require('osv').launch({port = 5677})<CR>","Debug Neovim-kind")
+map("n", "<leader>dn", ":lua require('osv').launch({port = 5677})<CR>","Debug Neovim-kind") -- one step for vim kind debugger
 map("n", "<F5>", ":lua require('dap').continue()<CR>","Debug continue")
 map("n", "<S-F5>", ":lua require'dap'.close()<cr>","Debug stop")
 
@@ -271,8 +225,6 @@ map(
 	":lua require('dap').set_breakpoint({ nil, nil, vim.fn.input('Log point message: ') })<CR>",
 	"Debug breakpoint with message"
 )
---map("n", "<leader>da", ":lua require'debugHelper'.attach()<CR>", { desc = "Debug attach" })
---map("n", "<leader>dA", ":lua require'debugHelper'.attachToRemote()<CR>", { desc = "Debug attach remote" })
 
 -- dapview
 vim.keymap.set("n", "<leader>dv", function()
@@ -372,7 +324,7 @@ map(
 	"<cmd>lua require('telescope.builtin').find_files({find_command= {'rg','--no-ignore','--hidden','--files','-g','!**/node_modules/*','-g','!**/.git/*'},})<cr>",
 	"Find ignored files"
 )
---vim.keymap.set("n", "<Leader>fF", ":lua require('telescope.builtin').find_files({})<CR>", { desc = '[f]ind [f]iles Exact Name' })
+
 map(
 	"n",
 	"<Leader>fb",
@@ -416,8 +368,6 @@ map("n", "<leader>dlb", ":Telescope dap list_breakpoints<CR>", "Telescope dap br
 map("n", "<leader>dtv", ":Telescope dap variables<CR>", "Telescope dap variables" )
 
 -- git
---vim.api.nvim_set_keymap("n", "<leader>lg", "<cmd>lua _lazygit_toggle()<CR>", {noremap = true, silent = true})
---map("n", "<leader>lg", ":LazyGit<CR>", { desc = "Lazy git" })
 local gitsigns = require('gitsigns')
 map("n", "<leader>gs", ":lua require('neogit').open({ kind = 'vsplit'})<cr>","Neogit Open")
 map("n", "<leader>gg", ":lua require('neogit').open({ kind = 'floating'})<cr>","Neogit Open")
@@ -432,7 +382,9 @@ map('v', '<leader>ghr', function()
       gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') })
     end)
 
-map("n", "<LocalLeader>gb", ":BlameToggle<cr>", "Git Blame" )
+map("n", "<LocalLeader>gb", ":GitSigns blame_line<cr>", "Git Blame" )
+map("n", "<LocalLeader>gB", ":GitSigns blame<cr>", "Git Blame" )
+
 -- Merge conflicts
 vim.keymap.set("n", "<leader>1", ":diffget LOCAL<CR>", { desc = "Diffget LOCAL" })
 vim.keymap.set("n", "<leader>2", ":diffget BASE<CR>", { desc = "Diffget BASE" })

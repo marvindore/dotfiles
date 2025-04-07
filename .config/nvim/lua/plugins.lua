@@ -1,12 +1,5 @@
 return {
 	"BurntSushi/ripgrep",
-	{
-		"numToStr/Comment.nvim",
-		opts = {
-			-- add any options here
-		},
-		lazy = false,
-	},
 	-- Editor
 	{
 		"catppuccin/nvim",
@@ -71,7 +64,7 @@ return {
 						LspReferenceWrite = { bg = "#6c473e" },
 
 						LightBulbVirtualText = { fg = colors.yellow },
-						SpellBad = { style = {"underline"}, fg = colors.yellow}
+						SpellBad = { style = { "underline" }, fg = colors.yellow },
 					}
 				end,
 			}
