@@ -22,15 +22,19 @@ return {
 					comments = { "italic" },
 				},
 				integrations = {
-					cmp = true,
+					blink_cmp = true,
 					gitsigns = true,
 					nvimtree = true,
-					telescope = true,
+					fidget = true,
+					flash = true,
+					fzf = true,
 					treesitter = true,
 					treesitter_context = true,
-					harpoon = true,
 					dap = { enabled = false, enabled_ui = false },
 					lsp_trouble = true,
+					overseer = true,
+					mason = true,
+					neogit = true,
 					which_key = true,
 					native_lsp = {
 						enabled = true,
@@ -73,6 +77,4 @@ return {
 			vim.cmd.colorscheme("catppuccin")
 		end,
 	},
-	-- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
-	{ "nvim-telescope/telescope-fzf-native.nvim", build = "make", cond = vim.fn.executable("make") == 1 },
 }

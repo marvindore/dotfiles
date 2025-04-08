@@ -1,7 +1,7 @@
 return {
   "yetone/avante.nvim",
-  event = "VeryLazy",
-  lazy = false,
+  cmd = "AvanteToggle",
+  lazy = true,
   version = false, -- set this if you want to always pull the latest change
   enabled = vim.g.enableAvante,
   opts = {

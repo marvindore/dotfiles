@@ -36,9 +36,7 @@ map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
--- oil
--- map("n", "-", ':lua require("oil").open()<cr>', "Open parent directory")
--- map("n", "_", ':lua require("oil").close()<cr>', "Close parent directory")
+-- Mini
 map("n", "<leader>e", ":lua MiniFiles.open()<cr>")
 map("n", "-", ':lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>', "Open parent directory")
 map("n", "_", ':lua MiniFiles.close()<cr>', "Close parent directory")
@@ -72,11 +70,11 @@ map("v", ",p", [[c(<c-r>")<esc>]], "Wrap in single parentheses") -- surround sin
 
 -- Avante
 if vim.g.enableAvante then
-  map("n", "<LocalLeader>aa", "<cmd>AvanteToggle<CR>", "Avante Ask")
-  map("n", "<LocalLeader>ab", "<cmd>AvanteBuild<cr>", "Avante Build")
-  map("n", "<LocalLeader>ac", "<cmd>Avante Chat<cr>", "Avante Chat")
-  map("n", "<LocalLeader>ar", "<cmd>AvanteRefresh<cr>", "Avante Refresh")
-  map("n", "<LocalLeader>ae", "<cmd>AvanteEdit<cr>", "Avante Edit")
+  map("n", "<leader>aa", "<cmd>AvanteToggle<CR>", "Avante Ask")
+  map("n", "<leader>ab", "<cmd>AvanteBuild<cr>", "Avante Build")
+  map("n", "<leader>ac", "<cmd>Avante Chat<cr>", "Avante Chat")
+  map("n", "<leader>ar", "<cmd>AvanteRefresh<cr>", "Avante Refresh")
+  map("n", "<leader>ae", "<cmd>AvanteEdit<cr>", "Avante Edit")
 end
 
 -- Copilot
@@ -236,7 +234,10 @@ end, { desc = "Dapview add expression" })
 map("n", "<leader>dw", ":DapViewWatch<cr>", "Dapview Watch")
 
 -- symbols
-map("n", "<LocalLeader>s", ":Outline<cr>","Symbols outline")
+map("n", "<LocalLeader>aa", "<cmd>AerialToggle!<cr>","Symbols outline")
+map("n", "<LocalLeader>{", "<cmd>AerialPrev!<cr>","Symbols outline")
+map("n", "<LocalLeader>}", "<cmd>AerialNext!<cr>","Symbols outline")
+map("n", "<LocalLeader>af", "<cmd>call aerial#fzf()<cr>", "Symbols Fzf")
 
 -- change list
 map("n", "<leader>Cl", ":changes<CR>","Change list")
@@ -246,45 +247,7 @@ map("n", "<leader>qfo", "<cmd>copen<CR>","Quickfix open")
 map("n", "<leader>qfc", "<cmd>cclose<CR>","Quickfix close")
 map("n", "<leader>qfd", "<cmd>cexpr []<CR>","Quickfix delete")
 
--- harpoon
-wk.add({
-	{ "<leader>h", group = "Harpoon" },
-})
-local harpoon = require("harpoon")
-map("n", "<leader>hl", ":Telescope harpoon marks<CR>","Harpoon list marks")
-vim.keymap.set("n", "<leader>ha", function()
-	harpoon:list():add()
-end, { desc = "Harpoon add mark file" })
-
-vim.keymap.set("n", "<leader>hh", function()
-	harpoon.ui:toggle_quick_menu(harpoon:list())
-end, { desc = "Harpoon toggle menu" })
-
-vim.keymap.set("n", ";1", function()
-	harpoon:list():select(1)
-end, { desc = "Harpoon select file 1" })
-
-vim.keymap.set("n", ";2", function()
-	harpoon:list():select(2)
-end, { desc = "Harpoon select file 2" })
-
-vim.keymap.set("n", ";3", function()
-	harpoon:list():select(3)
-end, { desc = "Harpoon select file 3" })
-
-vim.keymap.set("n", ";4", function()
-	harpoon:list():select(4)
-end, { desc = "Harpoon select file 4" })
-
-vim.keymap.set("n", "<leader>hn", function()
-	harpoon:list():next()
-end, { desc = "Harpoon next" })
-
-vim.keymap.set("n", "<leader>hp", function()
-	harpoon:list():next()
-end, { desc = "Harpoon previous" })
-
-map("n", "<leader>ml", ":Telescope marks<CR>","Marks telescope")
+-- Marks
 map("n", "<leader>md", ":delm! | delm A-Z0-9<CR>","Marks delete all")
 
 -- fzf-lua
@@ -298,74 +261,6 @@ map("n", "<LocalLeader>fG", ":lua require('fzf-lua').live_grep_glob()<CR>","Fzf 
 map("n", "<LocalLeader>fl", ":lua require('fzf-lua').live_grep()<CR>","Fzf Live Grep Current Project")
 map("n", "<LocalLeader>fc", ":lua require('fzf-lua').lgrep_curbuf()<CR>","Fzf Live Grep Current Buffer")
 map("n", "<LocalLeader>fu", ":lua require('fzf-lua').grep_cword()<CR>","Fzf Grep Word Under Cursor")
-
-
---
--- Telescope -- See `:help telescope.builtin`
---
--- navigate preview window with ctl-d ctl-u
-wk.add({
-	{ "<leader>f", group = "Telescope Find" },
-})
--- Function to search files in the opened directory
-local function search_files_in_opened_directory()
-  local current_dir = vim.fn.expand('%:p:h') -- Get the current working directory
-  current_dir = current_dir:gsub('^oil://', '')
-  require('telescope.builtin').find_files({ cwd = current_dir })
-end
-
-map("n", "<S-h>", ":Telescope buffers sort_mru=true sort_lastused=true initial_mode=normal theme=ivy<cr>", "Telescope open buffers")
-
-vim.keymap.set("n", "<Leader>fi", ":lua require('telescope.builtin').find_files()<CR>", { desc = "[f]ind [f]iles" })
-vim.keymap.set('n', '<leader>fo', function() search_files_in_opened_directory() end, { desc=  "[F]ind [O]pen directory"})
-map(
-	"n",
-	"<Leader>ff",
-	"<cmd>lua require('telescope.builtin').find_files({find_command= {'rg','--no-ignore','--hidden','--files','-g','!**/node_modules/*','-g','!**/.git/*'},})<cr>",
-	"Find ignored files"
-)
-
-map(
-	"n",
-	"<Leader>fb",
-	':lua require("telescope").extensions.file_browser.file_browser()<CR>',
-	"Telescope extensions file browse"
-)
-map("n", "<Leader>fC", ":lua require('telescope.builtin').colorscheme()<CR>")
-vim.keymap.set("n", "<leader>?", require("telescope.builtin").oldfiles, { desc = "[?] Find recently opened files" })
-vim.keymap.set("n", "<leader><space>", "<cmd>e #<cr>", { desc = "Alternate Buffer" }) 
-map("n", "<Leader>fc", ":Telescope commands<CR>","Telescope commands")
-map("n", "<Leader>jl", ":Telescope jumplist<CR>","Telescope jumplist")
-map("n", "<Leader>fq", ":Telescope quickfix<CR>","Telescope quickfix")
-map("n", "<Leader>fh", ":Telescope quickfixhistory<CR>","Telescope quick history")
-map("n", "<Leader>fg", ":Telescope live_grep<CR>","Telescope live grep")
-map("n", "<Leader>fr", ":Telescope resume<CR>","Telescope resume")
-map(
-	"n",
-	"<Leader>go",
-	":lua require('telescope.builtin').live_grep({grep_open_files=true})<CR>",
-	"Telescope grep open files"
-)
-map("n", "<Leader>fp", ":Telescope projects<CR>", "Telescope projects" )
-map("n", "<Leader>tgs", ":Telescope git_status<CR>", "Telescope git status" )
-map("n", "<Leader>tgf", ":Telescope git_files<CR>", "Telescope git files" )
-map(
-	"n",
-	"<Leader>tgc",
-	":lua require('telescope.builtin').git_commits({ git_command = {'git', 'log', '--pretty=reference'} })<cr>",
-	"Telescope git commits"
-)
-map("n", "<Leader>tgt", ":Telescope git_stash<CR>", "Telescope git stash" )
-map("n", "<Leader>tgb", ":Telescope git_branches<CR>", "Telescope git branches" )
-vim.keymap.set("n", "<leader>sd", require("telescope.builtin").diagnostics, { desc = "[S]earch [D]iagnostics" })
-vim.keymap.set("n", "<leader>sh", require("telescope.builtin").help_tags, { desc = "[S]earch [H]elp" })
-
--- telescope-dap
-map("n", "<leader>dtf", ":Telescope dap frames<CR>", "Telescope dap frames" )
-map("n", "<leader>dtc", ":Telescope dap commands<CR>", "Telescope dap commands" )
-map("n", "<leader>dto", ":Telescope dap configurations<CR>", "Telescope dap configuration" )
-map("n", "<leader>dlb", ":Telescope dap list_breakpoints<CR>", "Telescope dap breakpoints" )
-map("n", "<leader>dtv", ":Telescope dap variables<CR>", "Telescope dap variables" )
 
 -- git
 local gitsigns = require('gitsigns')
@@ -389,20 +284,6 @@ map("n", "<LocalLeader>gB", ":GitSigns blame<cr>", "Git Blame" )
 vim.keymap.set("n", "<leader>1", ":diffget LOCAL<CR>", { desc = "Diffget LOCAL" })
 vim.keymap.set("n", "<leader>2", ":diffget BASE<CR>", { desc = "Diffget BASE" })
 vim.keymap.set("n", "<leader>3", ":diffget REMOTE<CR>", { desc = "Diffget REMOTE" })
-
-local builtin = require("telescope.builtin")
-local utils = require("telescope.utils")
-
-vim.keymap.set("n", "<LocalLeader>fh", function()
-	builtin.find_files({ cwd = utils.buffer_dir() })
-end, { desc = "Find files in cwd" })
-vim.keymap.set("n", "<LocalLeader>fu", function()
-	-- You can pass additional configuration to telescope to change theme, layout, etc.
-	require("telescope.builtin").current_buffer_fuzzy_find(require("telescope.themes").get_dropdown({
-		winblend = 10,
-		previewer = false,
-	}))
-end, { desc = "[/] Fuzzily search in current buffer]" })
 
 -- Spring
 local spring_run_mvn = "mvn spring-boot:run -Dspring-boot.run.properties=local"

@@ -3,9 +3,6 @@ return {
   cmd = "Copilot",
   event = "InsertEnter",
   enabled = vim.g.enableCopilot,
-  dependencies = {
-    "zbirenbaum/copilot-cmp"
-  },
   config = function()
     require("copilot").setup({
       suggestion = {
@@ -14,6 +11,5 @@ return {
       },
       panel = { enabled = false },
     })
-    require("copilot_cmp").setup()
   end,
 }

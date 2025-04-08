@@ -11,6 +11,22 @@ nvim -d file1 file2
 
 :vert diffsplit filename 
 ```
+### Marks
+```
+Create local marks
+m<lowercase_letter> 
+
+Create global marks
+m<uppercase_letter>
+
+jump to mark (single quote)
+'<letter>
+
+jump to exact location of mark (backtick)
+`<letter>
+```
+** close buffer without exiting vim**
+`:bd`
 
 -- echo v:lua.vim.uv.os_name().sysname -- lua print(vim.uv.os_uname().sysname)
 -- Go to previous location Ctrl + o
@@ -32,3 +48,8 @@ nvim -d file1 file2
 -- :redir END
 -- :e messages.txt
 
+> For various plugin pickers to work correctly, you need to replace vim.ui.select with your desired picker (as the default vim.ui.select is very basic). Here are some examples:
+fzf-lua - call require('fzf-lua').register_ui_select()
+telescope - setup telescope-ui-select.nvim plugin
+snacks.picker - enable ui_select config
+mini.pick - set vim.ui.select = require('mini.pick').ui_select

@@ -31,15 +31,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 		map("n", "<leader>dh", toggle_diagnostics, "Toggle Diagnostics")
 
-		-- Goto Preview
-		map("n", "gpd", function() require("goto-preview").goto_preview_definition() end, "Definition - Goto preview")
-		map("n", "gpt", function() require("goto-preview").goto_preview_type_definition() end, "Type - Goto preview")
-		map("n", "gpi", function() require("goto-preview").goto_preview_implementation() end, "Implementation - Goto preview")
-		map("n", "gpD", function() require("goto-preview").goto_preview_declaration() end, "Declaration - Goto preview")
-		map("n", "gpc", function() require("goto-preview").close_all_win() end, "Close - Goto preview")
-		map("n", "gpr", function() require("goto-preview").goto_preview_references() end, "References - Goto preview")
-
-
 		-- server specific settings
 		for _, client in ipairs(vim.lsp.get_clients()) do
 			if client.name == "jdtls" then

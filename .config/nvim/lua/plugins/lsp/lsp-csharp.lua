@@ -8,9 +8,6 @@ return {
 		if vim.g.enableCsharp then
 			require("roslyn").setup({
 				config = {
-					on_attach = _G.on_attach("roslyn"),
-					handlers = handlers,
-					capabilities = capabilities,
 					cmd = {
 						"dotnet",
 						vim.fs.joinpath(vim.fn.stdpath("data"), "roslyn", "Microsoft.CodeAnalysis.LanguageServer.dll"),
