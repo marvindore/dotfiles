@@ -8,6 +8,7 @@ nvim -d file1 file2
 -- paste your contents
 :windo diffthis
 :windo diffoff
+:set diffopt+=iwhite
 
 :vert diffsplit filename 
 ```

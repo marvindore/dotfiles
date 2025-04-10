@@ -58,7 +58,7 @@ return {
 						DiffChange = { fg = "#d3d3d3" },
 
 						-- Changed text inside of a line (DiffChange)
-						DiffText = { fg = "#FAE3B0", style = { "bold" } },
+						DiffText = { fg = "#000000", bg = "#FFA600", style = { "bold" } },
 
 						-- DiffDelete uses a conceal character that spans the entire line. Highlight
 						-- that character instead of the background behind it.
