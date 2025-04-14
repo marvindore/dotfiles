@@ -35,6 +35,7 @@ map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 -- Remap for dealing with word wrap
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map("n", "<leader><space>", "<C-^>", "Go to previous buffer")
 
 -- Mini
 map("n", "<leader>e", ":lua MiniFiles.open()<cr>")
@@ -261,6 +262,21 @@ map("n", "<LocalLeader>fG", ":lua require('fzf-lua').live_grep_glob()<CR>","Fzf 
 map("n", "<LocalLeader>fl", ":lua require('fzf-lua').live_grep()<CR>","Fzf Live Grep Current Project")
 map("n", "<LocalLeader>fc", ":lua require('fzf-lua').lgrep_curbuf()<CR>","Fzf Live Grep Current Buffer")
 map("n", "<LocalLeader>fu", ":lua require('fzf-lua').grep_cword()<CR>","Fzf Grep Word Under Cursor")
+
+-- diffview
+diffview_toggle = function()
+  local lib = require("diffview.lib")
+  local view = lib.get_current_view()
+  if view then
+    -- Current tabpage is a Diffview; close it
+    vim.cmd.DiffviewClose()
+  else
+    -- No open Diffview exists: open a new one
+    vim.cmd.DiffviewOpen()
+  end
+end
+
+map("n", "<leader>D", diffview_toggle, "DiffView Toggle")
 
 -- git
 local gitsigns = require('gitsigns')

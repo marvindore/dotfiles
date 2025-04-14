@@ -57,6 +57,7 @@ return {
     { "gps", function() Snacks.picker.lsp_symbols() end, desc = "LSP Symbols" },
     { "gpS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "LSP Workspace Symbols" },
     { "<leader>sn", function() Snacks.picker.notifications() end, desc = "Notifications" },
+    { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "Notification History" },
     { "<leader>sm", function() Snacks.picker.marks() end, desc = "Marks" },
   }
 }

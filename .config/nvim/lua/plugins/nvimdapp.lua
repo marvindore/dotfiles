@@ -10,21 +10,23 @@ return {
 	"mfussenegger/nvim-dap",
 	cmd = "DapContinue",
 	dependencies = {
+		"mfussenegger/nvim-dap-python",
 		"theHamsta/nvim-dap-virtual-text",
-		"nvim-telescope/telescope-dap.nvim",
 		"jbyuki/one-small-step-for-vimkind",
-    { "igorlfs/nvim-dap-view", opts = {} },
+		{ "igorlfs/nvim-dap-view", opts = {} },
 		{
 			"microsoft/vscode-js-debug",
-			build = vim.g.isWindowsOs and "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && Move-Item -Path dist -Destination out" or "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out",
+			build = vim.g.isWindowsOs
+					and "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && Move-Item -Path dist -Destination out"
+				or "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out",
 		},
-    {
-      "leoluz/nvim-dap-go",
-      ft = "go",
-      config = function (_, opts)
-        require("dap-go").setup(opts)
-      end
-    },
+		{
+			"leoluz/nvim-dap-go",
+			ft = "go",
+			config = function(_, opts)
+				require("dap-go").setup(opts)
+			end,
+		},
 	},
 	config = function()
 		--https://alpha2phi.medium.com/neovim-dap-enhanced-ebc730ff498b
@@ -117,133 +119,77 @@ return {
 			},
 		}
 
-		-- Python
-		adapters.python = {
-			type = "executable",
-			command = vim.g.homeDir .. "/.local/share/nvim/mason/packages/debugpy/venv/bin/python",
-			args = { "-m", "debugpy.adapter" },
-		}
+		if vim.g.enablePython then
+			local dap_python = require("dap-python")
+			dap_python.setup(vim.g.neovim_home .. "/mason/packages/debugpy/venv/bin/python")
+			dap_python.test_runner = "pytest"
+			dap_python.default_port = 38000
 
-		adapters.generic_remote = function(callback, config)
-			callback({
-				type = "server",
-				host = (config.connect or config).host or "127.0.0.1",
-				port = (config.connect or config).port or "5678",
-				options = {
-					source_filetype = "python",
-				},
-			})
+			dap.listeners.after.event_initialized["dapview_config"] = function()
+				require("dap-view").open()
+			end
+			dap.listeners.before.event_terminated["dapview_config"] = function()
+				require("dap-view").close()
+			end
+			dap.listeners.before.event_exited["dapview_config"] = function()
+				require("dap-view").close()
+			end
 		end
 
-		configurations.python = {
-			{
-				type = "python",
-				request = "launch",
-				name = "launch file",
-				program = "${file}",
-				pythonPath = function()
-					-- debugpy supports launching an application with a different interpreter then the one used to launch debugpy itself.
-					-- The code below looks for a `venv` or `.venv` folder in the current directly and uses the python within.
-					-- You could adapt this - to for example use the `VIRTUAL_ENV` environment variable.
-					local cwd = vim.fn.getcwd()
-					if vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
-						return cwd .. "/venv/bin/python"
-					elseif vim.fn.executable(cwd .. "/.venv/bin/python") == 1 then
-						return cwd .. "/.venv/bin/python"
-					else
-						return vim.g.homeDir .. "/.asdf/shims/python3"
-					end
-				end,
-			},
-			{
-				type = "generic_remote",
-				name = "Generic remote",
-				request = "attach",
-				justMyCode = false,
-				connect = function()
-					local host = vim.fn.input("Host [127.0.0.1]: ")
-					host = host ~= "" and host or "127.0.0.1"
-					local port = tonumber(vim.fn.input("Port [5678]: ")) or 5678
-					return { host = host, port = port }
-				end,
-				pathMappings = { {
-					localRoot = vim.fn.getcwd(),
-					remoteRoot = "/",
-				} },
-			},
-		}
-		--
-		-- DotNet
-		local exe = vim.g.isWindowsOs and vim.g.neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
-			or vim.g.neovim_home .. "/mason/bin/netcoredbg"
+		if vim.g.enableCsharp then
+			--
+			-- DotNet
+			local exe = vim.g.isWindowsOs
+					and vim.g.neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
+				or vim.g.neovim_home .. "/mason/bin/netcoredbg"
 
-		adapters.netcoredbg = {
-			type = "executable",
-			command = exe,
-			args = { "--interpreter=vscode" },
-		}
+			adapters.netcoredbg = {
+				type = "executable",
+				command = exe,
+				args = { "--interpreter=vscode" },
+			}
 
-		adapters.netcoredbgattach = {
-			type = "executable",
-			command = exe,
-			args = { "--interpreter=vscode", "--attach" },
-		}
+			adapters.netcoredbgattach = {
+				type = "executable",
+				command = exe,
+				args = { "--interpreter=vscode", "--attach" },
+			}
 
-		configurations.cs = {
-			{
-				type = "netcoredbg",
-				name = "launch dll - netcoredbg",
-				request = "launch",
-				program = function()
-					-- Use telescope to select the DLL file
-					local pickers = require("telescope.pickers")
-					local finders = require("telescope.finders")
-					local sorters = require("telescope.sorters")
-					local actions = require("telescope.actions")
-					local action_state = require("telescope.actions.state")
+			configurations.cs = {
+				{
+					type = "netcoredbg",
+					name = "launch dll - netcoredbg",
+					request = "launch",
+					program = function()
+						-- Select the DLL file to debug
+						local co = coroutine.running()
+						local selected_file = nil
 
-					local selected_file = nil
-
-					local co = coroutine.running()
-					pickers
-						.new({}, {
-							prompt_title = "Select DLL",
-							finder = finders.new_oneshot_job({
-								"rg",
-								"--no-ignore",
-								"--hidden",
-								"--files",
-								"-g",
-								"*.dll",
-								"-g",
-								"!**/node_modules/*",
-								"-g",
-								"!**/.git/*",
-							}),
-							sorter = sorters.get_fuzzy_file(),
-							attach_mappings = function(prompt_bufnr, map)
-								actions.select_default:replace(function()
-									actions.close(prompt_bufnr)
-									selected_file = action_state.get_selected_entry()[1]
+						require("fzf-lua").files({
+							prompt = "Select DLL> ",
+							-- rg --no-ignore --hidden --files -g '*.dll' -g '!**/node_modules/*' -g '!**/.git/*'
+							cmd = "fd --type f --hidden --no-ignore -e dll --exclude node_modules --exclude .git",
+							actions = {
+								["default"] = function(selected)
+									selected_file = selected[1]
 									coroutine.resume(co)
-								end)
-								return true
-							end,
+								end,
+							},
 						})
-						:find()
 
-					coroutine.yield()
-					return selected_file
-				end,
-			},
-			{
-				type = "netcoredbgattach",
-				name = "attach - netcoredbg",
-				request = "attach",
-				justMyCode = false,
-				program = require("dap.utils").pick_process,
-			},
-		}
+						coroutine.yield()
+						return selected_file
+					end,
+				},
+				{
+					type = "netcoredbgattach",
+					name = "attach - netcoredbg",
+					request = "attach",
+					justMyCode = false,
+					program = require("dap.utils").pick_process,
+				},
+			}
+		end
 
 		--
 		-- Java
@@ -273,6 +219,7 @@ return {
 		--
 		local jsexe = vim.g.isWindowsOs and vim.g.neovim_home .. "/mason/packages/netcoredbg/js-debug-adapter"
 			or vim.g.neovim_home .. "/mason/bin/js-debug-adapter"
+
 		for _, language in ipairs(js_based_languages) do
 			configurations[language] = {
 				{
@@ -363,7 +310,6 @@ return {
 			args = {},
 		}
 
-		require("telescope").load_extension("dap")
 		require("nvim-dap-virtual-text").setup({})
 
 		-- nvim-dap-virtual-text. Show virtual text for current frame
