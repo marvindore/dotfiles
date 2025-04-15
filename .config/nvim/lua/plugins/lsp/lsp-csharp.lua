@@ -10,7 +10,7 @@ return {
 				config = {
 					cmd = {
 						"dotnet",
-						vim.fs.joinpath(vim.fn.stdpath("data"), "roslyn", "Microsoft.CodeAnalysis.LanguageServer.dll"),
+						vim.fs.joinpath(vim.g.neovim_home, "mason", "bin", "roslyn", "Microsoft.CodeAnalysis.LanguageServer.dll"),
 					},
 					settings = {
 						["csharp|inlay_hints"] = {
