@@ -14,8 +14,8 @@ sudo dnf upgrade -y
 
 echo -e "\n==== Installing dev dependencies ===="
 DEPS=(
-  bat difftastic dnsutils fzf gcc git-delta gnupg httpie jq make
-  restic rclone ripgrep tmux tree-sitter-cli wget wl-clipboard xclip zoxide zsh
+  bat difftastic dnsutils fzf gcc git-delta gnupg helix httpie jq make
+  restic rclone ripgrep tmux tree-sitter-cli wget wl-clipboard xclip zoxide yazi zsh
 )
 for pkg in "${DEPS[@]}"; do
   if ! command_exists "$pkg"; then

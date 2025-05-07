@@ -225,15 +225,6 @@ map(
 	"Debug breakpoint with message"
 )
 
--- dapview
-vim.keymap.set("n", "<leader>dv", function()
-    require("dap-view").toggle()
-end, { desc = "Toggle nvim-dap-view" })
-vim.keymap.set("n", "<leader>da", function()
-    require("dap-view").add_expr()
-end, { desc = "Dapview add expression" })
-map("n", "<leader>dw", ":DapViewWatch<cr>", "Dapview Watch")
-
 -- symbols
 map("n", "<LocalLeader>aa", "<cmd>AerialToggle!<cr>","Symbols outline")
 map("n", "<LocalLeader>{", "<cmd>AerialPrev!<cr>","Symbols outline")
@@ -347,4 +338,6 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 local home = vim.loop.os_homedir()  -- Get the home directory dynamically
 local notes_path = home .. "/dotfiles/cheatsheets"  -- Append the notes directory
 
-vim.keymap.set("n", "<leader>N", ":e " .. notes_path .. "<CR>", { noremap = true, silent = true })
+vim.api.nvim_create_user_command("Notes", function()
+  vim.cmd.edit(notes_path)
+end, {})

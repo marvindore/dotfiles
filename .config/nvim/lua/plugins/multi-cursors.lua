@@ -52,7 +52,7 @@ return {
 		set({ "n", "v" }, "<right>", mc.prevCursor)
 
 		-- Delete the main cursor.
-		set({ "n", "v" }, "<leader>x", mc.deleteCursor)
+		--set({ "n", "v" }, "<leader>x", mc.deleteCursor)
 
 		-- Add and remove cursors with control + left click.
 		set("n", "<c-leftmouse>", mc.handleMouse)
@@ -76,8 +76,9 @@ return {
 		-- bring back cursors if you accidentally clear them
 		set("n", "<leader>gv", mc.restoreCursors)
 
+    -- duplicate keybinding
 		-- Align cursor columns.
-		set("n", "<leader>a", mc.alignCursors)
+		--set("n", "<leader>a", mc.alignCursors)
 
 		-- Split visual selections by regex.
 		set("v", "S", mc.splitCursors)

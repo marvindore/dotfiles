@@ -21,12 +21,12 @@ return {
 		-- dont due this because nvim-java require("mason").setup(conf) https://github.com/nvim-java/nvim-java/wiki/Troubleshooting#no_entry-mason-failed-to-install-jdtls---cannot-find-package-xxxxx
 		config = function()
 			require("mason").setup()
-			require("mason-lspconfig").setup()
 		end,
 	},
 	{
 		"williamboman/mason-lspconfig.nvim",
 		config = function()
+			require("mason-lspconfig").setup()
 			vim.api.nvim_create_autocmd("User", {
 				pattern = "MasonToolsUpdateCompleted",
 				callback = function()

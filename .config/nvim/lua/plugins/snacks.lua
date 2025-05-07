@@ -20,8 +20,8 @@ return {
         dim = true,
         git_signs = false,
         diagnostics = false,
-        line_number = true,
-        relative_number = true,
+        linenumber = true,
+        relativenumber = false,
         indent = false
       },
       zoom = {
@@ -31,8 +31,8 @@ return {
         dim = true,
         git_signs = false,
         diagnostics = false,
-        line_number = true,
-        relative_number = true,
+        linenumber = true,
+        relativenumber = false,
         indent = false
         }
       }
