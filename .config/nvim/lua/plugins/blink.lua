@@ -1,7 +1,10 @@
 return {
 	{
 		"saghen/blink.cmp",
-		dependencies = { "rafamadriz/friendly-snippets" },
+		dependencies = {
+			"rafamadriz/friendly-snippets",
+			"Kaiser-Yang/blink-cmp-avante",
+		},
 		-- use a release tag to download pre-built binaries
 		version = "1.*",
 		---@module 'blink.cmp'
@@ -28,12 +31,52 @@ return {
 			},
 
 			-- (Default) Only show the documentation popup when manually triggered
-			completion = { documentation = { auto_show = false } },
+			completion = {
+				documentation = { auto_show = true },
+				menu = {
+					draw = {
+
+						columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind" } },
+					},
+				},
+			},
+			signature = { enabled = true },
 
 			-- Default list of enabled providers defined so that you can extend it
 			-- elsewhere in your config, without redefining it, due to `opts_extend`
 			sources = {
-				default = { "lsp", "path", "snippets", "buffer" },
+				default = { "lsp", "path", "snippets", "buffer", "avante" },
+				providers = {
+					avante = {
+						module = "blink-cmp-avante",
+						name = "Avante",
+						--	score_offset = 2,
+						opts = {
+							command = {
+								get_kind_name = function(_)
+									return "AvanteCmd"
+								end,
+							},
+							mention = {
+								get_kind_name = function(_)
+									return "AvanteMention"
+								end,
+							},
+							completion = {
+								menu = {
+									draw = {
+										components = {
+											kind_icons = {
+												AvanteCmd = "",
+												AvanteMention = "",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 
 			-- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
