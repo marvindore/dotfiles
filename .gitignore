@@ -39,3 +39,4 @@ lazy-lock.json
 .lazy-dev/
 
 .config/vale/*
+.config/raycast/*

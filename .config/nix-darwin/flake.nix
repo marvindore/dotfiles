@@ -52,6 +52,7 @@
             "hammerspoon"
             "google-chrome"
             "raycast"
+            "scroll-reverser"
             "wezterm@nightly"
         ];
         masApps = {
@@ -92,8 +93,9 @@
         loginwindow.GuestEnabled = false;
         NSGlobalDomain.KeyRepeat = 2;
       };
-      # Auto upgrade nix package and daemon service
-      services.nix-daemon.enable = true;
+
+      # make nix-darwin manage the nix-daemon
+      nix.enable = true;
 
       # Necessary for using flakes on this system.
       nix.settings.experimental-features = "nix-command flakes";
@@ -101,6 +103,7 @@
       # Enable alternative shell support in nix-darwin.
       # programs.fish.enable = true;
       programs.zsh.enable = true;
+
       # Set Git commit hash for darwin-version.
       system.configurationRevision = self.rev or self.dirtyRev or null;
 
@@ -109,7 +112,7 @@
       system.stateVersion = 5;
 
       # TODO: The platform the configuration will be used on. (x86_64-darwin) (aarch64-darwin)
-      nixpkgs.hostPlatform = "x86_64-darwin";
+      nixpkgs.hostPlatform = "aarch64-darwin";
     };
   in
   {
