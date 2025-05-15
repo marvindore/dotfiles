@@ -53,12 +53,9 @@ config.font = wezterm.font_with_fallback({ "JetBrains Mono", "Fira Code" })
 config.warn_about_missing_glyphs = false
 config.font_size = 13
 
-local userProfile = os.getenv("USERPROFILE") or os.getenv("HOME")
-local profile = userProfile:gsub("\\", "\\\\")
-
 -- config.default_domain = 'WSL:Ubuntu'
-if os.getenv("OS") == "Windows_NT" then
-	config.default_prog = { profile .. "\\scoop\\apps\\pwsh\\current\\pwsh.exe" }
+if vim.g.isWindowsOs then
+	config.default_prog = { "pwsh.exe" }
   -- config.default_domain = 'WSL:Ubuntu'
 end
 config.color_scheme = "MaterialDarker"
