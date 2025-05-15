@@ -84,9 +84,13 @@ local capabilities = {
   }
 }
 
-vim.lsp.config("*", {
-	capabilities = require("blink.cmp").get_lsp_capabilities(capabilities)
-})
+local success, blink = pcall(require, "blink.cmp")
+
+if success then
+	vim.lsp.config("*", {
+		capabilities = blink.get_lsp_capabilities(capabilities)
+	})
+end
 
 vim.lsp.enable("lua_ls")
 vim.lsp.enable({"bashls", "yamlls", "dockerls", "jsonls", "lemminx", "sql"})
