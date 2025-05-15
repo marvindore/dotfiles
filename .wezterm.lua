@@ -54,7 +54,7 @@ config.warn_about_missing_glyphs = false
 config.font_size = 13
 
 -- config.default_domain = 'WSL:Ubuntu'
-if vim.g.isWindowsOs then
+if os.getenv("OS") == "Windows_NT" then
 	config.default_prog = { "pwsh.exe" }
   -- config.default_domain = 'WSL:Ubuntu'
 end
