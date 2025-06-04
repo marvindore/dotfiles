@@ -98,6 +98,9 @@ automatically-unhide-macos-hidden-apps = false
     # end tell'
     # '''
 
+    alt-left = 'focus-monitor prev'   
+    alt-right = 'focus-monitor next'
+
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-slash = 'layout tiles horizontal vertical'
     alt-comma = 'layout accordion horizontal vertical'
@@ -224,3 +227,15 @@ run = "move-node-to-workspace B"
 [[on-window-detected]]
 if.app-id = 'com.google.Chrome'
 run = "move-node-to-workspace B"
+
+[[on-window-detected]]
+if.app-id = 'com.omnissa.horizon.client.mac'
+run = "move-node-to-workspace V"
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.rdc.macos'
+run = "move-node-to-workspace V"
+
+[[on-window-detected]]
+if.app-id = 'com.jetbrains.datagrip'
+run = "move-node-to-workspace D"
