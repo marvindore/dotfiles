@@ -13,7 +13,10 @@ if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
 $symlinks = @(
     @{source="$HOME\dotfiles\.config\nvim"; target="$HOME\AppData\Local\nvim"},
     @{source="$HOME\dotfiles\.wezterm.lua"; target="$HOME\.wezterm.lua"},
-    @{source="$HOME\dotfiles\.ideavimrc"; target="$HOME\.ideavimrc"}
+    @{source="$HOME\dotfiles\.ideavimrc"; target="$HOME\.ideavimrc"},
+    @{source="$HOME\dotfiles\.gitconfig"; target="$HOME\.gitconfig"},
+    @{source="$HOME\dotfiles\.gitconfig-windows"; target="$HOME\.gitconfig-windows"},
+    @{source="$HOME\dotfiles\.ssh\config"; target="$HOME\.ssh\config"}
 )
 
 foreach ($link in $symlinks) {

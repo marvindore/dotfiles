@@ -3,11 +3,11 @@
 	email = hi@marvindore.com
 
 [merge]
-    tool = nvimdiff
+    tool = nvim
     conflictstyle = diff3
 
-[mergetool]
-    tool = nvimdiff
+[mergetool "nvim"]
+    cmd = nvim -f -c \"DiffviewOpen\"
     conflictstyle = diff3
     keepBackup = false
     prompt = false
@@ -18,6 +18,8 @@
     ds = -c diff.external=difft show --ext-diff
     dd = -c diff.external=difft diff
     dlp = -c diff.external=difft log -p --ext-diff
+    mergetool = "!nvim -c DiffviewOpen"
+    dm = "!nvim -c DiffviewOpen && git add . && echo \"Conflicts resolved. Ready to commit.\""
 
 [difftool]
     difftool = true
@@ -38,3 +40,15 @@
 # User different gitconfig based on directory
 [includeIf "gitdir:~/ukg/"]
     path = .gitconfig-work
+
+[includeIf "gitdir:/ukg/"]
+    path = .gitconfig-work
+
+[includeIf "gitdir:/Projects/"]
+    path = .gitconfig-work
+
+[includeIf "gitdir:/ukgpro-core/"]
+    path = .gitconfig-work
+
+[includeIf "gitdir:/Windows/"]
+    path = .gitconfig-windows
