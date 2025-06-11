@@ -55,6 +55,8 @@ install_brew_packages() {
     "google-chrome"
     "raycast"
     "rider"
+    "scoot"
+    "slack"
     "wezterm@nightly"
   )
   

@@ -53,6 +53,8 @@
             "google-chrome"
             "raycast"
             "scroll-reverser"
+            "scoot"
+            "slack"
             "wezterm@nightly"
         ];
         masApps = {
