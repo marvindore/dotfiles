@@ -16,7 +16,7 @@ $symlinks = @(
     @{source="$HOME\dotfiles\.ideavimrc"; target="$HOME\.ideavimrc"},
     @{source="$HOME\dotfiles\.gitconfig"; target="$HOME\.gitconfig"},
     @{source="$HOME\dotfiles\.gitconfig-windows"; target="$HOME\.gitconfig-windows"},
-    @{source="$HOME\dotfiles\.ssh\config"; target="$HOME\.ssh\config"}
+    @{source="$HOME\dotfiles\.ssh\config-windows"; target="$HOME\.ssh\config"}
 )
 
 foreach ($link in $symlinks) {
