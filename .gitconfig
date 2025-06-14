@@ -38,17 +38,11 @@
 	cmd = difft "$LOCAL" "$REMOTE"
 
 # User different gitconfig based on directory
-[includeIf "gitdir:~/ukg/"]
+[includeIf "gitdir:~/work/"]
     path = .gitconfig-work
 
-[includeIf "gitdir:/ukg/"]
+[includeIf "gitdir:C:/work/"]
     path = .gitconfig-work
 
-[includeIf "gitdir:/Projects/"]
-    path = .gitconfig-work
-
-[includeIf "gitdir:/ukgpro-core/"]
-    path = .gitconfig-work
-
-[includeIf "gitdir:/Windows/"]
+[includeIf "gitdir:C:/work/"]
     path = .gitconfig-windows
