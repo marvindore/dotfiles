@@ -22,7 +22,7 @@ return {
 		-- Options are not required
 		dotnet.setup({
 			--Optional function to return the path for the dotnet sdk (e.g C:/ProgramFiles/dotnet/sdk/8.0.0)
-			get_sdk_path = get_sdk_path,
+			get_sdk_path = require("easy-dotnet.extensions").isWindows() and vim.fn.expand("~") .. "" or vim.fn.expand("~") .. "/.asdf/shims/dotnet",
 			---@type TestRunnerOptions
 			test_runner = {
 				---@type "split" | "float" | "buf"
