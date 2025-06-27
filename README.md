@@ -71,3 +71,10 @@ vale --config="$HOME/.config/vale/.vale.ini" sync
 Install tpm
 `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`
 then reload envionment `Ctrl-I`
+
+
+### Dotnet
+```
+dotnet tool install -g dotnet-outdated-tool
+dotnet tool install --global dotnet-ef
+```

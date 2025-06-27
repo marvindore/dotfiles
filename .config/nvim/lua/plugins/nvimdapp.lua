@@ -1,3 +1,20 @@
+local function rebuild_project(co, path)
+	local spinner = require("easy-dotnet.ui-modules.spinner").new()
+	spinner:start_spinner("Building")
+	vim.fn.jobstart(string.format("dotnet build %s", path), {
+		on_exit = function(_, return_code)
+			if return_code == 0 then
+				spinner:stop_spinner("Built successfully")
+			else
+				spinner:stop_spinner("Build failed with exit code " .. return_code, vim.log.levels.ERROR)
+				error("Build failed")
+			end
+			coroutine.resume(co)
+		end,
+	})
+	coroutine.yield()
+end
+
 local js_based_languages = {
 	"typescript",
 	"javascript",
@@ -186,53 +203,128 @@ return {
 				local exe = vim.g.isWindowsOs
 						and vim.g.neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
 					or vim.g.neovim_home .. "/mason/bin/netcoredbg"
+				local dotnet = require("easy-dotnet")
+				local dapui = require("dapui")
+				dap.set_log_level("TRACE")
 
-				adapters.netcoredbg = {
-					type = "executable",
-					command = exe,
-					args = { "--interpreter=vscode" },
-				}
+				dap.listeners.before.attach.dapui_config = function()
+					dapui.open()
+				end
+				dap.listeners.before.launch.dapui_config = function()
+					dapui.open()
+				end
+				dap.listeners.before.event_terminated.dapui_config = function()
+					dapui.close()
+				end
+				dap.listeners.before.event_exited.dapui_config = function()
+					dapui.close()
+				end
 
-				adapters.netcoredbgattach = {
-					type = "executable",
-					command = exe,
-					args = { "--interpreter=vscode", "--attach" },
-				}
+				vim.keymap.set("n", "q", function()
+					dap.close()
+					dapui.close()
+				end, {})
 
-				configurations.cs = {
-					{
-						type = "netcoredbg",
-						name = "launch dll - netcoredbg",
-						request = "launch",
-						program = function()
-							-- Select the DLL file to debug
-							local co = coroutine.running()
-							local selected_file = nil
+				local function file_exists(path)
+					local stat = vim.loop.fs_stat(path)
+					return stat and stat.type == "file"
+				end
 
-							require("fzf-lua").files({
-								prompt = "Select DLL> ",
-								-- rg --no-ignore --hidden --files -g '*.dll' -g '!**/node_modules/*' -g '!**/.git/*'
-								cmd = "fd --type f --hidden --no-ignore -e dll --exclude node_modules --exclude .git",
-								actions = {
-									["default"] = function(selected)
-										selected_file = selected[1]
-										coroutine.resume(co)
-									end,
-								},
-							})
+				local debug_dll = nil
 
-							coroutine.yield()
-							return selected_file
-						end,
-					},
-					{
-						type = "netcoredbgattach",
-						name = "attach - netcoredbg",
-						request = "attach",
-						justMyCode = false,
-						program = require("dap.utils").pick_process,
-					},
-				}
+				local function ensure_dll()
+					if debug_dll ~= nil then
+						return debug_dll
+					end
+					local dll = dotnet.get_debug_dll()
+					debug_dll = dll
+					return dll
+				end
+
+				for _, value in ipairs({ "cs", "fsharp" }) do
+					dap.configurations[value] = {
+						{
+							type = "coreclr",
+							name = "Program",
+							request = "launch",
+							env = function()
+								local dll = ensure_dll()
+								local vars =
+									dotnet.get_environment_variables(dll.project_name, dll.absolute_project_path)
+								return vars or nil
+							end,
+							program = function()
+								local dll = ensure_dll()
+								local co = coroutine.running()
+								rebuild_project(co, dll.project_path)
+								if not file_exists(dll.target_path) then
+									error("Project has not been built, path: " .. dll.target_path)
+								end
+								return dll.target_path
+							end,
+							cwd = function()
+								local dll = ensure_dll()
+								return dll.absolute_project_path
+							end,
+						},
+					}
+
+					dap.listeners.before["event_terminated"]["easy-dotnet"] = function()
+						debug_dll = nil
+					end
+
+					dap.adapters.coreclr = {
+						type = "executable",
+						command = "netcoredbg",
+						args = { "--interpreter=vscode" },
+					}
+				end
+				-- adapters.netcoredbg = {
+				-- 	type = "executable",
+				-- 	command = exe,
+				-- 	args = { "--interpreter=vscode" },
+				-- }
+				--
+				-- adapters.netcoredbgattach = {
+				-- 	type = "executable",
+				-- 	command = exe,
+				-- 	args = { "--interpreter=vscode", "--attach" },
+				-- }
+				--
+				-- configurations.cs = {
+				-- 	{
+				-- 		type = "netcoredbg",
+				-- 		name = "launch dll - netcoredbg",
+				-- 		request = "launch",
+				-- 		program = function()
+				-- 			-- Select the DLL file to debug
+				-- 			local co = coroutine.running()
+				-- 			local selected_file = nil
+				--
+				-- 			require("fzf-lua").files({
+				-- 				prompt = "Select DLL> ",
+				-- 				-- rg --no-ignore --hidden --files -g '*.dll' -g '!**/node_modules/*' -g '!**/.git/*'
+				-- 				cmd = "fd --type f --hidden --no-ignore -e dll --exclude node_modules --exclude .git",
+				-- 				actions = {
+				-- 					["default"] = function(selected)
+				-- 						selected_file = selected[1]
+				-- 						coroutine.resume(co)
+				-- 					end,
+				-- 				},
+				-- 			})
+				--
+				-- 			coroutine.yield()
+				-- 			return selected_file
+				-- 		end,
+				-- 	},
+				-- 	{
+				-- 		type = "netcoredbgattach",
+				-- 		name = "attach - netcoredbg",
+				-- 		request = "attach",
+				-- 		justMyCode = false,
+				-- 		program = require("dap.utils").pick_process,
+				-- 	},
+				-- }
 			end
 
 			--
