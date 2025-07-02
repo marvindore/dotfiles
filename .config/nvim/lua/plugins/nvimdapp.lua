@@ -453,6 +453,42 @@ return {
 
 			-- require('dap').set_log_level('INFO')
 			--		dap.defaults.fallback.terminal_win_cmd = "80vsplit new"
+
+			-- Rust
+
+			local extension_path = vim.g.mason_root .. "/packages/codelldb/extension/"
+			local codelldb_path = extension_path .. "adapter/codelldb"
+			local liblldb_path = extension_path .. "lldb/lib/liblldb.dylib"
+			--local cfg = require("rustaceanvim.config")
+
+			adapters.codelldb = {
+				type = "server",
+				host = "127.0.0.1",
+				port = 13000,
+			}
+
+--			adapters.rustaceanvim = cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
+			configurations.rust = {
+				{
+					type = "codelldb",
+					request = "launch",
+					program = function()
+						return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
+					end,
+					cwd = "${workspaceFolder}",
+					terminal = "integrated",
+					sourceLanguages = { "rust" },
+				},
+				-- {
+				-- 	type = "rustaceanvim",
+				-- 	name = "rustaceanvim",
+				-- 	request = "launch",
+				-- 	cwd = "${workspaceFolder}",
+				-- 	terminal = "integrated",
+				-- 	sourceLanguages = { "rust" },
+				-- },
+			}
+
 		end,
 		keys = {
 			{

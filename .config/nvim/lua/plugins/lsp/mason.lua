@@ -108,13 +108,22 @@ return {
 					"java-debug-adapter",
 					"java-test",
 					"jdtls",
-					"ktlint",
-					"kotlin-debug-adapter",
 				}
 				for _, value in ipairs(java_addons) do
 					table.insert(ensure_installed, value)
 				end
 			end
+
+			if vim.g.enableKotlin then
+			  local kotlin_addons = {
+					"ktlint",
+					"kotlin-debug-adapter",
+					"kotlin-lsp"
+			  }
+			  for _,value in ipairs(kotlin_addons) do
+			    table.insert(ensure_installed, value)
+        end
+      end
 
 			if vim.g.enableJavascript then
 				local javascript_addons = {
@@ -140,6 +149,17 @@ return {
 					table.insert(ensure_installed, value)
 				end
 			end
+
+			if vim.g.enableRust then
+        local rust_addons = {
+          "rust_analyzer",
+          "codelldb"
+        }
+
+        for _, value in ipairs(rust_addons) do
+          table.insert(ensure_installed, value)
+        end
+      end
 
 			require("mason-tool-installer").setup({
 				ensure_installed = ensure_installed,

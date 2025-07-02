@@ -117,38 +117,14 @@ map("i", t("<C-a>"), "<C-o>0", "")
 map("n", "<C-left>", "10zh", "")
 map("n", "<C-right>", "10zl", "")
 
-
--- Curl
+-- Kulala
 wk.add({
-	{ "<LocalLeader>c", group = "Curl" },
+  { "<leader>R", group = "Kulala"}
 })
-local curl = require("curl")
-curl.setup({})
-
-vim.keymap.set("n", "<LocalLeader>cc", function()
-    curl.open_curl_tab()
-end, { desc = "Open a curl tab scoped to the current working directory" })
-
-vim.keymap.set("n", "<LocalLeader>co", function()
-    curl.open_global_tab()
-end, { desc = "Open a curl tab with gloabl scope" })
-
--- These commands will prompt you for a name for your collection
-vim.keymap.set("n", "<LocalLeader>csc", function()
-      curl.create_scoped_collection()
-end, { desc = "Create or open a collection with a name from user input" })
-
-vim.keymap.set("n", "<LocalLeader>cgc", function()
-      curl.create_global_collection()
-end, { desc = "Create or open a global collection with a name from user input" })
-
-vim.keymap.set("n", "<LocalLeader>fsc", function()
-      curl.pick_scoped_collection()
-end, { desc = "Choose a scoped collection and open it" })
-
-vim.keymap.set("n", "<LocalLeader>fgc", function()
-      curl.pick_global_collection()
-end, { desc = "Choose a global collection and open it" })
+local lala = require('kulala')
+map({"n", "v"}, "<leader>Rs", function() lala.run() end, "Send Message")
+map({"n", "v"}, "<leader>Ra", function() lala.run_all() end, "Send Message")
+map({"n", "v"}, "<leader>Rr", function() lala.replay() end, "Send Message")
 
 function _G.set_terminal_keymaps()
 	local opts = { buffer = 0 }
