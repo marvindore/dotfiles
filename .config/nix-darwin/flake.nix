@@ -18,6 +18,7 @@
     configuration = { pkgs, config, ... }: {
       # List packages installed in system profile. To search by name, run:
       # $ nix-env -qaP | grep wget
+      system.primaryUser = "marvindore";
       nixpkgs.config.allowUnfree = true;
       environment.systemPackages =
         [ 
@@ -26,6 +27,7 @@
             pkgs.bat
             pkgs.difftastic
             pkgs.fzf
+            pkgs.gcc
             pkgs.git
             pkgs.gnupg
             pkgs.httpie
@@ -33,6 +35,7 @@
             pkgs.mkalias
             inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
             pkgs.ripgrep
+            pkgs.rustup
             pkgs.stow
             pkgs.tealdeer
             pkgs.zoxide
@@ -94,6 +97,7 @@
         dock.persistent-apps = [];
         loginwindow.GuestEnabled = false;
         NSGlobalDomain.KeyRepeat = 2;
+        WindowManager.EnableStandardClickToShowDesktop = false;
       };
 
       # make nix-darwin manage the nix-daemon
