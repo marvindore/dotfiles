@@ -240,6 +240,10 @@ if.app-id = 'com.microsoft.rdc.macos'
 run = "move-node-to-workspace V"
 
 [[on-window-detected]]
+if.app-id = 'com.parallels.desktop.console'
+run = "move-node-to-workspace V"
+
+[[on-window-detected]]
 if.app-id = 'com.jetbrains.datagrip'
 run = "move-node-to-workspace D"
 
@@ -258,3 +262,15 @@ run = 'move-node-to-workspace M'
 [[on-window-detected]]
 if.app-id = 'com.electron.logseq'
 run = 'move-node-to-workspace N'
+
+[[on-window-detected]]
+if.app-id = 'com.jetbrains.pycharm'
+run = 'move-node-to-workspace I'
+
+[[on-window-detected]]
+if.app-id = 'com.jetbrains.rider'
+run = 'move-node-to-workspace I'
+
+[[on-window-detected]]
+if.app-id = 'com.jetbrains.intellij'
+run = 'move-node-to-workspace I'

@@ -13,6 +13,7 @@ export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
 # Macos Paths
 export PATH="/opt/homebrew/bin:$PATH"
+export PATH="/opt/homebrew/sbin:$PATH"
 
 # Add .NET Core SDK tools
 export PATH="$PATH:$HOME/.dotnet/tools"

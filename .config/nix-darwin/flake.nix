@@ -28,6 +28,7 @@
             pkgs.difftastic
             pkgs.fzf
             pkgs.gcc
+            pkgs.gh
             pkgs.git
             pkgs.gnupg
             pkgs.httpie

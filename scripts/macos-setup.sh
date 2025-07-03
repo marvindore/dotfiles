@@ -35,6 +35,7 @@ install_brew_packages() {
     "tree-sitter"
     "bat"
     "fzf"
+    "gh"
     "git"
     "gnupg"
     "httpie"
