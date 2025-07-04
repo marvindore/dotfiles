@@ -119,7 +119,9 @@ export PATH="$PATH:/home/marvin/.local/share/lvim/distant.nvim/bin"
 # dotnet
 #export DOTNET_ROOT="$HOME/.dotnet"
 #export PATH="$PATH:/home/marvin/.dotnet"
-. ~/.asdf/plugins/dotnet/set-dotnet-env.zsh
+if [[ -f "~/.asdf/plugins/dotnet/set-dotnet-env.zsh" ]]; then
+    . ~/.asdf/plugins/dotnet/set-dotnet-env.zsh
+fi
 
 # pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"

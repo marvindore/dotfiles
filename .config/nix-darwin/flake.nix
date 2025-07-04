@@ -24,8 +24,12 @@
         [ 
             pkgs.aerospace
             pkgs.asdf-vm
+            pkgs.colima
             pkgs.bat
+            pkgs.delta
             pkgs.difftastic
+            pkgs.docker
+                        #pkgs.docker-compose
             pkgs.fzf
             pkgs.gcc
             pkgs.gh
@@ -52,7 +56,6 @@
         "tree-sitter"
         ];
         casks = [
-            "docker"
             "hammerspoon"
             "google-chrome"
             "raycast"
@@ -68,6 +71,7 @@
         onActivation.autoUpdate = true;
         onActivation.upgrade = true;
       };
+
       fonts.packages = [ 
         pkgs.nerd-fonts.jetbrains-mono
       ];

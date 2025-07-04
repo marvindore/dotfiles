@@ -37,6 +37,7 @@ install_brew_packages() {
     "fzf"
     "gh"
     "git"
+    "git-delta"
     "gnupg"
     "httpie"
     "logseq"
