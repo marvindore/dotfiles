@@ -34,6 +34,7 @@ install_brew_packages() {
     "difftastic"
     "tree-sitter"
     "bat"
+    "bitwarden"
     "fzf"
     "gh"
     "git"

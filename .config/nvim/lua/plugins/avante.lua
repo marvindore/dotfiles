@@ -6,7 +6,7 @@ return {
   enabled = vim.g.enableAvante,
   opts = {
     -- add any opts here
-       provider = "copilot", -- openai | ollama | copilot
+       provider = "gemini", -- openai | ollama | copilot
        vendors = {
          ollama = {
            api_key_name = "",

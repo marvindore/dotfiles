@@ -52,6 +52,7 @@
       homebrew = {
         enable = true;
         brews = [
+        "bitwarden"
         "mas"
         "tree-sitter"
         ];
