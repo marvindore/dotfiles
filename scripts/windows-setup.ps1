@@ -40,7 +40,6 @@ foreach ($link in $symlinks) {
 
 # List of apps to check and install
 $scoopApps = @(
-    'git',
     'lazygit'
     'logseq',
     'wezterm',
@@ -56,26 +55,32 @@ $scoopApps = @(
 )
 
 $wingetApps = @(
+    'Git.Git',
     'GitHub.cli',
     'Postman.Postman',
     'JetBrains.IntelliJIDEA.Ultimate',
     'JetBrains.Rider',
     'JetBrains.DataGrip',
+    'Microsoft.PowerShell',
     'Docker.DockerDesktop'
 )
-
-# Check and install each Scoop app
-foreach ($app in $scoopApps) {
-    if (-not (scoop list $app -q)) {
-        scoop install $app
-    }
-}
 
 # Check and install each Winget app
 foreach ($app in $wingetApps) {
     $installed = winget list --id $app -q
     if (-not $installed) {
         winget install --id $app --silent
+    }
+}
+
+scoop bucket add extras
+scoop bucket add main
+scoop bucket add versions
+
+# Check and install each Scoop app
+foreach ($app in $scoopApps) {
+    if (-not (scoop list $app -q)) {
+        scoop install $app
     }
 }
 
