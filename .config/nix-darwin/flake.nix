@@ -23,6 +23,7 @@
       environment.systemPackages =
         [ 
             pkgs.aerospace
+            pkgs.alacritty
             pkgs.asdf-vm
             pkgs.colima
             pkgs.bat
@@ -30,19 +31,25 @@
             pkgs.difftastic
             pkgs.docker
                         #pkgs.docker-compose
+            pkgs.fish
             pkgs.fzf
             pkgs.gcc
             pkgs.gh
             pkgs.git
             pkgs.gnupg
             pkgs.httpie
+            pkgs.ilspycmd
+            pkgs.k9s
             pkgs.logseq
             pkgs.mkalias
             inputs.neovim-nightly-overlay.packages.${pkgs.system}.default
+            pkgs.nushell
             pkgs.ripgrep
             pkgs.rustup
+            pkgs.starship
             pkgs.stow
             pkgs.tealdeer
+            pkgs.zellij
             pkgs.zoxide
             pkgs.zsh
         ];
@@ -63,7 +70,6 @@
             "scroll-reverser"
             "scoot"
             "slack"
-            "wezterm@nightly"
         ];
         masApps = {
 

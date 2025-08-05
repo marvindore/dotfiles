@@ -6,7 +6,7 @@ return {
   enabled = vim.g.enableAvante,
   opts = {
     -- add any opts here
-       provider = "gemini", -- openai | ollama | copilot
+       provider = "copilot", -- openai | ollama | copilot
        vendors = {
          ollama = {
            api_key_name = "",
@@ -32,6 +32,9 @@ return {
            end,
          },
        },
+    windows = {
+      width = 35
+    }
   },
   -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
   build = vim.g.isWindowsOs and "pwsh -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" or "make",

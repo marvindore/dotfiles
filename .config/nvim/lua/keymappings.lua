@@ -247,10 +247,13 @@ map("n", "<leader>D", diffview_toggle, "DiffView Toggle")
 
 -- git
 local gitsigns = require('gitsigns')
-map("n", "<leader>gs", ":lua require('neogit').open({ kind = 'vsplit'})<cr>","Neogit Open")
 map("n", "<leader>gg", ":lua require('neogit').open({ kind = 'floating'})<cr>","Neogit Open")
-map("n", "<leader>ghn", ":lua require('gitsigns').nav_hunk('next')<cr>","Git Next Hunk")
-map("n", "<leader>ghp", ":lua require('gitsigns').nav_hunk('prev')<cr>","Git Previous Hunk")
+map("n", "<leader>gs", ":lua require('gitsigns').show_commit()<cr>","Show commit")
+map("n", "<leader>]", ":lua require('gitsigns').next_hunk()<cr>","Git Next Hunk")
+map("n", "<leader>[", ":lua require('gitsigns').prev_hunk()<cr>","Prev Next Hunk")
+map("n", "<leader>gb", ":lua require('gitsigns').blame_line()<cr>", "Git Blame" )
+map("n", "<leader>gB", ":lua require('gitsigns').blame()<cr>", "Git Blame File" )
+map("n", "<leader>gp", ":lua require('gitsigns').preview_hunk_inline()<cr>","Preview Hunk")
 map("n", "<leader>ghs", ":lua require('gitsigns').stage_hunk<cr>","Git Stage Hunk")
 map("n", "<leader>ghr", ":lua require('gitsigns').reset_hunk<cr>","Git Reset Hunk")
 map('v', '<leader>ghs', function()
@@ -260,7 +263,6 @@ map('v', '<leader>ghr', function()
       gitsigns.reset_hunk({ vim.fn.line('.'), vim.fn.line('v') })
     end)
 
-map("n", "<LocalLeader>gb", ":GitSigns blame_line<cr>", "Git Blame" )
 map("n", "<LocalLeader>gB", ":GitSigns blame<cr>", "Git Blame" )
 
 -- Merge conflicts

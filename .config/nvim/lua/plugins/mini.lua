@@ -12,19 +12,33 @@ return {
 			require("mini.comment").setup()
 			require("mini.bracketed").setup()
 			require("mini.surround").setup({
-			  mappings = {
-			    add = "Sa",
-			    delete = "Sd",
-			    find = "Sf",
-			    find_left = "SF",
-			    highlight = "Sh",
-			    replace = "Sr",
-			    update_n_lines = "Sn"
-			  }
+				mappings = {
+					add = "Sa",
+					delete = "Sd",
+					find = "Sf",
+					find_left = "SF",
+					highlight = "Sh",
+					replace = "Sr",
+					update_n_lines = "Sn",
+				},
 			})
 			require("mini.pairs").setup()
 			require("mini.indentscope").setup()
-			require("mini.move").setup()
+			require("mini.move").setup({
+				mappings = {
+					-- Move visual selection in Visual mode. Defaults are Alt (Meta) + hjkl.
+					left = "<leader><left>",
+					right = "<leader><right>",
+					down = "<leader><right>",
+					up = "<leader><up>",
+
+					-- Move current line in Normal mode
+					line_left = "",
+					line_right = "",
+					line_down = "",
+					line_up = "",
+				},
+			})
 			require("mini.splitjoin").setup()
 
 			local hipatterns = require("mini.hipatterns")
@@ -40,7 +54,6 @@ return {
 					hex_color = hipatterns.gen_highlighter.hex_color(),
 				},
 			})
-
 		end,
 	},
 }

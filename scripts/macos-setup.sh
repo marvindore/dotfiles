@@ -1,121 +1,139 @@
 #!/bin/bash
 
-# Script to configure macOS environment with Homebrew packages and clean the Dock.
-# This script removes all items from the Dock and installs specified Homebrew packages.
-# https://www.shell-tips.com/mac/defaults/#gsc.tab=0
-
-set -e # Exit on any errors.
-set -u # Treat unset variables as an error.
+set -euo pipefail
 
 # ------------------------------------------------------------------------------
-# Function to remove all items from the Dock.
+# Define packages and casks
+# ------------------------------------------------------------------------------
+
+packages=(
+  "asdf" "difftastic" "tree-sitter" "bat" "bitwarden"
+  "fish" "fzf" "gh" "git" "git-delta"
+  "gnupg" "httpie" "k9s" "logseq" "nushell"
+  "ripgrep" "starship" "stow" "tealdeer" "zellij" "zoxide"
+)
+
+casks=(
+  "alacritty" "azure-data-studio" "datagrip" "docker" "hammerspoon"
+  "ilspy" "intellij-idea" "font-jetbrains-mono" "google-chrome"
+  "raycast" "rider" "scoot" "slack"
+)
+
+# ------------------------------------------------------------------------------
+# Configure personal macOS settings
 # ------------------------------------------------------------------------------
 
 configure_personal_settings() {
-  echo "Removing all items from the Dock..."
-  defaults write com.apple.dock persistent-apps -array
-  killall Dock
-  echo "Disabling click wallpaper to shoow desktop..."
-  defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
-  defaults write com.apple.dock appswitcher-all-displays -bool true # Show app switcher on all displays
-  Killall Dock
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "Configuring macOS personal settings..."
+    echo "Removing all items from the Dock..."
+    defaults write com.apple.dock persistent-apps -array
+    killall Dock || true
+
+    echo "Disabling click wallpaper to show desktop..."
+    defaults write com.apple.WindowManager EnableStandardClickToShowDesktop -bool false
+    defaults write com.apple.dock appswitcher-all-displays -bool true
+    killall Dock || true
+  else
+    echo "Skipping macOS settings — not running on macOS."
+  fi
 }
 
 # ------------------------------------------------------------------------------
-# Function to install Homebrew packages.
+# Print numbered list
 # ------------------------------------------------------------------------------
 
-install_brew_packages() {
-  echo "Installing Homebrew packages..."
-  
-  # List of packages to install
-  local packages=(
-    "asdf"
-    "difftastic"
-    "tree-sitter"
-    "bat"
-    "bitwarden"
-    "fzf"
-    "gh"
-    "git"
-    "git-delta"
-    "gnupg"
-    "httpie"
-    "logseq"
-    "ripgrep"
-    "stow"
-    "tealdeer"
-    "zoxide"
-  )
-
-  local casks=(
-    "azure-data-studio"
-    "datagrip"
-    "docker"
-    "hammerspoon"
-    "intellij-idea"
-    "font-jetbrains-mono"
-    "google-chrome"
-    "raycast"
-    "rider"
-    "scoot"
-    "slack"
-    "wezterm@nightly"
-  )
-  
-  # Iterate through each package and install it if not already installed.
+print_numbered_list() {
+  echo "0. Configure macOS personal settings"
+  echo "Available packages:"
+  local i=1
   for pkg in "${packages[@]}"; do
-    if ! command -v "$pkg" &>/dev/null && ! brew list "$pkg" &>/dev/null; then
-      echo "Installing $pkg..."
-      brew install "$pkg"
-    else
-      echo "$pkg is already installed, skipping..."
-    fi
+    printf "%2d. %s\n" "$i" "$pkg"
+    i=$((i + 1))
   done
 
-  # Iterate through casks and install it if not already installed.
-  for csk in "${casks[@]}"; do
-    if ! command -v "$csk" &>/dev/null && ! brew list "$csk" &>/dev/null; then
-      echo "Installing $csk..."
-      brew install --cask "$csk"
+  echo -e "\nAvailable casks:"
+  for cask in "${casks[@]}"; do
+    printf "%2d. %s\n" "$i" "$cask"
+    i=$((i + 1))
+  done
+}
+
+# ------------------------------------------------------------------------------
+# Parse input like 1,3,5-7 into array of indices
+# ------------------------------------------------------------------------------
+
+selected=()
+
+parse_selection() {
+  local input="$1"
+  local total=$(( ${#packages[@]} + ${#casks[@]} ))
+
+  if [ "$input" = "all" ]; then
+    for ((i=0; i<=total; i++)); do selected+=("$i"); done
+    return
+  fi
+
+  IFS=',' read -r -a parts <<< "$input"
+  for part in "${parts[@]}"; do
+    if [[ "$part" =~ ^[0-9]+$ ]]; then
+      selected+=("$part")
+    elif [[ "$part" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+      start=${BASH_REMATCH[1]}
+      end=${BASH_REMATCH[2]}
+      for ((i=start; i<=end; i++)); do selected+=("$i"); done
     else
-      echo "$csk is already installed, skipping..."
+      echo "Invalid input: $part"
+      exit 1
     fi
   done
 }
 
 # ------------------------------------------------------------------------------
-# Function to install Neovim nightly (special handling based on your input).
+# Install selected packages and casks
 # ------------------------------------------------------------------------------
 
-install_neovim_nightly() {
-  echo "Installing Neovim nightly..."
+install_selected_items() {
+  local total=${#packages[@]}
 
-  # Install Neovim nightly from a specific overlay (or package source)
-  # You may need to adjust this to your exact package source if you use Nix or a custom tap.
-  brew install neovim --HEAD
+  for index in "${selected[@]}"; do
+    if (( index == 0 )); then
+      configure_personal_settings
+    elif (( index >= 1 && index <= total )); then
+      pkg="${packages[index-1]}"
+      if ! brew list "$pkg" &>/dev/null; then
+        echo "Installing $pkg..."
+        brew install "$pkg"
+      else
+        echo "$pkg is already installed, skipping..."
+      fi
+    elif (( index > total && index <= total + ${#casks[@]} )); then
+      cask="${casks[index - total - 1]}"
+      if ! brew list --cask "$cask" &>/dev/null; then
+        echo "Installing $cask..."
+        brew install --cask "$cask"
+      else
+        echo "$cask is already installed, skipping..."
+      fi
+    else
+      echo "Invalid selection: $index"
+    fi
+  done
 }
 
 # ------------------------------------------------------------------------------
-# Main configuration function.
+# Main
 # ------------------------------------------------------------------------------
 
 main() {
-  # Step 1: Remove all items from the Dock.
-  configure_personal_settings
-  
-  # Step 2: Install necessary packages using Homebrew.
-  install_brew_packages
-  
-  # Step 3: Install Neovim nightly (if needed).
-  install_neovim_nightly
-  
-  echo "macOS configuration is complete!"
+  print_numbered_list
+  echo -e "\nEnter numbers to install (e.g. 0,1,3,5-7 or 'all'):"
+  read -r selection
+
+  parse_selection "$selection"
+  install_selected_items
+
+  echo -e "\n✅ Setup complete!"
 }
 
-# ------------------------------------------------------------------------------
-# Run the main function.
-# ------------------------------------------------------------------------------
-
 main
-

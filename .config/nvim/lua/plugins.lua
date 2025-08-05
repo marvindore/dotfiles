@@ -54,15 +54,15 @@ return {
 				},
 				custom_highlights = function(colors)
 					return {
-						DiffAdd = { bg = "#42a15e" },
+						DiffAdd = { bg = "#236724" },
 						DiffChange = { fg = "#d3d3d3" },
 
 						-- Changed text inside of a line (DiffChange)
-						DiffText = { fg = "#000000", bg = "#FFA600", style = { "bold" } },
+						DiffText = { fg = "#000000", bg = "#C27601", style = { "bold" } },
 
 						-- DiffDelete uses a conceal character that spans the entire line. Highlight
 						-- that character instead of the background behind it.
-						DiffDelete = { fg = "#F28FAD" },
+						DiffDelete = { bg = "#9A0202" },
 						LspReferenceRead = { bg = "#5f5840" },
 						LspReferenceText = { bg = "#504945" },
 						LspReferenceWrite = { bg = "#6c473e" },

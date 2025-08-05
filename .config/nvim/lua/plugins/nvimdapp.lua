@@ -358,33 +358,30 @@ return {
 
 			for _, language in ipairs(js_based_languages) do
 				configurations[language] = {
+					-- To debug a nodejs process you need to add --inspect when you run the process
+					--
+				  -- Debug single nodeje file with npm
 					{
 						type = "pwa-node",
 						request = "launch",
-						name = "Launch file",
+						name = "Launch file npm",
 						program = "$file",
 						cwd = "${workspaceFolder}",
+						runtimeExecutable = "npm",
 						sourceMaps = true,
-					}, -- To debug a nodejs process you need to add --inspect when you run the process
+					}, 
+				  -- Debug single nodeje file with pnpm
 					{ -- auto attach to node process running with --inspect
 						type = "pwa-node",
 						request = "launch",
-						name = "PNPM",
+						name = "Launch file pnpm",
 						cwd = "${workspaceFolder}",
 						runtimeExecutable = "pnpm",
 						runtimeArgs = {
 							"debug",
 						},
 					},
-					{
-						type = "pwa-node",
-						request = "attach",
-						name = "Attach to 3000",
-						address = "localhost",
-						port = 3000,
-						cwd = "${workspaceFolder}",
-						restart = true,
-					},
+					-- Debug node js processes that were ran with the --inspect flag
 					{
 						type = "pwa-node",
 						request = "attach",
@@ -392,6 +389,25 @@ return {
 						processId = require("dap.utils").pick_process,
 						cwd = "${workspaceFolder}",
 						sourceMaps = true,
+					},
+					{
+						type = "pwa-node",
+						request = "attach",
+						name = "Attach to localhost:<port>",
+						address = "localhost",
+						port = function()
+							local co = coroutine.running()
+							return coroutine.create(function()
+								vim.ui.input({ prompt = "Enter port to attach to: ", default = "9229" }, function(input)
+									coroutine.resume(co, tonumber(input))
+								end)
+							end)
+						end,
+						cwd = "${workspaceFolder}",
+						restart = true,
+						sourceMaps = true,
+						protocol = "inspector",
+						skipFiles = { "<node_internals>/**/*.js" },
 					},
 					-- Debug web application client side
 					{
@@ -430,7 +446,7 @@ return {
 
 			adapters["pwa-node"] = {
 				type = "server",
-				host = "::1",
+				host = "localhost",
 				port = "${port}",
 				executable = {
 					command = jsexe,
@@ -467,7 +483,7 @@ return {
 				port = 13000,
 			}
 
---			adapters.rustaceanvim = cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
+			--			adapters.rustaceanvim = cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
 			configurations.rust = {
 				{
 					type = "codelldb",
@@ -477,6 +493,8 @@ return {
 					end,
 					cwd = "${workspaceFolder}",
 					terminal = "integrated",
+					stopOnEntry = false,
+					args = {},
 					sourceLanguages = { "rust" },
 				},
 				-- {
@@ -487,8 +505,33 @@ return {
 				-- 	terminal = "integrated",
 				-- 	sourceLanguages = { "rust" },
 				-- },
-			}
+				{
+					name = "Debug Rust Executable (Picker)",
+					type = "codelldb",
+					request = "launch",
+					program = function()
+						local co = coroutine.running()
+						return coroutine.create(function()
+							local debug_dir = vim.fn.getcwd() .. "/target/debug"
+							local handle = io.popen("find " .. debug_dir .. " -maxdepth 1 -type f -executable")
+							local result = handle:read("*a")
+							handle:close()
 
+							local files = {}
+							for file in result:gmatch("[^\r\n]+") do
+								table.insert(files, file)
+							end
+
+							vim.ui.select(files, { prompt = "Select Rust executable to debug:" }, function(choice)
+								coroutine.resume(co, choice)
+							end)
+						end)
+					end,
+					cwd = "${workspaceFolder}",
+					stopOnEntry = false,
+					args = {},
+				},
+			}
 		end,
 		keys = {
 			{
@@ -518,7 +561,7 @@ return {
 					end
 					require("dap").continue()
 				end,
-				desc = "Run with Args",
+				desc = "Run with Args like vscode json",
 			},
 		},
 	},

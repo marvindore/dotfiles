@@ -22,10 +22,9 @@ set ideajoin
 " Multiple cursors support
 set multiple-cursors
 nmap <C-down> :action EditorCloneCaretBelow<cr>
-vmap n :action SelectNextOccurrence<cr>
-vmap N :action UnselectPreviousOccurrence<cr>
+vmap <localleader>n :action SelectNextOccurrence<cr>
+vmap <localleader>N :action UnselectPreviousOccurrence<cr>
 
-vmap <C-d> :action SelectNextOccurrence<cr>
 " These settings are from - https://github.com/Valloric/dotfiles/blob/master/intellij/ideavimrc
 
 " Ace jump
@@ -140,12 +139,9 @@ nmap <leader>t :action GotoTest<cr>
 nmap <leader>cc :action JumpToLastChange<cr>
 
 " Useful Git actions
+nmap <leader>gb :action Vcs.ShowHistoryForBlock<cr>
 nmap <leader>gB :action Annotate<cr>
-nmap <leader>gb :action Git.Branches<cr>
-nmap <leader>gp :action Git.Pull<cr>
-nmap <leader>gu :action Git.Push<cr>
-nmap <leader>gr :action Git.Rebase<cr>
-nmap <leader>gm :action Git.Merge<cr>
+nmap <leader>gp :action Compare.SameVersion<cr>
 
 " nmap <leader>a :action Switcher<cr>
 nmap ,a :action GotoAction<cr>
@@ -285,3 +281,8 @@ nnoremap <leader><leader> <C-S-6>
 " Increase or decrease font size
 nnoremap <C-=> :action EditorIncreaseFontSize<cr>
 nnoremap <C--> :action EditorDecreaseFontSize<cr>
+
+" Navigate changes
+nmap <leader>] :action VcsShowNextChangeMarker
+nmap <leader>[ :action VcsShowPrevChangeMarker
+

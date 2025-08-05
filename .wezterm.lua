@@ -24,6 +24,9 @@ end
 -- This table will hold the configuration.
 local config = {}
 
+config.max_fps = 120
+
+
 -- In newer versions of wezterm, use the config_builder which will
 -- help provide clearer error messages
 if wezterm.config_builder then

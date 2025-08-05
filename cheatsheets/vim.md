@@ -54,3 +54,32 @@ fzf-lua - call require('fzf-lua').register_ui_select()
 telescope - setup telescope-ui-select.nvim plugin
 snacks.picker - enable ui_select config
 mini.pick - set vim.ui.select = require('mini.pick').ui_select
+
+Surround:
+
+add = "Sa",
+delete = "Sd",
+find = "Sf",
+find_left = "SF",
+highlight = "Sh",
+replace = "Sr",
+update_n_lines = "Sn"
+
+
+#### Multicursor
+<LocalLeader>n : match next
+<LocalLeader>N : match prev
+<LocalLeader>s : skip next
+<LocalLeader>S : skip prev
+<up> : select line up
+<down> : select line down
+<leader><up> : skip line up
+<leader><down> : skip line down
+<left> : select cursor prev
+<right> : select cursor next
+
+### Selections
+<leader><left>
+<leader><right>
+<leader><up>
+<leader><down>
