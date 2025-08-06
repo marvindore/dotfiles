@@ -4,6 +4,7 @@
 
 [core]
     pager = delta
+	longpaths = true
 
 [interactive]
     diffFilter = delta --color-only
@@ -54,6 +55,3 @@
 
 [includeIf "gitdir:C:/work/"]
     path = .gitconfig-work
-
-[includeIf "gitdir:C:/work/"]
-    path = .gitconfig-windows
