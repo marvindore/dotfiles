@@ -4,6 +4,7 @@
 
 [core]
     pager = delta
+	longpaths = true
 
 [interactive]
     diffFilter = delta --color-only
@@ -47,13 +48,3 @@
 [difftool "difftastic"]
     prompt = false
 	cmd = difft "$LOCAL" "$REMOTE"
-
-# User different gitconfig based on directory
-[includeIf "gitdir:~/work/"]
-    path = .gitconfig-work
-
-[includeIf "gitdir:C:/work/"]
-    path = .gitconfig-work
-
-[includeIf "gitdir:C:/work/"]
-    path = .gitconfig-windows

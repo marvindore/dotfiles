@@ -1,8 +1,6 @@
 <#
 .SYNOPSIS
-Setup new windows machine dotfiles and applications
-
-
+Setup new Windows machine dotfiles and applications
 #>
 
 # Ensure Scoop is installed
@@ -15,22 +13,14 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     }
 }
 
-
 # Ensure Winget is installed
 if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
     Write-Host "❌ Winget is not installed. Please install it manually from the Microsoft Store."
     exit
 }
 
-# Define items
-$dotfiles = @(
-    @{label="Symlink nvim config"; source="$HOME\dotfiles\.config\nvim"; target="$HOME\AppData\Local\nvim"},
-    @{label="Symlink wezterm config"; source="$HOME\dotfiles\.wezterm.lua"; target="$HOME\.wezterm.lua"},
-    @{label="Symlink ideavimrc"; source="$HOME\dotfiles\.ideavimrc"; target="$HOME\.ideavimrc"},
-    @{label="Symlink gitconfig"; source="$HOME\dotfiles\.gitconfig"; target="$HOME\.gitconfig"},
-    @{label="Symlink gitconfig-windows"; source="$HOME\dotfiles\.gitconfig-windows"; target="$HOME\.gitconfig-windows"},
-    @{label="Symlink ssh config"; source="$HOME\dotfiles\.ssh\config-windows"; target="$HOME\.ssh\config"}
-)
+# Global dotfiles array (populated by Set-Dotfiles)
+$dotfiles = @()
 
 $scoopApps = @(
     'lazygit', 'logseq', 'mingw', 'nvm', 'difftastic',
@@ -38,13 +28,14 @@ $scoopApps = @(
 )
 
 $wingetApps = @(
-    'Alacritty.Alacritty', 'Git.Git', 'GitHub.cli', 'icsharpcode.ILSpy', 'Neovim.Neovim.Nightly'
+    'Alacritty.Alacritty', 'dandavison.delta', 'Git.Git', 'GitHub.cli', 'icsharpcode.ILSpy', 'Neovim.Neovim.Nightly',
     'Postman.Postman', 'JetBrains.IntelliJIDEA.Ultimate', 'JetBrains.Rider',
     'JetBrains.DataGrip', 'Microsoft.PowerShell', 'Docker.DockerDesktop'
 )
 
 function Show-Menu {
     Write-Host "`n0. Configure dotfile symlinks"
+    Write-Host "99. Remove all dotfile symlinks"
     $i = 1
     foreach ($app in $scoopApps) {
         Write-Host "$i. Scoop: $app"
@@ -80,8 +71,25 @@ function Parse-Selection($userInput) {
     return $selected
 }
 
+function Set-Dotfiles {
+    $workSetupResponse = Read-Host "Setting up dotfiles for work? (y/N)"
+    $settingUpForWork = $false
+    if ($workSetupResponse -match "^(Y|Yes)$") {
+        $settingUpForWork = $true
+    }
+
+    $global:dotfiles = @(
+        @{label="Symlink nvim config"; source="$HOME\dotfiles\.config\nvim"; target="$HOME\AppData\Local\nvim"},
+        @{label="Symlink wezterm config"; source="$HOME\dotfiles\.wezterm.lua"; target="$HOME\.wezterm.lua"},
+        @{label="Symlink ideavimrc"; source="$HOME\dotfiles\.ideavimrc"; target="$HOME\.ideavimrc"},
+        @{label="Symlink gitconfig"; source="$HOME\dotfiles\.gitconfig-windows"; target="$HOME\.gitconfig"},
+        @{label="Symlink ssh config"; source=($settingUpForWork ? "$HOME\dotfiles\.ssh\config-work-windows" : "$HOME\dotfiles\.ssh\config-windows"); target="$HOME\.ssh\config"}
+    )
+}
+
 function Configure-Dotfiles {
-    foreach ($link in $dotfiles) {
+    Set-Dotfiles
+    foreach ($link in $global:dotfiles) {
         $source = $link.source
         $target = $link.target
         $parent = Split-Path $target
@@ -91,7 +99,7 @@ function Configure-Dotfiles {
         }
 
         if (Test-Path $target) {
-            $response = Read-Host "Directory '$target' exists. Replace with symlink? (Y/N)"
+            $response = Read-Host "Target '$target' exists. Replace with symlink? (y/N)"
             if ($response -match "^(Y|Yes)$") {
                 Remove-Item -Recurse -Force $target
                 New-Item -ItemType SymbolicLink -Path $target -Target $source
@@ -105,6 +113,26 @@ function Configure-Dotfiles {
         }
     }
 }
+
+
+function Remove-DotfileSymlinks {
+    Set-Dotfiles
+    foreach ($link in $global:dotfiles) {
+        $target = $link.target
+        if (Test-Path $target) {
+            $item = Get-Item $target
+            if ($item.LinkType -eq 'SymbolicLink') {
+                Remove-Item -Force $target
+                Write-Host "🗑️ Removed symlink: $target"
+            } else {
+                Write-Host "⏭️ Skipped (not a symlink): $target"
+            }
+        } else {
+            Write-Host "⏭️ Skipped (doesn't exist): $target"
+        }
+    }
+}
+
 
 function Ensure-7zip {
     $installed = winget list --id "7zip.7zip" | Select-String "7zip.7zip"
@@ -131,6 +159,8 @@ function Install-Apps($selected) {
     foreach ($index in $selected) {
         if ($index -eq 0) {
             Configure-Dotfiles
+        } elseif ($index -eq 99) {
+            Remove-DotfileSymlinks
         } elseif ($index -ge 1 -and $index -le $totalScoop) {
             $app = $scoopApps[$index - 1]
             if (-not (scoop list | Select-String "^$app\s")) {

@@ -65,6 +65,7 @@
         ];
         casks = [
             "hammerspoon"
+            "jordanbaird-ice"
             "google-chrome"
             "raycast"
             "scroll-reverser"
