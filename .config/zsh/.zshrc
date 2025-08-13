@@ -8,7 +8,7 @@ source ~/.workrc
 # Path
 export PATH=/usr/local/sbin:$PATH
 export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
-export PATH="$HOME/.executables:$PATH"
+export PATH="$HOME/.apps:$PATH"
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
 # Macos Paths

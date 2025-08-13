@@ -28,7 +28,7 @@ $scoopApps = @(
 )
 
 $wingetApps = @(
-    'Alacritty.Alacritty', 'dandavison.delta', 'Git.Git', 'GitHub.cli', 'GnuPG.GnuPG', 'icsharpcode.ILSpy', 'Neovim.Neovim.Nightly',
+    'Alacritty.Alacritty', 'dandavison.delta', 'Git.Git', 'GitHub.cli', 'GnuPG.GnuPG', 'icsharpcode.ILSpy', 'jdx.mise', 'Neovim.Neovim.Nightly',
     'Postman.Postman', 'JetBrains.IntelliJIDEA.Ultimate', 'JetBrains.Rider',
     'JetBrains.DataGrip', 'Microsoft.PowerShell', 'Docker.DockerDesktop'
 )
