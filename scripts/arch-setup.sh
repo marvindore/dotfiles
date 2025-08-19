@@ -30,11 +30,16 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 
 packages=(
-  "hyprland"
   "alacritty"
+  "bat"
+  "difftastic"
   "firefox"
   "flatpak"
+  "git"
+  "git-delta"
+  "hyprland"
   "mise"
+  "tree-sitter"
   "zsh"
 )
 
