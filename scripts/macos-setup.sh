@@ -7,9 +7,9 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 
 packages=(
-  "asdf" "difftastic" "tree-sitter" "bat" "bitwarden"
+  "difftastic" "tree-sitter" "bat" "bitwarden"
   "fish" "fzf" "gh" "git" "git-delta"
-  "gnupg" "httpie" "k9s" "logseq" "nushell"
+  "gnupg" "httpie" "k9s" "logseq" "mise" "nushell"
   "ripgrep" "starship" "tealdeer" "zellij" "zoxide"
 )
 

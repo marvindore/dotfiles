@@ -43,3 +43,7 @@ git cherry-pick origin/feature-branch~3..origin/feature-branch
     # Show the content of a specific file at a specific commit
     git show <commit-hash>:path/to/file
 ```
+
+diff
+Use A B (two dots) when you want a direct comparison.
+Use A...B (three dots) when you want to see what B adds relative to the shared history with A
