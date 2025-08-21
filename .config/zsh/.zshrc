@@ -8,7 +8,7 @@ source ~/.workrc
 # Path
 export PATH=/usr/local/sbin:$PATH
 export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
-export PATH="$HOME/.apps:$PATH"
+export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
 # Macos Paths
@@ -65,6 +65,8 @@ zsh_add_file "zsh-prompt"
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
 zsh_add_plugin "hlissner/zsh-autopair"
+zsh_add_plugin "zsh-users/zsh-history-substring-search"
+
 # zsh_add_completion "esc/conda-zsh-completion" false
 # For more plugins: https://github.com/unixorn/awesome-zsh-plugins
 # More completions https://github.com/zsh-users/zsh-completions

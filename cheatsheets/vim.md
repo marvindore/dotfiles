@@ -83,3 +83,6 @@ update_n_lines = "Sn"
 <leader><right>
 <leader><up>
 <leader><down>
+
+> Delete current buffer
+:bd

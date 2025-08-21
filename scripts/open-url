@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Check if the first argument looks like a URL
+if [[ "$1" =~ ^(http|https|ftp|file|mailto|magnet|ipfs|ipns|gemini|gopher|news|git|ssh): ]]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        open "$1"
+    else
+        xdg-open "$1"
+    fi
+else
+    echo "Not a valid URL: $1"
+    exit 1
+fi

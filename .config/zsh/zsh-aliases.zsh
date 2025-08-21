@@ -1,4 +1,3 @@
-#!/bin/sh
 alias j='z'
 alias f='zi'
 alias g='lazygit'

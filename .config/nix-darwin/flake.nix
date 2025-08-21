@@ -31,7 +31,7 @@
             pkgs.difftastic
             pkgs.docker
                         #pkgs.docker-compose
-            pkgs.fish
+            pkgs.exa
             pkgs.fzf
             pkgs.gcc
             pkgs.gh

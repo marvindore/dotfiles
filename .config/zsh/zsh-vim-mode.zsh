@@ -1,4 +1,3 @@
-#!/bin/sh
 # bindkey -e will be emacs mode
 bindkey -v
 export KEYTIMEOUT=1

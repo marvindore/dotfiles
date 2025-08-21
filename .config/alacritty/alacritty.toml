@@ -28,7 +28,7 @@
 
 [[hints.enabled]]
     regex = "(ipfs:|ipns:|magnet:|mailto:|gemini:|gopher:|http:|https:|news:|file:|git:|ssh:|ftp:)[a-zA-Z0-9._?=%&/\\-~@#$!:,]*"
-    command = { program = "xdg-open", args = [] } # Or "open" on macOS, etc.
+    command = { program = "open-url", args = [] } # Or "open" on macOS, etc.
     hyperlinks = true
     mouse.enabled = true
     binding = { key = "U", mods = "Control|Shift" }

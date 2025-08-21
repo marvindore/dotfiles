@@ -33,6 +33,7 @@ packages=(
   "alacritty"
   "bat"
   "difftastic"
+  "exa"
   "firefox"
   "flatpak"
   "git"
@@ -124,6 +125,8 @@ stow_dotfiles_manually() {
   else
     link_file_with_prompt "$HOME/dotfiles/.ssh/config-marvin" "$HOME/.ssh/config"
   fi
+
+  sudo ln -s "$HOME/dotfiles/scripts/open-url" /usr/local/bin/open-url
 }
 
 # ------------------------------------------------------------------------------
@@ -162,6 +165,8 @@ unstow_dotfiles_manually() {
     rm "$ssh_config"
     echo "❌ Removed symlink: $ssh_config"
   fi
+
+  sudo rm /usr/local/bin/open-url
 }
 
 # ------------------------------------------------------------------------------
@@ -169,10 +174,10 @@ unstow_dotfiles_manually() {
 # ------------------------------------------------------------------------------
 
 setup_neovim() {
-  local nvim_path="$HOME/.apps/nvim"
+  local nvim_path="$HOME/bin/nvim"
   local download_url="https://github.com/neovim/neovim/releases/download/v0.11.3/nvim-linux-x86_64.appimage"
 
-  mkdir -p "$HOME/.apps"
+  mkdir -p "$HOME/bin"
 
   if [[ -f "$nvim_path" ]]; then
     echo "📝 Neovim already exists at $nvim_path"

@@ -5,6 +5,17 @@ return {
 		local iron = require("iron.core")
 
 		iron.setup({
+			keymaps = {
+				clear = "<leader>rc",
+				exit = "<leader>rx",
+				send_code_block = "<leader>rs",
+				send_code_block_and_move = "<leader>rn",
+				send_file = "<leader>rf",
+				send_paragraph = "<leader>rp",
+				send_line = "<leader>rl",
+				send_until_cursor = "<leader>ru",
+				visual_send = "<leader>rv",
+			},
 			config = {
 				scratch_repl = true, -- discard repls,
 				repl_definition = {
@@ -33,7 +44,7 @@ return {
 							end, result)
 							return filtered
 						end,
-						block_deviders = { "# %%", "#%%" },
+						block_dividers = { "# %%", "#%%" },
 					},
 					javascript = {
 						command = { "node" },
@@ -52,8 +63,12 @@ return {
 					return ft
 				end,
 				repl_open_cmd = require("iron.view").split.vertical.botright("40%"),
+				repl_open_cmd_2 = require("iron.view").split.vertical.botright("100%"),
+				keymaps = {
+				toggle_repl_with_cmd_2 = "<leader>rF"
+				}
 			},
-		  ignore_blank_lines = true, -- when sending visual select lines, IIAC to not submit extra prompt lines
+			ignore_blank_lines = true, -- when sending visual select lines, IIAC to not submit extra prompt lines
 		})
 	end,
 }

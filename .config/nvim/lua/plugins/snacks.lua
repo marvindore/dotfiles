@@ -44,6 +44,7 @@ return {
     { "<leader>ff", function() Snacks.picker.files() end, desc = "Find Files" },
     { "<leader>fc", function() Snacks.picker.files({ cwd = vim.fn.expand('%:p:h')}) end, desc = "Find File In Current Directory" },
     { "<leader>fg", function() Snacks.picker.grep() end, desc = "Grep Files" },
+    { "<leader>fG", function() Snacks.picker.grep({ hidden = true }) end, desc = "Grep Hidden Files" },
     { "<leader>fe", function() Snacks.explorer() end, desc = "File Explorer" },
     { "<leader>fr", function() Snacks.picker.resume() end, desc = "Resume Find"},
     { "<leader>fj", function() Snacks.picker.jumps() end, desc = "Jumps"},
@@ -58,6 +59,6 @@ return {
     { "gpS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "LSP Workspace Symbols" },
     { "<leader>sn", function() Snacks.picker.notifications() end, desc = "Notifications" },
     { "<leader>sN", function() Snacks.notifier.show_history() end, desc = "Notification History" },
-    { "<leader>sm", function() Snacks.picker.marks() end, desc = "Marks" },
+    { "<leader>fm", function() Snacks.picker.marks() end, desc = "Marks" },
   }
 }

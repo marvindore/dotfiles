@@ -8,9 +8,9 @@ set -euo pipefail
 
 packages=(
   "difftastic" "tree-sitter" "bat" "bitwarden"
-  "fish" "fzf" "gh" "git" "git-delta"
+  "exa" "fzf" "gh" "git" "git-delta"
   "gnupg" "httpie" "k9s" "logseq" "mise" "nushell"
-  "ripgrep" "starship" "tealdeer" "zellij" "zoxide"
+  "sst/tap/opencode" "ripgrep" "starship" "tealdeer" "zellij" "zoxide"
 )
 
 casks=(
@@ -122,6 +122,8 @@ stow_dotfiles_manually() {
   else
     link_file_with_prompt "$HOME/dotfiles/.ssh/config-marvin" "$HOME/.ssh/config"
   fi
+
+  sudo ln -s "$HOME/dotfiles/scripts/open-url" /usr/local/bin/open-url
 }
 
 # ------------------------------------------------------------------------------
@@ -159,6 +161,8 @@ unstow_dotfiles_manually() {
     rm "$ssh_config"
     echo "❌ Removed symlink: $ssh_config"
   fi
+
+  sudo rm /usr/local/bin/open-url
 }
 
 # ------------------------------------------------------------------------------
