@@ -3,6 +3,8 @@ local wo = vim.wo
 local g = vim.g
 local opt = vim.opt
 
+vim.g.lazyvim_picker = "snacks"
+
 opt.autoread = false -- potentially help prevent neovim freezes
 vim.cmd("set modifiable")
 -- Colorscheme
@@ -177,4 +179,53 @@ end
 -- Autocmd to update the winbar on BufEnter and WinEnter events
 vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
   callback = update_winbar,
+})
+
+
+-- Python
+local function set_python_host_prog()
+  local buf_ft = vim.bo.filetype
+  --if buf_ft ~= "python" then return end
+
+  local cwd = vim.fn.getcwd()
+  local venv_paths = {
+    cwd .. "/.venv/bin/python3",
+    cwd .. "/venv/bin/python",
+    cwd .. "/env/bin/python"
+  }
+
+  for _, path in ipairs(venv_paths) do
+    if vim.fn.filereadable(path) == 1 then
+      vim.g.python3_host_prog = path
+      --print("Using virtualenv Python: " .. path)
+
+      -- Update system $PATH if necessary
+      -- local venv_bin = vim.fn.fnamemodify(path, ":h") -- get the bin directory
+      -- local current_path = vim.fn.getenv("PATH")
+      -- local path_parts = vim.split(current_path, ":", { plain = true })
+      --
+      -- if path_parts[1] ~= venv_bin then
+      --   table.insert(path_parts, 1, venv_bin)
+      --   local new_path = table.concat(path_parts, ":")
+      --   vim.fn.setenv("PATH", new_path)
+      --   print("Prepended venv bin to PATH: " .. venv_bin)
+      -- end
+
+      return
+    end
+  end
+
+  -- Fallback to system Python
+  vim.g.python3_host_prog = vim.g.neovim_home .. "/mason/packages/debugpy/venv/bin/python3"
+  --print("Using system Python: " .. vim.g.python3_host_prog)
+end
+
+set_python_host_prog()
+
+-- Autocommand to trigger the function when a Python file is opened
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function()
+    print("Using python: " .. vim.g.python3_host_prog)
+  end,
 })

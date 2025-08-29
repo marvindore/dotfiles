@@ -15,6 +15,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 require("globals")
+require("settings")
 
 require("lazy").setup({
 	spec = {
@@ -25,5 +26,9 @@ require("lazy").setup({
 	},
 })
 
-require("settings")
 require("keymappings")
+vim.api.nvim_set_hl(0, 'BugIcon', { fg = '#FF0000' })
+
+vim.api.nvim_create_autocmd("SessionLoadPost", {
+    callback = function() require("lib.dap").load_breakpoints() end,
+})

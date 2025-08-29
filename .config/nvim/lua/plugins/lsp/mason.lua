@@ -52,7 +52,9 @@ return {
 		},
 		-- dont due this because nvim-java require("mason").setup(conf) https://github.com/nvim-java/nvim-java/wiki/Troubleshooting#no_entry-mason-failed-to-install-jdtls---cannot-find-package-xxxxx
 		config = function()
-			require("mason").setup()
+			require("mason").setup({
+		    PATH = "append",
+			})
 		end,
 	},
 	{
@@ -86,7 +88,6 @@ return {
 				local cSharp_addons = {
 					"csharpier",
 					"netcoredbg",
-					"roslyn",
 				}
 				for _, value in ipairs(cSharp_addons) do
 					table.insert(ensure_installed, value)
@@ -142,6 +143,7 @@ return {
 				local python_addons = {
 					"basedpyright",
 					"black",
+					"debugpy",
 					"flake8",
 					"ruff",
 				}

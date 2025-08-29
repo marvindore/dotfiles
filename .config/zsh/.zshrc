@@ -9,7 +9,7 @@ source ~/.workrc
 export PATH=/usr/local/sbin:$PATH
 export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
 export PATH="$HOME/bin:$PATH"
-export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+# export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
 # Macos Paths
 export PATH="/opt/homebrew/bin:$PATH"
@@ -116,8 +116,6 @@ export GOPATH=$HOME/go
 #export GOROOT=$HOME/.asdf/shims
 export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${GOPATH}/bin"
 
-export PATH="$PATH:/home/marvin/.local/share/lvim/distant.nvim/bin"
-
 # dotnet
 #export DOTNET_ROOT="$HOME/.dotnet"
 #export PATH="$PATH:/home/marvin/.dotnet"
@@ -134,3 +132,4 @@ esac
 # pnpm end
 
 export PATH="$HOME/.local/share/mise/shims:$PATH"
+export GOOGLE_APPLICATION_CREDENTIALS="$HOME/gcp-sa-dev.json"

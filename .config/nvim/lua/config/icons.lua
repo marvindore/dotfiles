@@ -2,7 +2,19 @@
 -- go to the above and then enter <c-v>u<unicode> and the symbold should appear
 -- or go here and upload the font file: https://mathew-kurian.github.io/CharacterMap/
 -- find more here: https://www.nerdfonts.com/cheat-sheet
+-- terminal emojis https://gist.github.com/nicolasdao/8f0220d050f585be1b56cc615ef6c12e
 return {
+  emoji = {
+    Anger = "💢",
+    Bug = "🐛",
+    Dash = "💨",
+    EmptyRedCircle = "⭕",
+    Poop = "💩",
+    PushPin = "📍",
+    RedCircle = "🔴",
+    Rocket = "🚀",
+    OrangeDiamond = "🔶"
+  },
 	kind = {
 		Call = " ",
 		Class = " ",

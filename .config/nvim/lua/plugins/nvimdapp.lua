@@ -24,66 +24,42 @@ local js_based_languages = {
 }
 
 return {
-	{
-		"rcarriga/nvim-dap-ui",
-		dependencies = {
-			"nvim-neotest/nvim-nio",
-			"folke/lazydev.nvim",
-			"mfussenegger/nvim-dap",
-		},
-		opts = {
-			layouts = {
-				{
-					elements = {
-						{ id = "console", size = 0.5 },
-						{ id = "repl", size = 0.5 },
-					},
-					position = "left",
-					size = 50,
-				},
-				{
-					elements = {
-						{ id = "scopes", size = 0.50 },
-						{ id = "breakpoints", size = 0.20 },
-						{ id = "stacks", size = 0.15 },
-						{ id = "watches", size = 0.15 },
-					},
-					position = "bottom",
-					size = 15,
-				},
-			},
-		},
-		config = function(_, opts)
-			-- require("lazydev").setup({
-			-- 	library = { "nvim-dap-ui" },
-			-- })
+	
+			--  {
+			--      "igorlfs/nvim-dap-view",
+			--      ---@module 'dap-view'
+			--      ---@type dapview.Config
+			--      opts = {},
+			--    config = function()
+			--    local icons = require("config.icons")
+			-- local dap, dapview = require("dap"), require("dap-view")
+			-- dapview.setup()
+			--
+			-- dap.listeners.before.attach.dapui_config = function()
+			-- 	dapview.open()
+			-- end
+			-- dap.listeners.before.launch.dapui_config = function()
+			-- 	dapview.open()
+			-- end
+			-- dap.listeners.before.event_terminated.dapui_config = function()
+			-- 	dapview.close()
+			-- end
+			-- dap.listeners.before.event_exited.dapui_config = function()
+			-- 	dapview.close()
+			-- end
+			--
+			-- vim.fn.sign_define("DapBreakpoint", { text = icons.emoji.Anger, texthl = "", linehl = "", numhl = "" })
+			-- vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop, texthl = "", linehl = "", numhl = "" })
+			-- vim.fn.sign_define("DapStopped", { text = icons.emoji.OrangeDiamond, texthl = "", linehl = "", numhl = "" })
+			--    end
+			--  },
 
-			local dap, dapui = require("dap"), require("dapui")
-			dapui.setup()
-
-			dap.listeners.before.attach.dapui_config = function()
-				dapui.open()
-			end
-			dap.listeners.before.launch.dapui_config = function()
-				dapui.open()
-			end
-			dap.listeners.before.event_terminated.dapui_config = function()
-				dapui.close()
-			end
-			dap.listeners.before.event_exited.dapui_config = function()
-				dapui.close()
-			end
-
-			vim.fn.sign_define("DapBreakpoint", { text = "🟥", texthl = "", linehl = "", numhl = "" })
-			vim.fn.sign_define("DapBreakpointRejected", { text = "🟦", texthl = "", linehl = "", numhl = "" })
-			vim.fn.sign_define("DapStopped", { text = "⭐️", texthl = "", linehl = "", numhl = "" })
-		end,
-	},
 	{
 		"mfussenegger/nvim-dap",
 		cmd = "DapContinue",
 		dependencies = {
 			"mfussenegger/nvim-dap-python",
+			"igorlfs/nvim-dap-view",
 			"jbyuki/one-small-step-for-vimkind",
 			{
 				"microsoft/vscode-js-debug",
@@ -102,9 +78,9 @@ return {
 		config = function()
 			--https://alpha2phi.medium.com/neovim-dap-enhanced-ebc730ff498b
 			local dap = require("dap")
+			--local dapview = package.loaded["dap-view"] or require("dap-view")
 			local configurations = dap.configurations
 			local adapters = dap.adapters
-
 			-- Debug js/ts
 			--https://www.youtube.com/watch?v=Ul_WPhS2bis&ab_channel=LazarNikolov
 			-- Lua one step mankind plugin
@@ -190,12 +166,14 @@ return {
 				},
 			}
 
+      -- Python
 			if vim.g.enablePython then
 				local dap_python = require("dap-python")
-				dap_python.setup(vim.g.neovim_home .. "/mason/packages/debugpy/venv/bin/python")
+				dap_python.setup(vim.g.python3_host_prog)
 				dap_python.test_runner = "pytest"
 				dap_python.default_port = 38000
 			end
+			--
 
 			if vim.g.enableCsharp then
 				--
@@ -204,26 +182,26 @@ return {
 						and vim.g.neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
 					or vim.g.neovim_home .. "/mason/bin/netcoredbg"
 				local dotnet = require("easy-dotnet")
-				local dapui = require("dapui")
+				-- local dapview = require("dap-view")
 				dap.set_log_level("TRACE")
 
-				dap.listeners.before.attach.dapui_config = function()
-					dapui.open()
-				end
-				dap.listeners.before.launch.dapui_config = function()
-					dapui.open()
-				end
-				dap.listeners.before.event_terminated.dapui_config = function()
-					dapui.close()
-				end
-				dap.listeners.before.event_exited.dapui_config = function()
-					dapui.close()
-				end
+				-- dap.listeners.before.attach.dapui_config = function()
+				-- 	dapview.open()
+				-- end
+				-- dap.listeners.before.launch.dapui_config = function()
+				-- 	dapview.open()
+				-- end
+				-- dap.listeners.before.event_terminated.dapui_config = function()
+				-- 	dapview.close()
+				-- end
+				-- dap.listeners.before.event_exited.dapui_config = function()
+				-- 	dapview.close()
+				-- end
 
-				vim.keymap.set("n", "q", function()
-					dap.close()
-					dapui.close()
-				end, {})
+				-- vim.keymap.set("n", "q", function()
+				-- 	dap.close()
+				-- 	dapview.close()
+				-- end, {})
 
 				local function file_exists(path)
 					local stat = vim.loop.fs_stat(path)

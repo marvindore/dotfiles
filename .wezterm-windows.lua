@@ -47,6 +47,7 @@ local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/s
 -- set path to zoxide
 workspace_switcher.zoxide_path = zoxide_path
 
+config.leader = { key = "a", mods = "CTRL", timeout_milliseconds = 2000 }
 config.window_decorations = "TITLE|RESIZE|MACOS_FORCE_DISABLE_SHADOW"
 
 -- This is where you actually apply your config choices
@@ -69,6 +70,30 @@ config.color_scheme = "MaterialDarker"
 -- end
 
 config.keys = {
+	-- tmux defaults
+	{ mods = "LEADER", key = "v", action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	{ mods = "LEADER", key = "h", action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ mods = "LEADER", key = "c", action = wezterm.action.SpawnTab("CurrentPaneDomain") },
+	{ mods = "LEADER", key = "x", action = wezterm.action.CloseCurrentPane({ confirm = true }) },
+	{ mods = "SHIFT", key = "LeftArrow", action = wezterm.action.ActivateTabRelative(-1) },
+	{ mods = "SHIFT", key = "RightArrow", action = wezterm.action.ActivateTabRelative(1) },
+	{ mods = "CTRL", key = "LeftArrow", action = wezterm.action.ActivatePaneDirection("Left") },
+	{ mods = "CTRL", key = "DownArrow", action = wezterm.action.ActivatePaneDirection("Down") },
+	{ mods = "CTRL", key = "UpArrow", action = wezterm.action.ActivatePaneDirection("Up") },
+	{ mods = "CTRL", key = "RightArrow", action = wezterm.action.ActivatePaneDirection("Right") },
+	{ mods = "LEADER", key = "LeftArrow", action = wezterm.action.AdjustPaneSize({ "Left", 5 }) },
+	{ mods = "LEADER", key = "RightArrow", action = wezterm.action.AdjustPaneSize({ "Right", 5 }) },
+	{ mods = "LEADER", key = "DownArrow", action = wezterm.action.AdjustPaneSize({ "Down", 5 }) },
+	{ mods = "LEADER", key = "UpArrow", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
+  { mods = "LEADER", key = "Space", action = wezterm.action.RotatePanes "Clockwise" },
+  { mods = "LEADER", key = "0", action = wezterm.action.PaneSelect { mode = "SwapWithActive" }},
+
+  -- session management
+  { mods = "CTRL|SHIFT", key = "s", action = workspace_switcher.switch_workspace()},
+  { mods = "CTRL|SHIFT", key = "t", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES"})},
+  { mods = "CTRL|SHIFT", key = "[", action = act.SwitchWorkspaceRelative(1)},
+  { mods = "CTRL|SHIFT", key = "]", action = act.SwitchWorkspaceRelative(-1)},
+
 	-- paste from clipboard
 	{ key = "V", mods = "CTRL", action = act.PasteFrom("Clipboard") },
 	-- paste from primary selection

@@ -28,16 +28,16 @@ show_python_version() {
 show_python_env() {
   local env=""
   if [[ -n "$VIRTUAL_ENV" ]]; then
-    env="venv:$(basename "$VIRTUAL_ENV")"
+    env="🐍 active:$(basename "$VIRTUAL_ENV")"
   elif [[ -n "$CONDA_DEFAULT_ENV" ]]; then
-    env="conda:$CONDA_DEFAULT_ENV"
+    env="🐍 active:$CONDA_DEFAULT_ENV"
   elif command -v poetry &>/dev/null && [[ -f pyproject.toml ]]; then
-    env="poetry:$(poetry env info --name 2>/dev/null)"
+    env="🐍 active:$(poetry env info --name 2>/dev/null)"
   elif [[ -d .venv ]]; then
-    env=".venv (not activated)"
+    env="(not activated)"
   fi
 
-  [[ -n "$env" ]] && echo -n "🐍 $env"
+  [[ -n "$env" ]] && echo -n "$env"
 }
 
 show_node_env() {

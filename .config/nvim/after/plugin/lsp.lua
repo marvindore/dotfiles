@@ -5,6 +5,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 			vim.keymap.set(mode, keys, func, { buffer = args.buf, desc = "LSP: " .. desc })
 		end
 
+    -- gr for implementation, rename, refs, code actions
 		map("n", "gd", vim.lsp.buf.definition, "Go To Definition")
 		map("n", "K", function() vim.lsp.buf.hover({ border = "rounded" }) end, "Hover")
 		map("n", "gt", vim.lsp.buf.type_definition, "Go to Type Definition")

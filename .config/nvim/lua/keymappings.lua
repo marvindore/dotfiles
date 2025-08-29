@@ -38,7 +38,9 @@ map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map("n", "<leader><space>", "<C-^>", "Go to previous buffer")
-
+map("n", "<leader>bd", ":bdelete<cr>", "Buffer Delete")
+map("n", "<leader>bD", ":bdelete!<cr>", "Buffer Force Delete")
+map("n", "<leader>bq", ":%bd|e #<cr>", "Buffer Delete All Other Buffers")
 -- Mini
 map("n", "<leader>e", ":lua MiniFiles.open()<cr>")
 map("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", "Open parent directory")
@@ -162,6 +164,31 @@ map("n", "<leader>rt", ":IronRestart<cr>", "Repl toggle")
 --map("v", "<leader>rm",":lua require('iron.core').send_mark()<cr>","Repl send mark")
 --map("n", "<leader>ru",":lua require('iron.core').send_until_cursor()<cr>","Repl send until cursor")
 
+function ToggleReplLayout()
+  local bufnr = _G.repl_bufnr
+  if not bufnr or not vim.api.nvim_buf_is_valid(bufnr) then
+    print("REPL buffer not found or not valid.")
+    return
+  end
+
+  local winid = vim.fn.bufwinid(bufnr)
+  if winid == -1 then
+    print("REPL window not found.")
+    return
+  end
+
+  local screen_height = vim.o.lines
+  local current_height = vim.api.nvim_win_get_height(winid)
+
+  if current_height < screen_height - 2 then
+    vim.api.nvim_win_set_height(winid, screen_height - 2)
+  else
+    vim.api.nvim_win_set_height(winid, math.floor(screen_height / 2))
+  end
+end
+
+vim.keymap.set("n", "<leader>rt", ToggleReplLayout, { desc = "Toggle REPL layout" })
+
 -- Enter normal mode when in terminal buffer
 vim.api.nvim_set_keymap("t", "<Esc>", [[<C-\><C-n>]], { noremap = true, silent = true })
 
@@ -173,11 +200,12 @@ map("n", "<leader>dn", ":lua require('osv').launch({port = 5677})<CR>", "Debug N
 map("n", "<F5>", ":lua require('dap').continue()<CR>", "Debug continue")
 map("n", "<S-F5>", ":lua require'dap'.close()<cr>", "Debug stop")
 
-map("n", "<F11>", ":lua require('dap').step_into()<CR>", "Debug step into")
 map("n", "<F10>", ":lua require('dap').step_over()<CR>", "Debug step over")
-map("n", "<S-F12>", ":lua require('dap').step_out()<CR>", "Debug step out")
+map("n", "<F11>", ":lua require('dap').step_into()<CR>", "Debug step into")
+map("n", "<S-F11>", ":lua require('dap').step_out()<CR>", "Debug step out")
+map("n", "<leader>do", ":lua require('dap').step_out()<CR>", "Debug step out")
 
-map("n", "<leader>db", ":lua require'dap'.toggle_breakpoint()<CR>", "Debug toggle breakpoint")
+map("n", "<leader>db", ":lua require('lib.dap').toggle_breakpoint()<CR>", "Debug toggle breakpoint")
 map("n", "<leader>dr", ":lua require'dap'.restart()<cr>", "Debug restart")
 map("n", "<leader>ds", ":lua require'dap'.stop()<cr>", "Debug stop")
 map("n", "<leader>dT", ":lua require'dap'.terminate()<cr>", "Debug terminate")
@@ -185,6 +213,8 @@ map("n", "<leader>dC", ":lua require'dap'.clear_breakpoints()<CR>", "Debug clear
 map("n", "<leader>dX", ":lua require'dap'.close()<CR>", "Debug close")
 map("n", "<leader>dc", ":lua require'dap'.continue()<CR>", "Debug continue")
 map("n", "<leader>dU", ":lua require'dap'.up()<CR>", "Debug up")
+map("n", "<leader>dui", ":lua require'dap-view'.toggle()<CR>", "Debug up")
+map("n", "<leader>dd", ":lua require'dap'.clear_breakpoints()<CR>", "Delete all breakpoints")
 map("n", "<leader>dD", ":lua require'dap'.down()<CR>", "Debug down")
 map(
 	"n",
@@ -211,6 +241,16 @@ map(
 	"Debug breakpoint with message"
 )
 
+-- DapView
+map("n", "<leader>dw", ":DapViewWatch<cr>", "Dap Add To Watch List")
+map("n", "<leader>dvb", ":lua require('dap-view.views').switch_to_view('breakpoints')<cr>", "DapView breakpoints")
+map("n", "<leader>dvs", ":lua require('dap-view.views').switch_to_view('scopes')<cr>", "DapView scopes")
+map("n", "<leader>dve", ":lua require('dap-view.views').switch_to_view('exceptions')<cr>", "DapView exceptions")
+map("n", "<leader>dvw", ":lua require('dap-view.views').switch_to_view('watches')<cr>", "DapView watches")
+map("n", "<leader>dvt", ":lua require('dap-view.views').switch_to_view('threads')<cr>", "DapView threads")
+map("n", "<leader>dvr", ":lua require('dap-view.views').switch_to_view('repl')<cr>", "DapView repl")
+map("n", "<leader>dvS", ":lua require('dap-view.views').switch_to_view('sessions')<cr>", "DapView sessions")
+
 -- symbols
 map("n", "<LocalLeader>aa", "<cmd>AerialToggle!<cr>", "Symbols outline")
 map("n", "<LocalLeader>{", "<cmd>AerialPrev!<cr>", "Symbols outline")
@@ -232,6 +272,7 @@ map("n", "<leader>md", ":delm! | delm A-Z0-9<CR>", "Marks delete all")
 wk.add({
 	{ "<LocalLeader>f", group = "Fuzzy Find" },
 })
+map("n", "<leader>fo", ":lua require('fzf-lua').oldfiles()<CR>", "Fzf open old files")
 map("n", "<LocalLeader>ff", ":lua require('fzf-lua').files()<CR>", "Fzf Files")
 map("n", "<LocalLeader>fr", ":lua require('fzf-lua').resume()<CR>", "Fzf Resume")
 map("n", "<LocalLeader>fg", ":lua require('fzf-lua').grep_project()<CR>", "Fzf Grep")

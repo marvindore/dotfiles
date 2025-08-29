@@ -3,11 +3,13 @@ return {
 	cmd = "IronRepl",
 	config = function()
 		local iron = require("iron.core")
+		local view = require("iron.view")
 
 		iron.setup({
 			keymaps = {
 				clear = "<leader>rc",
 				exit = "<leader>rx",
+        interrupt = "<leader>rI",
 				send_code_block = "<leader>rs",
 				send_code_block_and_move = "<leader>rn",
 				send_file = "<leader>rf",
@@ -15,8 +17,14 @@ return {
 				send_line = "<leader>rl",
 				send_until_cursor = "<leader>ru",
 				visual_send = "<leader>rv",
+				toggle_repl_with_cmd_1 = "<leader>rm",
+				toggle_repl_with_cmd_2 = "<leader>rM"
 			},
 			config = {
+			  repl_open_cmd = {
+			    view.split.vertical.rightbelow("%35"),
+			    view.split.vertical.rightbelow("%100")
+			  },
 				scratch_repl = true, -- discard repls,
 				repl_definition = {
 					cs = {
@@ -62,11 +70,6 @@ return {
 				repl_filetype = function(bufnr, ft)
 					return ft
 				end,
-				repl_open_cmd = require("iron.view").split.vertical.botright("40%"),
-				repl_open_cmd_2 = require("iron.view").split.vertical.botright("100%"),
-				keymaps = {
-				toggle_repl_with_cmd_2 = "<leader>rF"
-				}
 			},
 			ignore_blank_lines = true, -- when sending visual select lines, IIAC to not submit extra prompt lines
 		})
