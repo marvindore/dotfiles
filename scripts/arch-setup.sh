@@ -32,6 +32,7 @@ set -euo pipefail
 packages=(
   "alacritty"
   "bat"
+  "base-devel"
   "difftastic"
   "exa"
   "firefox"
@@ -40,7 +41,13 @@ packages=(
   "git-delta"
   "hyprland"
   "mise"
+  "openssh"
   "tree-sitter"
+  "ttf-font-awesome"
+  "ttf-nerd-fonts-symbols-mono"
+  "waybar"
+  "wofi"
+  "zoxide"
   "zsh"
 )
 
@@ -121,12 +128,12 @@ stow_dotfiles_manually() {
   done
 
   if $context_is_work; then
-    link_file_with_prompt "$HOME/dotfiles/.ssh/config-work" "$HOME/.ssh/config"
+    link_file_with_prompt "$HOME/dotfiles/.ssh/config-work-windows" "$HOME/.ssh/config"
   else
-    link_file_with_prompt "$HOME/dotfiles/.ssh/config-marvin" "$HOME/.ssh/config"
+    link_file_with_prompt "$HOME/dotfiles/.ssh/config-marvin-windows" "$HOME/.ssh/config"
   fi
 
-  sudo ln -s "$HOME/dotfiles/scripts/open-url" /usr/local/bin/open-url
+  ln -s "$HOME/dotfiles/scripts/open-url" "$HOME/bin/open-url"
 }
 
 # ------------------------------------------------------------------------------
@@ -366,3 +373,6 @@ main() {
 }
 
 main
+
+# install wezterm
+# curl -LO https://github.com/wezterm/wezterm/releases/download/nightly/WezTerm-nightly-Ubuntu20.04.AppImage
