@@ -1,3 +1,4 @@
+local util = require("lspconfig.util")
 return {
 	cmd = { "vscode-eslint-language-server", "--stdio" },
 	filetypes = {
@@ -11,6 +12,15 @@ return {
 		"svelte",
 		"astro",
 	},
+root_dir = util.root_pattern(
+    ".eslintrc.json",
+    "package.json",
+    "tsconfig.json",
+    "tsconfig.lib.json",
+    "karma.conf.js",
+    "project.json",
+    ".git"
+  ),
 	settings = {
 		codeAction = {
 			disableRuleComment = {

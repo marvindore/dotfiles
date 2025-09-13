@@ -78,3 +78,6 @@ then reload envionment `Ctrl-I`
 dotnet tool install -g dotnet-outdated-tool
 dotnet tool install --global dotnet-ef
 ```
+
+mkdir -p ~/.config/zellij/plugins/
+curl -LO https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm

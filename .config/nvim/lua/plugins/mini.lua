@@ -4,6 +4,11 @@ return {
 		version = false,
 		config = function()
 			require("mini.ai").setup()
+			local diff = require("mini.diff")
+			diff.setup({
+			  source = diff.gen_source.none()
+			})
+
 			require("mini.files").setup({
 				mappings = {
 					go_in_plus = "<cr>",

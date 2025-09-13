@@ -55,16 +55,16 @@ return {
 						block_dividers = { "# %%", "#%%" },
 					},
 					javascript = {
-						command = { "node" },
+						command = { "deno" },
 					},
 					typescript = {
-						command = { "tsx" },
+						command = { "deno" },
 					},
 					typescriptreact = {
-						command = { "tsx" },
+						command = { "deno" },
 					},
 					javascriptreact = {
-						command = { "tsx" },
+						command = { "deno" },
 					},
 				},
 				repl_filetype = function(bufnr, ft)

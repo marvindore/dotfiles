@@ -39,6 +39,7 @@ return {
 
 						return vim.g.homeDir .. "/.local/share/mise/shims/python3"
 					end,
+          pytest_discover_instances = true,
 				}),
 				require("neotest-rust"),
 				require("neotest-dotnet")({

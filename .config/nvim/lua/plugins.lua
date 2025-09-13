@@ -1,5 +1,11 @@
 return {
 	"BurntSushi/ripgrep",
+{
+  "swaits/zellij-nav.nvim",
+  lazy = true,
+  event = "VeryLazy",
+  opts = {},
+},
 	-- Editor
 	{
 		"catppuccin/nvim",

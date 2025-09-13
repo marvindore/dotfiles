@@ -1,3 +1,23 @@
+plugins {
+    // Define the "autolock" plugin.
+    autolock location="file:~/.config/zellij/plugins/zellij-autolock.wasm" {
+        // Enabled at start?
+        is_enabled true
+        // Lock when any open these programs open.
+        triggers "nvim|vim|git|fzf|zoxide|atuin"
+        // Reaction to input occurs after this many seconds. (default=0.3)
+        // (An existing scheduled reaction prevents additional reactions.)
+        reaction_seconds "0.3"
+        // Print to Zellij log? (default=false)
+        print_to_log true
+    }
+    //...
+}
+// Load this "headless" plugin on start.
+load_plugins {
+    autolock
+}
+
 // Setting keybinds to clear-defaults=true will override all default keybindings, alternative is to set clear-defaults by section
 keybinds clear-defaults=true {
     normal {
@@ -8,26 +28,47 @@ keybinds clear-defaults=true {
 
     locked {
         bind "Ctrl g" { SwitchToMode "normal"; }
+        bind "Alt z" {
+                // Disable the autolock plugin.
+                MessagePlugin "autolock" {payload "disable";};
+                // Unlock Zellij.
+                SwitchToMode "Normal";
+            }
+        bind "Ctrl a" { SwitchToMode "Tmux"; }
+    }
+
+    // Keybindings shared across all modes.
+    shared {
+        bind "Ctrl a" { SwitchToMode "Tmux"; }
+        bind "Alt Shift z" {
+            // Enable the autolock plugin.
+            MessagePlugin "autolock" {payload "enable";};
+        }
+        //...
     }
 
     shared_except "locked" {
         bind "Ctrl g" { SwitchToMode "locked"; }
+        bind "Alt z" {
+                // Disable the autolock plugin.
+                MessagePlugin "autolock" {payload "disable";};
+                // Lock Zellij.
+                SwitchToMode "Locked";
+            }
     }
 
     shared_among "normal" "tab" {
         // tabs
-        bind "Shift left" { GoToPreviousTab; }
-        bind "Shift down" { GoToNextTab; }
-        bind "Shift up" { GoToPreviousTab; }
-        bind "Shift right" { GoToNextTab; }
+        bind ">" { GoToPreviousTab; }
+        bind "<" { GoToNextTab; }
     }
 
     shared_among "normal" "pane" {
         // panes
-        bind "Ctrl Shift left" { MoveFocus "left"; }
-        bind "Ctrl Shift down" { MoveFocus "down"; }
-        bind "Ctrl Shift up" { MoveFocus "up"; }
-        bind "Ctrl Shift right" { MoveFocus "right"; }
+        bind "Ctrl h" { MoveFocus "left"; }
+        bind "Ctrl j" { MoveFocus "down"; }
+        bind "Ctrl k" { MoveFocus "up"; }
+        bind "Ctrl l" { MoveFocus "right"; }
     }
 
     tmux {

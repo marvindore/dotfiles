@@ -1,3 +1,4 @@
+Path to executables `mise which dotnet`
 mise completion – Set up completions for your shell.
 mise cfg|config – A bunch of commands for working with mise.toml files via the CLI.
 mise x|exec – Execute a command in the mise environment without activating mise.

@@ -24,6 +24,8 @@ end, { expr = true })
 
 --map("n", "<Space>", "<NOP>", )
 
+map("n", "<LocalLeader>ss", ':source $MYVIMRC<CR>', "Source nvim config")
+
 -- Format on all files not just LSP
 map(
 	"n",
@@ -50,10 +52,16 @@ map("n", "_", ":lua MiniFiles.close()<cr>", "Close parent directory")
 map("n", "gf", ":edit <cfile><CR>", "Open filename under cursor")
 
 -- better window movement
-map("n", "<C-h>", "<C-w>h", "Switch window left")
-map("n", "<C-j>", "<C-w>j", "Switch window down")
-map("n", "<C-k>", "<C-w>k", "Swith window up")
-map("n", "<C-l>", "<C-w>l", "Switch window right")
+-- map("n", "<C-h>", "<C-w>h", "Switch window left")
+-- map("n", "<C-j>", "<C-w>j", "Switch window down")
+-- map("n", "<C-k>", "<C-w>k", "Swith window up")
+-- map("n", "<C-l>", "<C-w>l", "Switch window right")
+map("n", "<C-h>", "<cmd>ZellijNavigateLeft<cr>", "Switch window left")
+map("n", "<C-j>", "<cmd>ZellijNavigateDown<cr>", "Switch window down")
+map("n", "<C-k>", "<cmd>ZellijNavigateUp<cr>", "Swith window up")
+map("n", "<C-l>", "<cmd>ZellijNavigateRight<cr>", "Switch window right")
+map("n", ">", "<cmd>ZellijNavigateRightTab<cr>", "Switch tab right")
+map("n", "<", "<cmd>ZellijNavigateLeftTab<cr>", "Switch tab left")
 
 -- Clear search
 vim.api.nvim_create_user_command("C", 'let @/=""', {})
@@ -75,11 +83,24 @@ map("v", ",p", [[c(<c-r>")<esc>]], "Wrap in single parentheses") -- surround sin
 
 -- Avante
 if vim.g.enableAvante then
+	wk.add({
+		{ "<leader>a", group = "Avante" },
+	})
 	map("n", "<leader>aa", "<cmd>AvanteToggle<CR>", "Avante Ask")
 	map("n", "<leader>ab", "<cmd>AvanteBuild<cr>", "Avante Build")
 	map("n", "<leader>ac", "<cmd>Avante Chat<cr>", "Avante Chat")
 	map("n", "<leader>ar", "<cmd>AvanteRefresh<cr>", "Avante Refresh")
 	map("n", "<leader>ae", "<cmd>AvanteEdit<cr>", "Avante Edit")
+end
+
+-- CodeCompanion
+if vim.g.enableCodeCompanion then
+	wk.add({
+		{ "<leader>a", group = "CodeCompanion" },
+	})
+	map("n", "<leader>aa", "<cmd>CodeCompanionChat Toggle<CR>", "CodeCompanion Toggle")
+	map("n", "<leader>ax", "<cmd>CodeCompanionActions<cr>", "CodeCompanion Actions")
+	map("n", "<leader>ac", "<cmd>CodeCompanionCmd<cr>", "CodeCompanion Command")
 end
 
 -- Copilot

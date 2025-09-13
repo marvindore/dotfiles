@@ -18,6 +18,9 @@ set termguicolors
 opt.spelllang = 'en_us'
 opt.spell = true
 
+-- diagnostics
+vim.diagnostic.config({ virtual_lines = { current_line = true } })
+
 --vim.cmd[[set guicursor=n-v-c-i:block]]
 -- disable netrw at the very start of your init.lua (strongly advised)
 vim.g.loaded = 1
@@ -227,5 +230,21 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "python",
   callback = function()
     print("Using python: " .. vim.g.python3_host_prog)
+  end,
+})
+
+
+-- Prevent lsp and other pluggins from attaching to repl buffers
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "dap-repl",
+  callback = function()
+    vim.lsp.stop_client(vim.lsp.get_active_clients({ bufnr = 0 }))
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "dap-repl",
+  callback = function()
+    vim.b.copilot_enabled = false
   end,
 })

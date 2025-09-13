@@ -7,7 +7,8 @@ vim.g.enableCsharp = true
 vim.g.enableGo = false
 vim.g.enablePython = true
 vim.g.enableRust = false
-vim.g.enableAvante = true
+vim.g.enableAvante = false
+vim.g.enableCodeCompanion = true
 vim.g.enableCopilot = true
 vim.g.isWindowsOs = vim.fn.has('win32') == 1
 vim.g.homeDir = vim.g.isWindowsOs and os.getenv("USERPROFILE") or os.getenv('HOME')

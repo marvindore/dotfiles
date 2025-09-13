@@ -119,9 +119,9 @@ export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${GOPATH}/bin"
 # dotnet
 #export DOTNET_ROOT="$HOME/.dotnet"
 #export PATH="$PATH:/home/marvin/.dotnet"
-if [[ -f "~/.asdf/plugins/dotnet/set-dotnet-env.zsh" ]]; then
-    . ~/.asdf/plugins/dotnet/set-dotnet-env.zsh
-fi
+# if [[ -f "~/.asdf/plugins/dotnet/set-dotnet-env.zsh" ]]; then
+#     . ~/.asdf/plugins/dotnet/set-dotnet-env.zsh
+# fi
 
 # pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"
