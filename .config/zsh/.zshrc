@@ -59,7 +59,7 @@ source "$ZDOTDIR/zsh-functions"
 zsh_add_file "zsh-exports"
 zsh_add_file "zsh-vim-mode"
 zsh_add_file "zsh-aliases"
-zsh_add_file "zsh-prompt"
+# zsh_add_file "zsh-prompt"
 
 # Plugins
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
@@ -132,4 +132,8 @@ esac
 # pnpm end
 
 export PATH="$HOME/.local/share/mise/shims:$PATH"
+export PATH="$PATH:$HOME/.local/share/mise/installs/python/3.12.0/bin"
 export GOOGLE_APPLICATION_CREDENTIALS="$HOME/gcp-sa-dev.json"
+export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+
+eval "$(starship init zsh)"

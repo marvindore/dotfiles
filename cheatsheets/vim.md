@@ -58,11 +58,11 @@ mini.pick - set vim.ui.select = require('mini.pick').ui_select
 Surround:
 
 add = "Sa",
+replace = "Sr",
 delete = "Sd",
 find = "Sf",
 find_left = "SF",
 highlight = "Sh",
-replace = "Sr",
 update_n_lines = "Sn"
 
 
@@ -86,3 +86,34 @@ update_n_lines = "Sn"
 
 > Delete current buffer
 :bd
+
+Delete all lines without pattern:
+:g!/pattern/d
+
+# Search and Replace
+
+Run command across lines in quickfix
+```md
+:vimgrep /foo/ **/*.txt
+:cdo s/foo/bar/g
+```
+cdo will target specific words and replace them, it's more granular than cfdo,
+which replaces everything in the file.
+
+Overwrite entire files with contents of another file
+`:cfdo %delete | 0r /path/to/source.txt | update`
+:cfdo — runs the command on each file in the quickfix list.
+%delete — deletes all lines in the current buffer.
+0r /path/to/source.txt — reads the contents of the source file at line 0 (top of file).
+update — saves the file only if it was modified.
+
+Run command across all files in argument list
+```md
+:args *.txt
+:argdo %s/foo/bar/g | update
+```
+
+:args sets the list of files.
+:argdo runs the substitution in each file.
+update saves the file only if it was changed.
+

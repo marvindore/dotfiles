@@ -60,6 +60,7 @@ if os.getenv("OS") == "Windows_NT" then
 	config.default_prog = { "pwsh.exe" }
   -- config.default_domain = 'WSL:Ubuntu'
 end
+--config.default_prog = { "/opt/homebrew/bin/nu" }
 config.color_scheme = "MaterialDarker"
 -- tmux
 -- if is_darwin() then

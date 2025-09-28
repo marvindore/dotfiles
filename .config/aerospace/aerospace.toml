@@ -134,8 +134,8 @@ automatically-unhide-macos-hidden-apps = false
     alt-7 = 'workspace 7'
     alt-8 = 'workspace 8'
     alt-9 = 'workspace 9'
-    alt-a = 'workspace A' # In your config, you can drop workspace bindings that you don't need
-    alt-b = 'workspace B'
+    alt-a = 'workspace A' 
+    alt-b = ['exec-and-forget open /Applications/Google Chrome.app', 'workspace B']
     alt-c = 'workspace C'
     alt-d = 'workspace D'
     alt-e = 'workspace E'
@@ -143,13 +143,13 @@ automatically-unhide-macos-hidden-apps = false
     alt-g = 'workspace G'
     alt-i = 'workspace I'
     alt-m = 'workspace M'
-    alt-n = 'workspace N'
+    alt-n = ['exec-and-forget open /Applications/Logseq.app', 'workspace N']
     alt-o = 'workspace O'
     alt-p = 'workspace P'
     alt-q = 'workspace Q'
     alt-r = 'workspace R'
     alt-s = 'workspace S'
-    alt-t = 'workspace T'
+    alt-t = ['exec-and-forget open /Applications/WezTerm.app', 'workspace T']
     alt-u = 'workspace U'
     alt-v = 'workspace V'
     alt-w = 'workspace W'
@@ -219,6 +219,10 @@ automatically-unhide-macos-hidden-apps = false
     shift-down = ['volume set 0', 'mode main']
 
 # from terminal enter: aerospace list-apps
+[[on-window-detected]]
+if.app-name-regex-substring = 'Finder'
+run = 'layout floating'
+
 [[on-window-detected]]
 if.app-id = 'com.github.wez.wezterm'
 run = "move-node-to-workspace T"

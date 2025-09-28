@@ -45,8 +45,8 @@ map("n", "<leader>bD", ":bdelete!<cr>", "Buffer Force Delete")
 map("n", "<leader>bq", ":%bd|e #<cr>", "Buffer Delete All Other Buffers")
 -- Mini
 map("n", "<leader>e", ":lua MiniFiles.open()<cr>")
-map("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", "Open parent directory")
-map("n", "_", ":lua MiniFiles.close()<cr>", "Close parent directory")
+map("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", "Open directory")
+map("n", "_", ":lua MiniFiles.open()<cr>", "Open parent directory")
 
 -- Allow gf to open non-existent files
 map("n", "gf", ":edit <cfile><CR>", "Open filename under cursor")
@@ -60,8 +60,8 @@ map("n", "<C-h>", "<cmd>ZellijNavigateLeft<cr>", "Switch window left")
 map("n", "<C-j>", "<cmd>ZellijNavigateDown<cr>", "Switch window down")
 map("n", "<C-k>", "<cmd>ZellijNavigateUp<cr>", "Swith window up")
 map("n", "<C-l>", "<cmd>ZellijNavigateRight<cr>", "Switch window right")
-map("n", ">", "<cmd>ZellijNavigateRightTab<cr>", "Switch tab right")
-map("n", "<", "<cmd>ZellijNavigateLeftTab<cr>", "Switch tab left")
+map("n", "<C-right>", "<cmd>ZellijNavigateRightTab<cr>", "Switch tab right")
+map("n", "<C-left>", "<cmd>ZellijNavigateLeftTab<cr>", "Switch tab left")
 
 -- Clear search
 vim.api.nvim_create_user_command("C", 'let @/=""', {})
@@ -149,13 +149,13 @@ wk.add({
 local lala = require("kulala")
 map({ "n", "v" }, "<leader>Rs", function()
 	lala.run()
-end, "Send Message")
+end, "Send single request")
 map({ "n", "v" }, "<leader>Ra", function()
 	lala.run_all()
-end, "Send Message")
+end, "Send all requests")
 map({ "n", "v" }, "<leader>Rr", function()
 	lala.replay()
-end, "Send Message")
+end, "Replay requests")
 
 function _G.set_terminal_keymaps()
 	local opts = { buffer = 0 }

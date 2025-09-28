@@ -47,3 +47,5 @@ git cherry-pick origin/feature-branch~3..origin/feature-branch
 diff
 Use A B (two dots) when you want a direct comparison.
 Use A...B (three dots) when you want to see what B adds relative to the shared history with A
+git diff -w // ignore whitespace
+git diff --ignore-space-at-eol

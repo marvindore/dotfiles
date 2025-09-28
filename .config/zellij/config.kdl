@@ -59,8 +59,8 @@ keybinds clear-defaults=true {
 
     shared_among "normal" "tab" {
         // tabs
-        bind ">" { GoToPreviousTab; }
-        bind "<" { GoToNextTab; }
+        bind "Ctrl left" { GoToPreviousTab; }
+        bind "Ctrl right" { GoToNextTab; }
     }
 
     shared_among "normal" "pane" {

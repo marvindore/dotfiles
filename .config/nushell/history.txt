@@ -1,0 +1,55 @@
+ifconfig
+clear
+ip a
+ifconfig | lines | where $it =~ 'inet' | str replace -a 'inet ' '' | str trim
+clear
+awk
+sed
+ls
+clear
+brew uninstall fish
+v ~/dotfiles/
+ls
+ls where name = Dockerfile
+ls where name is Dockerfile
+ls | get name
+ls | where size > 10
+ls | where size > 10kb
+ifconfig
+ifconfig | lines | where $it =~ 'active'
+ifconfig | lines
+sys net | where name == "Wi-Fi" | get ip_addresses | flatten | where ($it | is-ip) | get 0
+sys net | where name == "Wi-Fi" | get ip_addresses | flatten | where ($it | is-ip) 
+clear
+ipconfig
+ifconfig
+exit
+which $SHELL
+ls
+bash -c "which $SHELL"
+clear
+v .
+nvim .
+clear
+$nu.default-config-dir
+ls
+clear
+nvim .
+v .
+nvim .
+$env.path
+nvim .
+$env.path
+nvim dotfiles/.config/
+jc
+jq
+gh
+clear
+ls
+git ls-remote --heads
+git ls-remote --heads | jq
+git ls-remote --heads | jc
+clear
+ls
+ls | where type == file and size > 100B
+clear

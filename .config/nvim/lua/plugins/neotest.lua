@@ -18,7 +18,6 @@ return {
 		"nvim-neotest/neotest-vim-test",
 		"vim-test/vim-test",
 	},
-
 	config = function()
 		require("neotest").setup({
 			adapters = {
@@ -50,7 +49,14 @@ return {
 				}),
 				require("neotest-scala"),
 				-- require "neotest-haskell",
-				require("neotest-jest"),
+        require("neotest-jest")({
+        jestCommand = "npm test --",
+        jestConfigFile = "custom.jest.config.ts",
+        env = { CI = true },
+        cwd = function()
+          return vim.fn.getcwd()
+        end,
+      }),
 				require("neotest-go"),
 				require("neotest-plenary"),
 				require("neotest-vim-test")({
