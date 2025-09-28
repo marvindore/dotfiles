@@ -1,6 +1,7 @@
 return {
 	"GustavEikaas/easy-dotnet.nvim",
 	dependencies = { "nvim-lua/plenary.nvim", "folke/snacks.nvim" },
+  enabled = vim.g.enableCsharp,
 	config = function()
 		local function get_secret_path(secret_guid)
 			local path = ""

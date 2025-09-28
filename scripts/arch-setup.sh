@@ -34,21 +34,39 @@ packages=(
   "bat"
   "base-devel"
   "difftastic"
+  "docker"
   "exa"
+  "fd"
   "firefox"
+  "ffmpeg"
   "flatpak"
+  "fzf"
   "git"
   "git-delta"
+  "ghostscript" # for imagemagick pdf conversions
   "hyprland"
+  "hyprlock"
+  "hyprpaper"
+  "imagemagick" # for yazi
+  "jc"
+  "jq"
   "mise"
   "openssh"
+  "poppler" # for yazi
+  "reflector"
+  "resvg" # for yazi
+  "ripgrep"
+  "starship"
   "tree-sitter"
   "ttf-font-awesome"
   "ttf-nerd-fonts-symbols-mono"
   "waybar"
   "wofi"
+  "yazi"
+  "zellij"
   "zoxide"
   "zsh"
+  "7zip"
 )
 
 # ------------------------------------------------------------------------------

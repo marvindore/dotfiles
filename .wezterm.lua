@@ -74,6 +74,8 @@ config.keys = {
 	{ key = "V", mods = "CTRL", action = act.PasteFrom("Clipboard") },
 	-- paste from primary selection
 	{ key = "V", mods = "CTRL", action = act.PasteFrom("PrimarySelection") },
+	-- close window
+  { key = "w", mods = "CTRL", action = act.CloseCurrentPane { confirm = false }}
 }
 
 for i = 0, 9 do

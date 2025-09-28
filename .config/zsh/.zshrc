@@ -137,3 +137,11 @@ export GOOGLE_APPLICATION_CREDENTIALS="$HOME/gcp-sa-dev.json"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 
 eval "$(starship init zsh)"
+
+function y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}
