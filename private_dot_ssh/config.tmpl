@@ -1,0 +1,48 @@
+{{ if and (eq .chezmoi.os "darwin") (eq .chezmoi.username "marvin.dore") -}}
+Include /Users/marvindore/.colima/ssh_config
+
+Host github.com
+  HostName github.com
+  User marvin-dore_ukg
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/work
+
+Host github-marvin
+  HostName github.com
+  User marvindore
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/marvin
+
+{{ else if eq .chezmoi.os "darwin" -}}
+Include /Users/marvindore/.colima/ssh_config
+
+Host github.com
+  HostName github.com
+  User marvindore
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile ~/.ssh/marvin
+
+{{ else if eq .chezmoi.username "marvin.dore" -}}
+Host github.com
+  HostName github.com
+  User marvin-dore_ukg
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/work
+
+Host github-marvin
+  HostName github.com
+  User marvindore
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/marvin
+
+{{ else -}}
+Host github.com
+  HostName github.com
+  User marvindore
+  AddKeysToAgent yes
+  IdentityFile ~/.ssh/marvin
+
+{{ end -}}

@@ -1,0 +1,72 @@
+[user]
+	name = Marvin Dore
+	email = hi@marvindore.com
+
+[core]
+    pager = delta
+	longpaths = true
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true  # use n and N to move between diff sections
+    dark = true      # or light = true, or omit for auto-detection
+    hyperlinks = true
+
+[merge]
+    tool = nvim
+    conflictstyle = diff3
+
+[mergetool "nvim"]
+    cmd = nvim -f -c \"DiffviewOpen\"
+    conflictstyle = diff3
+    keepBackup = false
+    prompt = false
+
+[alias]
+    # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
+    dl = -c diff.external=difft log --ext-diff
+    ds = -c diff.external=difft show --ext-diff
+    dd = -c diff.external=difft diff
+    dlp = -c diff.external=difft log -p --ext-diff
+    mergetool = "!nvim -c DiffviewOpen"
+    dm = "!nvim -c DiffviewOpen && git add . && echo \"Conflicts resolved. Ready to commit.\""
+
+[difftool]
+    difftool = true
+    prompt = false
+
+[pager]
+    difftool = true
+
+[diff]
+    # Set difftastic as the default difftool, so we don't need to specify
+    # `-t difftastic` every time.
+    tool = difftastic
+
+[difftool "difftastic"]
+    prompt = false
+	cmd = difft "$LOCAL" "$REMOTE"
+
+{{ if eq .chezmoi.os "windows" -}}
+[gpg]
+
+    program = C:\\Program Files (x86)\\gnupg\\bin\\gpg.exe
+
+[safe]
+
+	directory = C:/Projects
+
+# Force lfs to use https because ssh not working: failing command (GIT_TRACE=1 GIT_CURL_VERBOSE=1 git lfs pull)
+# set for your local profile: git config --local lfs.url (company-https-url)/info/lfs
+#[lfs]
+# url = (company-https-url)/info/lfs
+# User different gitconfig based on directory
+{{ end -}}
+
+[includeIf "gitdir:~/work/"]
+    path = .gitconfig-work
+
+[includeIf "gitdir:C:/"]
+    path = .gitconfig-work

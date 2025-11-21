@@ -1,0 +1,118 @@
+;; https://shom.dev/start/using-kanata-to-remap-any-keyboard/
+;; ARTSEY MINI 0.2 https://github.com/artseyio/artsey/issues/7
+
+;; Exactly one defcfg entry is required. This is used for configuration key-pairs.
+(defcfg
+  ;; Your keyboard device will likely differ from this.
+  linux-dev /dev/input/event2
+
+  ;; Windows doesn't need any input/output configuration entries; however, there
+  ;; must still be a defcfg entry. You can keep the linux-dev entry or delete
+  ;; it and leave it empty.
+)
+
+;; Source keys to remap
+(defsrc
+  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lmet lalt           spc            ralt rmet rctl
+)
+
+;; Destination keys are mapped to
+(deflayer base
+  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl @alt @cmd           spc            @alt @cmd rctl
+)
+
+;; Alias 
+(defalias
+  cmd (layer-toggle cmd)                    ;; Command cmd
+  alt (layer-toggle alt)                    ;; Option alt
+)
+
+;; Command (⌘)
+(deflayer cmd
+  _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    @cq  @cw  @ce  @cr  @ct  @cy  @cu  @ci  @co  @cp  _    _    _
+  _    @ca  @cs  @cd  @cf  @cg  @ch  @cj  @ck  @cl  _    _    _
+  _    @cz  @cx  @cc  @cv  @cb  @cn  @cm  _    _    _    _
+  _    _    _              _              _    _    _
+)
+
+;; Option (⌥)
+(deflayer alt
+  _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _    _    _    _    _    _    _    _    _
+  _    @aq  @aw  @ae  @ar  @at  @ay  @au  @ai  @ao  @ap  _    _    _
+  _    @aa  @as  @ad  @af  @ag  @ah  @aj  @ak  @al  _    _    _
+  _    @az  @ax  @ac  @av  @ab  @an  @am  _    _    _    _
+  _    _    _              _              _    _    _
+)
+
+;; Command
+(defalias
+  cq C-q
+  cw C-w
+  ce C-e
+  cr C-r
+  ct C-t
+  cy C-y
+  cu C-u
+  ci C-i
+  co C-o
+  cp C-p
+  ca C-S-a
+  cs C-s
+  cd C-d
+  cf C-f
+  cg C-g
+  ch C-h
+  cj C-j
+  ck C-k
+  cl C-l
+  cz C-z
+  cx C-x
+  cc C-c
+  cv C-S-v
+  cb C-b
+  cn C-n
+  cm C-m
+)
+
+;; Option
+(defalias
+  aq A-q
+  aw A-w
+  ae A-e
+  ar A-r
+  at A-t
+  ay A-y
+  au A-u
+  ai A-i
+  ao A-o
+  ap A-p
+  aa A-a
+  as A-s
+  ad A-d
+  af A-f
+  ag A-g
+  ah A-h
+  aj A-j
+  ak A-k
+  al A-l
+  az A-z
+  ax A-x
+  ac A-c
+  av A-v
+  ab A-b
+  an A-n
+  am A-m
+)
