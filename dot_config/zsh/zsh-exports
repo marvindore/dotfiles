@@ -1,0 +1,9 @@
+HISTSIZE=1000000
+SAVEHIST=1000000
+export PATH="$HOME/.local/bin":$PATH
+export MANWIDTH=999
+export PATH=$HOME/.cargo/bin:$PATH
+export PATH="/usr/local/bin":$PATH
+export PATH="/usr/bin":$PATH
+
+eval "$(zoxide init zsh)"
