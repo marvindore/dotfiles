@@ -23,14 +23,12 @@
       environment.systemPackages =
         [ 
             pkgs.aerospace
-            pkgs.alacritty
-            pkgs.asdf-vm
+            pkgs.chezmoi
             pkgs.colima
             pkgs.bat
             pkgs.delta
             pkgs.difftastic
             pkgs.docker
-                        #pkgs.docker-compose
             pkgs.eza
             pkgs.fzf
             pkgs.gcc
@@ -41,39 +39,43 @@
             pkgs.ilspycmd
             pkgs.k9s
             pkgs.logseq
+            pkgs.opencode
+            pkgs.mise
             pkgs.mkalias
             inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
             pkgs.nushell
             pkgs.ripgrep
             pkgs.rustup
             pkgs.starship
-            pkgs.stow
                         #(pkgs.tealdeer.override { doCheck = false })
+            pkgs.tree-sitter
+            pkgs.wezterm
             pkgs.zellij
             pkgs.zoxide
             pkgs.zsh
         ];
 
       # Must be logged into app store for this to work
-      # Search for mac store apps with `mas search <appName>` then add to masApps like "AppName" = <appID>
+      # Search for mac store apps with 
+      # `mas search <appName>` then add to masApps like "AppName" = <appID>
       homebrew = {
         enable = true;
         brews = [
-        "bitwarden"
         "mas"
-        "tree-sitter"
         ];
         casks = [
             "hammerspoon"
+            "font-jetbrains-mono-nerd-font"
             "jordanbaird-ice"
             "google-chrome"
+            "google-drive"
             "raycast"
             "scroll-reverser"
             "scoot"
             "slack"
         ];
         masApps = {
-
+          "DaisyDisk" = 411643860;  
         };
         onActivation.cleanup = "zap";
         onActivation.autoUpdate = true;

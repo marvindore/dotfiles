@@ -14,17 +14,19 @@ this approach pre-builds nix as your user then only uses sudo to activate as roo
 This uses the build from the user so root doesn't have to rebuild maximizing cache use.
 ```bash
 cd ~/Downloads
-curl -LJO https://raw.githubusercontent.com/marvindore/dotfiles/refs/heads/main/.config/nix-darwin/flake.nix
+curl -o flake.nix https://raw.githubusercontent.com/marvindore/dotfiles/main/dot_config/nix-darwin/flake.nix
 nix build ~/Downloads#darwinConfigurations.mchip.system
 sudo ./result/sw/bin/darwin-rebuild switch --flake ~/Downloads#mchip
+chezmoi init --apply marvindore
 ```
-use of sudo is needed for initial setup because nix-darwin needs to configure system-wide
+
+use of sudo is needed for activation(switch) step because nix-darwin needs to configure system-wide
 settings like /etc defaults, /Applications, and launchd services. This creates your
 "active system" under /nix/store/.. and sets up the darwin-rebuild links.
 
 ```bash
 # rebuild config
-darwin-rebuild switch --flake ~/dotfiles/.confid/nix-darwin#mchip
+darwin-rebuild switch --flake ~/.config/nix-darwin#mchip
 ```
 the rebuild usually doesn't need sudo each time unless you update system aliases/defaults.
 
@@ -39,21 +41,12 @@ Update packages requires two commands
 ```bash
 nix flake update #which updates the flake.lock file
 #rebuild your config
-darwin-rebuild switch --flake ~/dotfiles/.config/nix-darwin#mchip 
+darwin-rebuild switch --flake ~/.config/nix-darwin#mchip 
 ```
 
 ** Setup ssh**
 - https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=mac
 
-**Use GNU stow to setup symlinks** 
-```bash
-cd dotfiles
-stow .
-
-# the following command will look for existing dotfiles at that location and use those to overwrite the files in this directory
-stow --adopt .
-```
-Now that symlinks are created, use the flake from the dotfiles
 
 ## Set zsh as default shell
 First view list of shells, if bash not listed and you add zsh you might find you can no longer log in as root and bash doesn't work
