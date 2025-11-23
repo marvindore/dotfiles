@@ -6,9 +6,7 @@ alias copyq='flatpak run com.github.hluk.copyq'
 alias flatseal='flatpak run com.github.tchx84.Flatseal'
 alias flameshot='env QT_SCREEN_SCALE_FACTORS="1;1.5;" flatpak run org.flameshot.Flameshot gui'
 alias upgradedistrobox='curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh -s -- --next'
-alias flake='nvim ~/dotfiles/.config/nix-darwin/'
-alias flakeUpdate='nix flake update --flake ~/dotfiles/.config/nix-darwin'
-alias flakeBuild='darwin-rebuild switch --flake ~/dotfiles/.config/nix-darwin#mchip'
+alias flake='nvim ~/.config/nix-darwin/'
 alias msbuild='$HOME/.local/share/mise/shims/dotnet'
 alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
 
@@ -29,6 +27,21 @@ alias v="nvim"
 alias zj="zellij"
 alias zjn="zellij -s"
 
-alias l="exa"
+alias l="eza"
 
 alias wiki="nvim ~/vimwiki/index.md"
+
+function darwin-update() {
+  echo "Building system configuration as unprivileged user..."
+  nix build ~/.config/nix-darwin#darwinConfigurations.mchip.system
+
+  if [ $? -eq 0 ]; then
+    # this step doesn't need the full path darwinConfigurations.mchip.system
+    # similarly the darwin-rebuild command looks up the systemconfiguration on its own.
+
+    echo "Build successful. Switching system configuration as root..."
+    sudo darwin-rebuild switch --flake ~/.config/nix-darwin#mchip
+  else
+    echo "Nix build failed. Aborting switch."
+  fi
+}
