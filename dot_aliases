@@ -47,33 +47,20 @@ function darwin-update() {
 }
 
 function cht() {
-    while [[ "$#" -gt 0 ]];do
-        case $1 in
-            1|lang)
-            topic_constraint="lang"
-            shift;;
-        esac
-        done
+# :list
+# :learn
+# sub topic
+    lang=$(curl -s cht.sh/:list | fzf)
+    topic=$(
+      {
+        echo "ALL"
+        curl -s "cht.sh/$lang/:list"
+      } | fzf
+    )
 
-    topic=""
-    if [[ "$topic_constraint" == "lang" ]]; then
-        topic=$(printf "go\nrust\nc" | fzf)
-        stty sane
+    if [[ "$topic" == "ALL" ]]; then
+      curl -s "cht.sh/$lang" | bat
     else
-        topic=$(curl -s cht.sh/:list | fzf)
-        stty sane
+      curl -s "cht.sh/$lang/$topic" | bat
     fi
-
-    if [[ -z "$topic" ]]; then
-        exit 0
-    fi
-
-    sheet=$(curl -s cht.sh/$topic/:list | fzf)
-
-    if [[ -z "$sheet" ]]; then
-        curl -s cht.sh/$topic?style=rrt | less -R
-        exit 0
-    fi
-
-    curl -s cht.sh/$topic/$sheet?style=rrt | less -R
 }
