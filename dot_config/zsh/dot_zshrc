@@ -19,6 +19,15 @@ export PATH="/opt/homebrew/sbin:$PATH"
 export PATH="$PATH:$HOME/.dotnet/tools"
 #export PATH="$PATH:/opt/homebrew/opt/dotnet@6/bin"
 
+# Set MANPAGER
+# Uncomment only one
+
+## "bat" as manpager
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+
+## "nvim" as manpager
+# export MANPAGER="nvim -c 'set ft=man' -"
+
 # Environment variables set everywhere
 export EDITOR="nvim"
 export VISUAL="$EDITOR"
