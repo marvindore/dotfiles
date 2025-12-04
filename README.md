@@ -9,7 +9,7 @@ First run `xcode-select --install`
 - If brew not found on command line add it to your path: 
     - `echo "export PATH=/opt/homebrew/bin:$PATH" >> ~/.zshrc`
 
-** Install nix-darwin**
+## Setup nix-darwin and dotfiles
 this approach pre-builds nix as your user then only uses sudo to activate as root.
 This uses the build from the user so root doesn't have to rebuild maximizing cache use.
 ```bash
@@ -44,7 +44,7 @@ nix flake update #which updates the flake.lock file
 darwin-rebuild switch --flake ~/.config/nix-darwin#mchip 
 ```
 
-** Setup ssh**
+## Setup ssh
 - https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=mac
 
 
@@ -80,5 +80,8 @@ dotnet tool install -g dotnet-outdated-tool
 dotnet tool install --global dotnet-ef
 ```
 
+### Zellij setup
+```
 mkdir -p ~/.config/zellij/plugins/
-curl -LO https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm
+curl -LO ~/.config/zellij/plugins/zellij-autolock.wasm https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm
+```
