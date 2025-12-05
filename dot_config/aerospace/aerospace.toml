@@ -151,7 +151,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-s = 'workspace S'
 
     alt-t = [
-        "exec-and-forget bash -c 'if [ -d \"/Applications/WezTerm.app\" ]; then open -a /Applications/WezTerm.app; elif [ -x \"/usr/bin/wezterm\" ]; then /usr/bin/wezterm; else echo \"WezTerm not found\"; fi'",
+        "exec-and-forget bash -c 'if [ -d \"/Applications/WezTerm.app\" ]; then open -a /Applications/WezTerm.app; elif [ -x \"/run/current-system/sw/bin/wezterm\" ]; then open -a wezterm; else echo \"WezTerm not found\"; fi'",
         "workspace T"
     ]
     alt-u = 'workspace U'

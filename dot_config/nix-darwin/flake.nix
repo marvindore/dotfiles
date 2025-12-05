@@ -49,7 +49,6 @@
             pkgs.starship
                         #(pkgs.tealdeer.override { doCheck = false })
             pkgs.tree-sitter
-            pkgs.wezterm
             pkgs.zellij
             pkgs.zoxide
             pkgs.zsh
@@ -61,6 +60,7 @@
       homebrew = {
         enable = true;
         brews = [
+        "kanata"
         "mas"
         ];
         casks = [
@@ -73,6 +73,7 @@
             "scroll-reverser"
             "scoot"
             "slack"
+            "wezterm@nightly"
         ];
         masApps = {
           "DaisyDisk" = 411643860;  
