@@ -15,6 +15,9 @@
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, nix-homebrew, neovim-nightly-overlay }:
   let
+    overlays = [
+        (import ./overlays/mise_2025120.nix)
+    ];
     configuration = { pkgs, config, ... }: {
       # List packages installed in system profile. To search by name, run:
       # $ nix-env -qaP | grep wget
@@ -23,6 +26,7 @@
       environment.systemPackages =
         [ 
             pkgs.aerospace
+            pkgs.atuin
             pkgs.chezmoi
             pkgs.colima
             pkgs.bat
@@ -60,7 +64,6 @@
       homebrew = {
         enable = true;
         brews = [
-        "kanata"
         "mas"
         ];
         casks = [
@@ -69,7 +72,7 @@
             "jordanbaird-ice"
             "google-chrome"
             "google-drive"
-            "raycast"
+            "karabiner-elements"
             "scroll-reverser"
             "scoot"
             "slack"
@@ -142,6 +145,7 @@
     # $ darwin-rebuild build --flake .#simple
     darwinConfigurations."mchip" = nix-darwin.lib.darwinSystem {
       modules = [ 
+      { nixpkgs.overlays = overlays; } 
       configuration 
         nix-homebrew.darwinModules.nix-homebrew
         {

@@ -85,3 +85,8 @@ dotnet tool install --global dotnet-ef
 mkdir -p ~/.config/zellij/plugins/
 curl -LO ~/.config/zellij/plugins/zellij-autolock.wasm https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm
 ```
+
+### Kanata Setup
+- Drivers: https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice
+- run daemon: `sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon'`
+

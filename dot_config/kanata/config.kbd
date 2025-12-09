@@ -11,16 +11,6 @@
   ;; it and leave it empty.
 )
 
-;; Source keys to remap
-(defsrc
-  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
-  grv  1    2    3    4    5    6    7    8    9    0    -    =    del
-  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-  caps a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  lctl   lalt  lmet           spc            rmet ralt rctl
-)
-
 (defvar
   ;; Note: consider using different time values for your different fingers.
   ;; For example, your pinkies might be slower to release keys and index
@@ -33,28 +23,68 @@
 ;; Alias 
 (defalias
   l_two (layer-toggle two)
+  l_three (layer-toggle three)
   cmd (layer-toggle cmd)                    ;; Command cmd
   alt (layer-toggle alt)                    ;; Option alt
   spc (tap-hold $tap-time $hold-time spc @l_two)
+  esc  (tap-hold $tap-time $hold-time esc @l_three)
+
+  ;;;; Mouse movements
+  mwu (mwheel-up 50 120)
+  mwd (mwheel-down 50 120)
+  mwl (mwheel-left 50 120)
+  mwr (mwheel-right 50 120)
+
+  ms↑ (movemouse-up 1 1)
+  ms← (movemouse-left 1 1)
+  ms↓ (movemouse-down 1 1)
+  ms→ (movemouse-right 1 1)
+
+  ma↑ (movemouse-accel-up 1 1000 1 5)
+  ma← (movemouse-accel-left 1 1000 1 5)
+  ma↓ (movemouse-accel-down 1 1000 1 5)
+  ma→ (movemouse-accel-right 1 1000 1 5)
+
+  sm (setmouse 32228 32228)
+
+  fst (movemouse-speed 200)
 )
 
-;; Destination keys are mapped to
-(deflayer base
+;; Source keys to remap
+(defsrc
   esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
-  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    del
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-  esc a    s    d    f    g    h    j    k    l    ;    '    ret
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
   lsft z    x    c    v    b    n    m    ,    .    /    rsft
   lctl   lalt  lmet           spc            rmet ralt rctl
 )
 
 ;; Destination keys are mapped to
+(deflayer base
+  esc   🔅   🔆    ✗    ✗    ✗    ✗    ◀◀   ▶⏸   ▶▶   🔇   🔉   🔊
+  grv   1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab   q    w    e    r    t    y    u    i    o    p    [    ]    \
+  @esc  a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft  z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl  lalt  lmet           @spc            rmet ralt rctl
+)
+
 (deflayer two
-  _  _    _    _    _    _    _    _    _    _    _    _    _
-  _  _    _    _    _    _    _    _    _    _    _    _    _    _
-  _  _    _    _    _    _    _    _    _    _    _    _    _    _
-  _  _    _    _    _    _    left    down    up    right   _    _    _
-  _  _    _    _    _    _    _    _    _    _    _    _
+  _    _    _    _    _    _     _     _      _     _    _    _    _
+  _    _    _    _    _    _     _     _      _     _    _    _    _    _
+  @cT  _    _    _    @a←  @a→    @ms←  @ms↓   @ms↑  @ms→  mltp    _    _    _
+  @cST _    _    _    _    _     left  down   up    right   _    _    mltp
+  _    _    _    _    _    _     @mwu  @mwd   @c←   @c→     _    _
+  _ _ _                _            _ _ _
+)
+
+(deflayer three
+  _    _    _    _    _    _    _     _     _     _    _    _    _
+  _    _    _    _    _    _    _     _     _     _    _    _    _    _
+  @cT  _    _    _    _    _    _     @mwu  @mwd  _    _    _    _    _
+  @cST _    _    _    _    _    @ms←  @ms↓  @ms↑  @ms→ _    _    mltp
+  _    _    _    _    _    _    _     @mwu  @mwd  @c←  @c→    _
   _ _ _                _            _ _ _
 )
 
@@ -78,8 +108,12 @@
   _    _    _              _              _    _    _
 )
 
-;; Command
+;; Commands
 (defalias
+  c← C-left
+  c→ C-right
+  cT C-tab
+  cST C-S-tab
   cq C-q
   cw C-w
   ce C-e
@@ -110,6 +144,8 @@
 
 ;; Option
 (defalias
+  a← A-left
+  a→ A-right
   aq A-q
   aw A-w
   ae A-e
