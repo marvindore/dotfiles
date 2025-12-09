@@ -129,6 +129,7 @@ return {
 			if vim.g.enableJavascript then
 				local javascript_addons = {
 					"angularls",
+					"astro",
 					"biome",
 					"eslint",
 					"prettier",

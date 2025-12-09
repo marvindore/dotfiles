@@ -31,6 +31,61 @@ alias l="eza"
 
 alias wiki="nvim ~/vimwiki/index.md"
 
+# --- Start Kanata + Virtual HID daemon ---
+function kanata_up() {
+    # Check if karabiner_cli exists in PATH
+    if ! command -v karabiner_cli >/dev/null 2>&1; then
+        echo "Karabiner-Elements CLI not found — please install/start Karabiner-Elements first."
+        return 1
+    fi
+
+    echo "Karabiner-Elements CLI detected."
+
+    # Optional: wait a short moment for Karabiner to initialize
+    sleep 0.5
+
+    echo "Starting Kanata..."
+    sudo nohup kanata --cfg "$HOME/.config/kanata/config.kbd" \
+        >> /tmp/kanata.log 2>&1 &
+    echo $! | sudo tee /tmp/kanata-kanata.pid >/dev/null
+
+    echo "Kanata started!"
+}
+
+# --- Stop Kanata ---
+function kanata_down() {
+    echo "Stopping Kanata..."
+
+    # Kill any process named 'kanata'
+    sudo pkill -x kanata 2>/dev/null || true
+
+    # Kill any process containing 'kanata' in the command line
+    sudo pkill -f "kanata" 2>/dev/null || true
+
+    # Kill any remaining child processes Kanata spawned
+    for pid in $(pgrep -f "kanata"); do
+        sudo kill -9 "$pid" 2>/dev/null || true
+    done
+
+    # Remove PID files
+    sudo rm -f /tmp/kanata.pid /tmp/kanata-kanata.pid
+
+    echo "Kanata stack stopped."
+}
+
+# --- Check status ---
+function kanata_status() {
+    echo "Kanata:"
+    pgrep -fl "kanata --cfg" || echo "not running"
+
+    echo "Karabiner-Elements:"
+    if command -v karabiner_cli >/dev/null 2>&1; then
+        echo "installed"
+    else
+        echo "not installed / not found"
+    fi
+}
+
 function darwin-update() {
   echo "Building system configuration as unprivileged user..."
   nix build ~/.config/nix-darwin#darwinConfigurations.mchip.system

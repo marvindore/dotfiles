@@ -98,6 +98,9 @@ automatically-unhide-macos-hidden-apps = false
     # end tell'
     # '''
 
+    alt-space = "workspace-back-and-forth" #toggle workspace
+    alt-shift-space = "focus-back-and-forth "
+
     alt-left = 'focus-monitor prev'   
     alt-right = 'focus-monitor next'
 

@@ -147,6 +147,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="$HOME/gcp-sa-dev.json"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 
 eval "$(starship init zsh)"
+eval "$(atuin init zsh)" # shell history
 
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
