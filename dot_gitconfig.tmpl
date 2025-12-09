@@ -14,15 +14,35 @@
     dark = true      # or light = true, or omit for auto-detection
     hyperlinks = true
 
-[merge]
-    tool = nvim
-    conflictstyle = diff3
+#[merge]
+#    tool = nvim
+#    conflictstyle = diff3
+#
+#[mergetool "nvim"]
+#    cmd = nvim -f -c \"DiffviewOpen\"
+#    conflictstyle = diff3
+#    keepBackup = false
+#    prompt = false
 
-[mergetool "nvim"]
-    cmd = nvim -f -c \"DiffviewOpen\"
-    conflictstyle = diff3
+[merge]
+    tool = meld
+    conflictstyle = diff3   # shows the BASE section in conflict markers
+
+[mergetool]
+    keepBackup = false      # don't leave *.orig files
+    prompt = false          # don't prompt for each file
+
+[mergetool "meld"]
+    # Use Meld's 3‑way merge and write back to MERGED
     keepBackup = false
     prompt = false
+    cmd = meld --auto-merge \
+               --label="LOCAL:$LOCAL" "$LOCAL" \
+               --label="BASE:$BASE"   "$BASE"  \
+               --label="REMOTE:$REMOTE" "$REMOTE" \
+               --output="$MERGED"
+    trustExitCode = true     # accept Meld's exit code to decide success
+    hideResolved = true
 
 [alias]
     # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.

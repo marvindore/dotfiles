@@ -42,6 +42,8 @@ format = '[on](white) [$symbol$branch ]($style)'
 [git_status]
 style = 'fg:peach'
 format = '([$all_status$ahead_behind]($style) )'
+modified = " "
+untracked = " 󰘓"
 
 [fill]
 symbol = ' '
