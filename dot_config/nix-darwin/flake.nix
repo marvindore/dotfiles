@@ -45,6 +45,7 @@
             pkgs.logseq
             pkgs.opencode
             pkgs.mise
+            pkgs.meld
             pkgs.mkalias
             inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
             pkgs.nushell

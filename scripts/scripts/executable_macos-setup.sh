@@ -7,7 +7,7 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 
 packages=(
-  "bruno" "difftastic" "tree-sitter" "bat" "bitwarden"
+  "atuin" "bruno" "difftastic" "tree-sitter" "bat" "bitwarden"
   "exa" "fzf" "gh" "git" "git-delta"
   "gnupg" "httpie" "jc" "jq" "k9s" "logseq" "mise" "nushell"
   "sst/tap/opencode" "ripgrep" "starship" "tealdeer" 
@@ -17,7 +17,7 @@ packages=(
 casks=(
   "datagrip" "docker" "hammerspoon"
   "jordanbaird-ice", "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font" "google-chrome"
-  "raycast" "rider" "scoot" "slack"
+  "meld" "rider" "scoot" "slack"
 )
 
 # ------------------------------------------------------------------------------
