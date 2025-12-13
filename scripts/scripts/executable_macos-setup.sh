@@ -10,7 +10,7 @@ packages=(
   "atuin" "bruno" "difftastic" "tree-sitter" "bat" "bitwarden"
   "exa" "fzf" "gh" "git" "git-delta"
   "gnupg" "httpie" "jc" "jq" "k9s" "logseq" "mise" "nushell"
-  "sst/tap/opencode" "ripgrep" "starship" "tealdeer" 
+  "serie" "sst/tap/opencode" "ripgrep" "starship" "tealdeer" 
   "wezterm@nightly" "zellij" "zoxide"
 )
 
