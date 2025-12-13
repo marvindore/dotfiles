@@ -51,6 +51,7 @@
             pkgs.nushell
             pkgs.ripgrep
             pkgs.rustup
+            pkgs.serie
             pkgs.starship
                         #(pkgs.tealdeer.override { doCheck = false })
             pkgs.tree-sitter
