@@ -172,7 +172,7 @@ end
 
 vim.lsp.enable("lua_ls")
 vim.lsp.enable({ "bashls", "yamlls", "dockerls", "jsonls", "lemminx", "sql" })
-vim.lsp.enable({ "angularls", "vtsls" }, vim.g.enableJavascript)
+vim.lsp.enable({ "angularls", "astro", "vtsls" }, vim.g.enableJavascript)
 vim.lsp.enable("go", vim.g.enableGo)
 vim.lsp.enable("pwsh", vim.g.isWindowsOs)
 vim.lsp.enable("roslyn", vim.g.enableCsharp)

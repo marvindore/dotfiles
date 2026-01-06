@@ -105,13 +105,22 @@ function cht() {
 # :list
 # :learn
 # sub topic
-    lang=$(curl -s cht.sh/:list | fzf)
+    if [ -z "$1" ]; then
+        lang=$(curl -s cht.sh/:list | fzf)
+    else
+        lang="$1"
+    fi
+
+    [ -z "$lang" ] && return
+
     topic=$(
       {
         echo "ALL"
         curl -s "cht.sh/$lang/:list"
       } | fzf
     )
+
+    [ -z "$topic" ] && return
 
     if [[ "$topic" == "ALL" ]]; then
       curl -s "cht.sh/$lang" | bat

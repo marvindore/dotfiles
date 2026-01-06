@@ -22,12 +22,19 @@
 
 ;; Alias 
 (defalias
+  l_one (layer-toggle one)
   l_two (layer-toggle two)
   l_three (layer-toggle three)
   cmd (layer-toggle cmd)                    ;; Command cmd
   alt (layer-toggle alt)                    ;; Option alt
-  spc (tap-hold $tap-time $hold-time spc @l_two)
-  esc  (tap-hold $tap-time $hold-time esc @l_three)
+  spc (tap-hold $tap-time $hold-time spc @l_one)
+  esc  (tap-hold $tap-time $hold-time esc @l_two)
+  ret  (tap-hold $tap-time $hold-time ret @l_three)
+  cz  (tap-hold $tap-time $hold-time c lctl)
+  ax  (tap-hold $tap-time $hold-time a lalt)
+  c/  (tap-hold $tap-time $hold-time / rctl)
+  a.  (tap-hold $tap-time $hold-time . ralt)
+
 
   ;;;; Mouse movements
   mwu (mwheel-up 50 120)
@@ -65,17 +72,26 @@
   esc   🔅   🔆    ✗    ✗    ✗    ✗    ◀◀   ▶⏸   ▶▶   🔇   🔉   🔊
   grv   1    2    3    4    5    6    7    8    9    0    -    =    bspc
   tab   q    w    e    r    t    y    u    i    o    p    [    ]    \
-  @esc  a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft  z    x    c    v    b    n    m    ,    .    /    rsft
+  @esc  a    s    d    f    g    h    j    k    l    ;    '    @ret
+  lsft  @cz  @ax  c    v    b    n    m    ,    @a.    @c/    rsft
   lctl  lalt  lmet           @spc            rmet ralt rctl
 )
 
+(deflayer one
+  _    _      _       _       _      _          _     _      _     _    _    _    _
+  _    _      _       _       _      _          _     _      _     _    _    _    _    _
+  @cT  _      _       @ms↑    _      _          @ms←  @ms↓   @ms↑  @ms→  mltp    _    _    _
+  @cST @a←    @ms←    @ms↓    @ms→   @a→        left  down   up    right   _    _    mltp
+  _    _      _       _       _      mltp       pgup  pgdn   @c←   @c→     _    _
+  _ _ _                                     _            _ _ _
+)
+
 (deflayer two
-  _    _    _    _    _    _     _     _      _     _    _    _    _
-  _    _    _    _    _    _     _     _      _     _    _    _    _    _
-  @cT  _    _    _    @a←  @a→    @ms←  @ms↓   @ms↑  @ms→  mltp    _    _    _
-  @cST _    _    _    _    _     left  down   up    right   _    _    mltp
-  _    _    _    _    _    _     @mwu  @mwd   @c←   @c→     _    _
+  _    _    _    _    _    _    _     _     _     _    _    _    _
+  _    _    _    _    _    _    _     _     _     _    _    _    _    _
+  @cT  _    _    _    _    _    _     @mwu  @mwd  _    _    _    _    _
+  @cST _    _    _    _    _    @ms←  @ms↓  @ms↑  @ms→ _    _    mltp
+  _    _    _    _    _    _    _     @mwu  @mwd  @c←  @c→    _
   _ _ _                _            _ _ _
 )
 

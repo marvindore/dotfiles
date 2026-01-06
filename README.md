@@ -83,8 +83,9 @@ dotnet tool install --global dotnet-ef
 ### Zellij setup
 ```
 mkdir -p ~/.config/zellij/plugins/
-curl -LO ~/.config/zellij/plugins/zellij-autolock.wasm https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm
+curl -Lo ~/.config/zellij/plugins/zellij-autolock.wasm https://github.com/fresh2dev/zellij-autolock/releases/download/0.2.2/zellij-autolock.wasm
 ```
+Disable the mission control keyboard shortcuts for Ctl+left and Ctrl+right
 
 ### Kanata Setup
 - Drivers: https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice
