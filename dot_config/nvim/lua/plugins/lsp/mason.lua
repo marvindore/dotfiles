@@ -3,7 +3,8 @@ return {
 	-- Automatically install LSPs to stdpath for neovim
 	-- Mason path ~/.local/share/nvim/mason/bin
 	{
-		"williamboman/mason.nvim",
+		"mason-org/mason.nvim",
+		lazy = true,
 		opts = {
 			ui = {
 				---@since 1.0.0
@@ -44,12 +45,10 @@ return {
 				},
 			},
 			registries = {
-				"github:nvim-java/mason-registry",
 				"github:mason-org/mason-registry",
 				"github:Crashdummyy/mason-registry",
 			},
 		},
-		-- dont due this because nvim-java require("mason").setup(conf) https://github.com/nvim-java/nvim-java/wiki/Troubleshooting#no_entry-mason-failed-to-install-jdtls---cannot-find-package-xxxxx
 		config = function()
 			require("mason").setup({
 				PATH = "append",
@@ -83,6 +82,7 @@ return {
 				local cSharp_addons = {
 					"csharpier",
 					"netcoredbg",
+					"roslyn"
 				}
 				for _, value in ipairs(cSharp_addons) do
 					table.insert(ensure_installed, value)

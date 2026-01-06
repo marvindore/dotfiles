@@ -11,15 +11,15 @@ return {
 		"svelte",
 		"astro",
 	},
-	root_markers = {
-		".eslintrc.json",
-		"package.json",
-		"tsconfig.json",
-		"tsconfig.lib.json",
-		"karma.conf.js",
-		"project.json",
-		".git",
-	},
+root_markers = {
+    ".eslintrc.json",
+    "package.json",
+    "tsconfig.json",
+    "tsconfig.lib.json",
+    "karma.conf.js",
+    "project.json",
+    ".git"
+  },
 	settings = {
 		codeAction = {
 			disableRuleComment = {
