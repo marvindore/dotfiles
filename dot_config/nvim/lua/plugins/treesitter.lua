@@ -1,20 +1,6 @@
-return {
-  'nvim-treesitter/nvim-treesitter',
-  dependencies = {
-    'nvim-treesitter/nvim-treesitter-textobjects',
-  },
-  event = { "BufReadPost", "BufNewFile" },
-  opts = { highlight = { enable = true } },
-  config = function()
-    require 'nvim-treesitter.configs'.setup {
-      configs = {
-        ignore_install = { "help", "vimdoc" }
-      },
-      modules = {},
-      ignore_install = { "help" },
-      ensure_installed = {
+local install_list = {
         'bash',
-        'c_sharp',
+        --'c_sharp',
         'cmake',
         'comment',
         --'cpp',
@@ -23,20 +9,20 @@ return {
         --'devicetree',
         'dockerfile',
         'gitignore',
-        'go',
+        --'go',
         --'gomod',
         --'gowork',
         'graphql',
         'html',
         'http',
-        'java',
+        --'java',
         'javascript',
         'jsdoc',
         'json',
         'json5',
         --'jsonnet',
-        'julia',
-        'kotlin',
+        --'julia',
+        --'kotlin',
         'latex',
         'lua',
         'make',
@@ -45,14 +31,14 @@ return {
         --'ocaml',
         --'ocaml_interface',
         --'ocamllex',
-        'php',
-        'phpdoc',
+        --'php',
+        --'phpdoc',
         'python',
         'query',
-        'tlaplus',
+        --'tlaplus',
         'regex',
-        'rust',
-        'scala',
+        --'rust',
+        --'scala',
         --'scheme,'
         'scss',
         --'solidity',
@@ -68,12 +54,44 @@ return {
         'vue',
         'yaml',
         --'zig'
-      }, -- one of 'all', 'maintained' (parsers with maintainers), or a list of languages
+      }
+
+if vim.g.enableRust then
+  table.insert(install_list, "rust")
+end
+
+if vim.g.enableJava then
+  table.insert(install_list, {"java", "kotlin"})
+end
+
+if vim.g.enableCsharp then
+  table.insert(install_list, "c_sharp")
+end
+
+if vim.g.enableGo then
+  table.insert(install_list, { "go", "gomod", "gowork" })
+end
+
+return {
+  'nvim-treesitter/nvim-treesitter',
+  dependencies = {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+  },
+  event = { "BufReadPost", "BufNewFile" },
+  opts = { highlight = { enable = true } },
+  config = function()
+    require 'nvim-treesitter.configs'.setup {
+      configs = {
+        ignore_install = { "help", "vimdoc" }
+      },
+      modules = {},
+      ignore_install = { "help" },
+      ensure_installed = install_list, -- one of 'all', 'maintained' (parsers with maintainers), or a list of languages
       sync_install = false,
       auto_install = true,
       highlight = {
         enable = true,             -- false will disable the whole extension
-        disable = { 'c', 'rust' }, -- list of language that will be disabled
+        disable = { "c" }, -- list of language that will be disabled
       },
       indent = { enable = true },
       incremental_selection = {

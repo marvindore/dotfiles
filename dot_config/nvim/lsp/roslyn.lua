@@ -1,7 +1,12 @@
 return {
 	cmd = {
 		"dotnet",
-		vim.fs.joinpath(vim.g.neovim_home, "mason", "bin", "roslyn", "Microsoft.CodeAnalysis.LanguageServer.dll"),
+		vim.fs.joinpath(vim.g.mason_root, "packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"),
+		"--logLevel", -- this property is required by the server
+		"Information",
+		"--extensionLogDirectory", -- this property is required by the server
+		vim.fs.joinpath(vim.uv.os_tmpdir(), "roslyn_ls/logs"),
+		"--stdio",
 	},
 	settings = {
 		["csharp|inlay_hints"] = {
