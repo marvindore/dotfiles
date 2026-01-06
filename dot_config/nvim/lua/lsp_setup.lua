@@ -146,10 +146,6 @@ function M.enable_servers(opts)
     vim.lsp.enable("pwsh")
   end
 
-  if opts.enable_cs ~= nil and opts.enable_cs or g.enableCsharp then
-    vim.lsp.enable("roslyn")
-  end
-
   if opts.enable_rust ~= nil and opts.enable_rust or g.enableRust then
     vim.lsp.enable("rust")
   end

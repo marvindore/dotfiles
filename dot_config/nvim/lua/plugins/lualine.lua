@@ -132,7 +132,7 @@ return {
 						"ex.lsp.all",
 
             fmt = function(str)
-              return str ~= "" and ( str .. "on") or "off"
+              return str ~= "" and ( "running" .. str ) or "off"
             end,
 
 						-- If true then only clients attached to the current buffer will be shown:
