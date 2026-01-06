@@ -36,6 +36,55 @@ map(
 
 map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 
+-- LSP config
+vim.api.nvim_create_user_command("LspInfo", function()
+  -- convert clients table to string
+  local lines = vim.split(vim.inspect(vim.lsp.get_clients()), "\n")
+
+  -- create a new scratch buffer
+  vim.cmd("tabnew")  -- optional: open in new tab
+  local bufnr = vim.api.nvim_get_current_buf()
+
+  -- set buffer options
+  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
+  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
+  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+
+  -- set lines
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+
+  -- optionally set filetype for syntax highlighting
+  vim.api.nvim_buf_set_option(bufnr, "filetype", "lua")
+end, {})
+
+
+vim.api.nvim_create_user_command("LspInfoBuf", function()
+  vim.print(vim.lsp.get_clients({ bufnr = 0 }))
+end, {})
+
+vim.api.nvim_create_user_command("LspLog", function()
+  vim.cmd('edit ' .. vim.lsp.get_log_path())
+end, {})
+
+vim.api.nvim_create_user_command("LspRestartAll", function()
+  for _, client in ipairs(vim.lsp.get_clients()) do
+    client.stop(true)
+  end
+end, {})
+
+vim.api.nvim_create_user_command("LspRestart", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+    client.stop(true)
+  end
+
+  -- force reattach
+  vim.cmd("edit")
+end, {})
+
 -- Remap for dealing with word wrap
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })

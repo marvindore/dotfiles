@@ -5,4 +5,5 @@ return {
 		"--config",
 		vim.g.homeDir .. "/.config/sqls.yml",
 	},
+  filetypes = { "sql", "mysql" }
 }

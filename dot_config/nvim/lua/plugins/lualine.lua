@@ -131,7 +131,9 @@ return {
 					{
 						"ex.lsp.all",
 
-						-- Extends options from the `ex.lsp.single`
+            fmt = function(str)
+              return str ~= "" and ( str .. "on") or "off"
+            end,
 
 						-- If true then only clients attached to the current buffer will be shown:
 						only_attached = false,

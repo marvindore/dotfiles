@@ -34,6 +34,7 @@
             pkgs.difftastic
             pkgs.docker
             pkgs.eza
+            pkgs.flameshot
             pkgs.fzf
             pkgs.gcc
             pkgs.gh
@@ -41,20 +42,21 @@
             pkgs.gnupg
             pkgs.httpie
             pkgs.ilspycmd
+            pkgs.jc
+            pkgs.jq
             pkgs.k9s
             pkgs.logseq
-            pkgs.opencode
+            pkgs.miller
             pkgs.mise
             pkgs.meld
             pkgs.mkalias
             inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
-            pkgs.nushell
             pkgs.ripgrep
             pkgs.rustup
             pkgs.serie
             pkgs.starship
-                        #(pkgs.tealdeer.override { doCheck = false })
             pkgs.tree-sitter
+            pkgs.utm
             pkgs.zellij
             pkgs.zoxide
             pkgs.zsh
@@ -67,6 +69,7 @@
         enable = true;
         brews = [
         "mas"
+        "opencode"
         ];
         casks = [
             "hammerspoon"

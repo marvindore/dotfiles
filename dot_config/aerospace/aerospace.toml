@@ -146,7 +146,10 @@ automatically-unhide-macos-hidden-apps = false
     alt-g = 'workspace G'
     alt-i = 'workspace I'
     alt-m = ['exec-and-forget open "hammerspoon://messaging"', 'workspace M']
-    alt-n = ['exec-and-forget open /Applications/Logseq.app', 'workspace N']
+    alt-n = [
+        "exec-and-forget bash -c 'if [ -d \"/Applications/Logseq.app\" ]; then open -a /Applications/Logseq.app; elif [ -x \"/run/current-system/sw/bin/logseq\" ]; then open -a logseq; else echo \"LogSeq not found\"; fi'",
+        "workspace N"
+    ]
     alt-o = 'workspace O'
     alt-p = 'workspace P'
     alt-q = 'workspace Q'

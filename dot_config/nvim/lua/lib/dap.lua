@@ -16,6 +16,11 @@ end
 
 --- Load existing breakpoints for all open buffers in the session
 M.load_breakpoints = function()
+
+  if not vim.g.BREAKPOINTS then
+    return
+  end
+
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         local filename = vim.api.nvim_buf_get_name(buf)
         local buffer_breakpoints = vim.g.BREAKPOINTS[filename]

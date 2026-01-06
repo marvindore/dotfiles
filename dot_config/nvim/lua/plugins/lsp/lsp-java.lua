@@ -8,7 +8,6 @@ return {
 		"nvim-java/nvim-java-test",
 		"nvim-java/nvim-java-dap",
 		"MunifTanjim/nui.nvim",
-		"neovim/nvim-lspconfig",
 		"mfussenegger/nvim-dap",
 		"williamboman/mason.nvim",
 	},

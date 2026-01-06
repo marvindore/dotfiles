@@ -1,5 +1,4 @@
 return {
-	{ "neovim/nvim-lspconfig" },
 	{ "WhoIsSethDaniel/mason-tool-installer.nvim" },
 	-- Automatically install LSPs to stdpath for neovim
 	-- Mason path ~/.local/share/nvim/mason/bin
@@ -53,14 +52,10 @@ return {
 		-- dont due this because nvim-java require("mason").setup(conf) https://github.com/nvim-java/nvim-java/wiki/Troubleshooting#no_entry-mason-failed-to-install-jdtls---cannot-find-package-xxxxx
 		config = function()
 			require("mason").setup({
-		    PATH = "append",
+				PATH = "append",
 			})
-		end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		config = function()
-			require("mason-lspconfig").setup()
+
+
 			vim.api.nvim_create_autocmd("User", {
 				pattern = "MasonToolsUpdateCompleted",
 				callback = function()
@@ -79,7 +74,7 @@ return {
 				"lua_ls",
 				"tailwindcss",
 				"yamlls",
-				"sqlls",
+				"sqls",
 				"stylua",
 				"vale",
 			}
@@ -116,15 +111,15 @@ return {
 			end
 
 			if vim.g.enableKotlin then
-			  local kotlin_addons = {
+				local kotlin_addons = {
 					"ktlint",
 					"kotlin-debug-adapter",
-					"kotlin-lsp"
-			  }
-			  for _,value in ipairs(kotlin_addons) do
-			    table.insert(ensure_installed, value)
-        end
-      end
+					"kotlin-lsp",
+				}
+				for _, value in ipairs(kotlin_addons) do
+					table.insert(ensure_installed, value)
+				end
+			end
 
 			if vim.g.enableJavascript then
 				local javascript_addons = {
@@ -134,6 +129,7 @@ return {
 					"eslint",
 					"prettier",
 					"js-debug-adapter",
+					"vtsls",
 				}
 				for _, value in ipairs(javascript_addons) do
 					table.insert(ensure_installed, value)
@@ -154,15 +150,15 @@ return {
 			end
 
 			if vim.g.enableRust then
-        local rust_addons = {
-          "rust_analyzer",
-          "codelldb"
-        }
+				local rust_addons = {
+					"rust_analyzer",
+					"codelldb",
+				}
 
-        for _, value in ipairs(rust_addons) do
-          table.insert(ensure_installed, value)
-        end
-      end
+				for _, value in ipairs(rust_addons) do
+					table.insert(ensure_installed, value)
+				end
+			end
 
 			require("mason-tool-installer").setup({
 				ensure_installed = ensure_installed,
@@ -171,4 +167,9 @@ return {
 			})
 		end,
 	},
+	-- {
+	-- 	"williamboman/mason-lspconfig.nvim",
+	-- 	config = function()
+	-- 	end,
+	-- },
 }
