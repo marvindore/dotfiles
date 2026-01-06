@@ -3,6 +3,15 @@ return {
 	enabled = vim.g.enableCsharp,
 	ft = { "cs", "razor" },
 	opts = {
+		cmd = {
+			"dotnet",
+			vim.fs.joinpath(vim.g.mason_root, "packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"),
+			"--logLevel", -- this property is required by the server
+			"Information",
+			"--extensionLogDirectory", -- this property is required by the server
+			vim.fs.joinpath(vim.uv.os_tmpdir(), "roslyn_ls/logs"),
+			"--stdio",
+		},
 		on_attach = function(client, bufnr)
 			-- Install roslyn after plugin loads
 			local registry = require("mason-registry")
