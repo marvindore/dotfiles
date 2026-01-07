@@ -24,39 +24,9 @@ local js_based_languages = {
 }
 
 return {
-	
-			--  {
-			--      "igorlfs/nvim-dap-view",
-			--      ---@module 'dap-view'
-			--      ---@type dapview.Config
-			--      opts = {},
-			--    config = function()
-			--    local icons = require("config.icons")
-			-- local dap, dapview = require("dap"), require("dap-view")
-			-- dapview.setup()
-			--
-			-- dap.listeners.before.attach.dapui_config = function()
-			-- 	dapview.open()
-			-- end
-			-- dap.listeners.before.launch.dapui_config = function()
-			-- 	dapview.open()
-			-- end
-			-- dap.listeners.before.event_terminated.dapui_config = function()
-			-- 	dapview.close()
-			-- end
-			-- dap.listeners.before.event_exited.dapui_config = function()
-			-- 	dapview.close()
-			-- end
-			--
-			-- vim.fn.sign_define("DapBreakpoint", { text = icons.emoji.Anger, texthl = "", linehl = "", numhl = "" })
-			-- vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop, texthl = "", linehl = "", numhl = "" })
-			-- vim.fn.sign_define("DapStopped", { text = icons.emoji.OrangeDiamond, texthl = "", linehl = "", numhl = "" })
-			--    end
-			--  },
-
 	{
 		"mfussenegger/nvim-dap",
-		cmd = "DapContinue",
+		cmd = { "DapContinue", "DapToggleBreakpoint" },
 		dependencies = {
 			"mfussenegger/nvim-dap-python",
 			"igorlfs/nvim-dap-view",
@@ -69,23 +39,21 @@ return {
 			},
 			{
 				"leoluz/nvim-dap-go",
-				ft = "go",
 				config = function(_, opts)
 					require("dap-go").setup(opts)
 				end,
 			},
 		},
 		config = function()
-			--https://alpha2phi.medium.com/neovim-dap-enhanced-ebc730ff498b
 			local dap = require("dap")
-			--local dapview = package.loaded["dap-view"] or require("dap-view")
 			local configurations = dap.configurations
 			local adapters = dap.adapters
-			-- Debug js/ts
-			--https://www.youtube.com/watch?v=Ul_WPhS2bis&ab_channel=LazarNikolov
-			-- Lua one step mankind plugin
+
+			-- =========================================
+			-- Lua Setup
+			-- =========================================
 			adapters.nlua = function(callback, config)
-				callback({ type = "server", host = config.host or "127.0.0.1", port = 5677 }) --8086
+				callback({ type = "server", host = config.host or "127.0.0.1", port = 5677 })
 			end
 
 			adapters.local_lua = {
@@ -97,8 +65,6 @@ return {
 				enrich_config = function(config, on_config)
 					if not config["extensionPath"] then
 						local c = vim.deepcopy(config)
-						-- 💀 If this is missing or wrong you'll see
-						-- "module 'lldebugger' not found" errors in the dap-repl when trying to launch a debug session
 						c.extensionPath = vim.g.homeDir .. "/projects/local-lua-debugger-vscode/"
 						on_config(c)
 					else
@@ -139,26 +105,6 @@ return {
 				{
 					type = "nlua",
 					request = "attach",
-					name = "New instance (crate/crate)",
-					port = lua_port,
-					start_neovim = {
-						cwd = vim.g.homeDir .. "/dev/crate/crate",
-						fname = "server/src/test/java/io/crate/planner/PlannerTest.java",
-					},
-				},
-				{
-					type = "nlua",
-					request = "attach",
-					name = "New instance (neovim/neovim)",
-					port = lua_port,
-					start_neovim = {
-						cwd = vim.g.homeDir .. "/dev/neovim/neovim",
-						fname = "src/nvim/main.c",
-					},
-				},
-				{
-					type = "nlua",
-					request = "attach",
 					name = "Attach",
 					port = function()
 						return assert(tonumber(vim.fn.input("Port: ")), "Port is required")
@@ -166,42 +112,21 @@ return {
 				},
 			}
 
-      -- Python
+			-- =========================================
+			-- Python Setup
+			-- =========================================
 			if vim.g.enablePython then
 				local dap_python = require("dap-python")
 				dap_python.setup(vim.g.python3_host_prog)
 				dap_python.test_runner = "pytest"
 				dap_python.default_port = 38000
 			end
-			--
 
+			-- =========================================
+			-- C# / DotNet Setup
+			-- =========================================
 			if vim.g.enableCsharp then
-				--
-				-- DotNet
-				local exe = vim.g.isWindowsOs
-						and vim.g.neovim_home .. "/mason/packages/netcoredbg/netcoredbg/netcoredbg.exe"
-					or vim.g.neovim_home .. "/mason/bin/netcoredbg"
-				local dotnet = require("easy-dotnet")
-				-- local dapview = require("dap-view")
 				dap.set_log_level("TRACE")
-
-				-- dap.listeners.before.attach.dapui_config = function()
-				-- 	dapview.open()
-				-- end
-				-- dap.listeners.before.launch.dapui_config = function()
-				-- 	dapview.open()
-				-- end
-				-- dap.listeners.before.event_terminated.dapui_config = function()
-				-- 	dapview.close()
-				-- end
-				-- dap.listeners.before.event_exited.dapui_config = function()
-				-- 	dapview.close()
-				-- end
-
-				-- vim.keymap.set("n", "q", function()
-				-- 	dap.close()
-				-- 	dapview.close()
-				-- end, {})
 
 				local function file_exists(path)
 					local stat = vim.loop.fs_stat(path)
@@ -214,21 +139,37 @@ return {
 					if debug_dll ~= nil then
 						return debug_dll
 					end
+					-- Lazy load: Only require when actually debugging
+					local dotnet = require("easy-dotnet")
 					local dll = dotnet.get_debug_dll()
 					debug_dll = dll
 					return dll
 				end
 
-				for _, value in ipairs({ "cs", "fsharp" }) do
-					dap.configurations[value] = {
+				-- Define Adapter Once
+				dap.adapters.coreclr = {
+					type = "executable",
+					command = "netcoredbg",
+					args = { "--interpreter=vscode" },
+				}
+
+				-- Define Listener Once
+				dap.listeners.before["event_terminated"]["easy-dotnet"] = function()
+					debug_dll = nil
+				end
+
+				-- Define Configurations for both languages
+				for _, lang in ipairs({ "cs", "fsharp" }) do
+					dap.configurations[lang] = {
 						{
 							type = "coreclr",
-							name = "Program",
+							name = "Launch - " .. lang,
 							request = "launch",
 							env = function()
 								local dll = ensure_dll()
-								local vars =
-									dotnet.get_environment_variables(dll.project_name, dll.absolute_project_path)
+								-- Lazy require here to get env vars
+								local dotnet = require("easy-dotnet")
+								local vars = dotnet.get_environment_variables(dll.project_name, dll.absolute_project_path)
 								return vars or nil
 							end,
 							program = function()
@@ -246,99 +187,17 @@ return {
 							end,
 						},
 					}
-
-					dap.listeners.before["event_terminated"]["easy-dotnet"] = function()
-						debug_dll = nil
-					end
-
-					dap.adapters.coreclr = {
-						type = "executable",
-						command = "netcoredbg",
-						args = { "--interpreter=vscode" },
-					}
 				end
-				-- adapters.netcoredbg = {
-				-- 	type = "executable",
-				-- 	command = exe,
-				-- 	args = { "--interpreter=vscode" },
-				-- }
-				--
-				-- adapters.netcoredbgattach = {
-				-- 	type = "executable",
-				-- 	command = exe,
-				-- 	args = { "--interpreter=vscode", "--attach" },
-				-- }
-				--
-				-- configurations.cs = {
-				-- 	{
-				-- 		type = "netcoredbg",
-				-- 		name = "launch dll - netcoredbg",
-				-- 		request = "launch",
-				-- 		program = function()
-				-- 			-- Select the DLL file to debug
-				-- 			local co = coroutine.running()
-				-- 			local selected_file = nil
-				--
-				-- 			require("fzf-lua").files({
-				-- 				prompt = "Select DLL> ",
-				-- 				-- rg --no-ignore --hidden --files -g '*.dll' -g '!**/node_modules/*' -g '!**/.git/*'
-				-- 				cmd = "fd --type f --hidden --no-ignore -e dll --exclude node_modules --exclude .git",
-				-- 				actions = {
-				-- 					["default"] = function(selected)
-				-- 						selected_file = selected[1]
-				-- 						coroutine.resume(co)
-				-- 					end,
-				-- 				},
-				-- 			})
-				--
-				-- 			coroutine.yield()
-				-- 			return selected_file
-				-- 		end,
-				-- 	},
-				-- 	{
-				-- 		type = "netcoredbgattach",
-				-- 		name = "attach - netcoredbg",
-				-- 		request = "attach",
-				-- 		justMyCode = false,
-				-- 		program = require("dap.utils").pick_process,
-				-- 	},
-				-- }
 			end
 
-			--
-			-- Java
-			-- configurations.java = {
-			--   {
-			--     type = 'java';
-			--       request = 'attach';
-			--       name = 'Remote Attach';
-			--       hostName = function()
-			--         return vim.fn.input('Enter host (127.0.0.1):')
-			--       end;
-			--       port = 5005;
-			--       },
-			--   {
-			--       type = 'java';
-			--         request = 'launch';
-			--         name = 'Run Main';
-			--       javaExec = home .. "/.asdf/shims/java",
-			--       mainClass = function()
-			--         return vim.fn.input('Enter Main class (your.package.name.MainClassName): ')
-			--       end
-			--       }
-			--     }
-
-			--
-			-- Typescript
-			--
+			-- =========================================
+			-- Typescript / Javascript Setup
+			-- =========================================
 			local jsexe = vim.g.isWindowsOs and vim.g.neovim_home .. "/mason/packages/netcoredbg/js-debug-adapter"
 				or vim.g.neovim_home .. "/mason/bin/js-debug-adapter"
 
 			for _, language in ipairs(js_based_languages) do
 				configurations[language] = {
-					-- To debug a nodejs process you need to add --inspect when you run the process
-					--
-				  -- Debug single nodeje file with npm
 					{
 						type = "pwa-node",
 						request = "launch",
@@ -347,19 +206,15 @@ return {
 						cwd = "${workspaceFolder}",
 						runtimeExecutable = "npm",
 						sourceMaps = true,
-					}, 
-				  -- Debug single nodeje file with pnpm
-					{ -- auto attach to node process running with --inspect
+					},
+					{
 						type = "pwa-node",
 						request = "launch",
 						name = "Launch file pnpm",
 						cwd = "${workspaceFolder}",
 						runtimeExecutable = "pnpm",
-						runtimeArgs = {
-							"debug",
-						},
+						runtimeArgs = { "debug" },
 					},
-					-- Debug node js processes that were ran with the --inspect flag
 					{
 						type = "pwa-node",
 						request = "attach",
@@ -368,26 +223,6 @@ return {
 						cwd = "${workspaceFolder}",
 						sourceMaps = true,
 					},
-					{
-						type = "pwa-node",
-						request = "attach",
-						name = "Attach to localhost:<port>",
-						address = "localhost",
-						port = function()
-							local co = coroutine.running()
-							return coroutine.create(function()
-								vim.ui.input({ prompt = "Enter port to attach to: ", default = "9229" }, function(input)
-									coroutine.resume(co, tonumber(input))
-								end)
-							end)
-						end,
-						cwd = "${workspaceFolder}",
-						restart = true,
-						sourceMaps = true,
-						protocol = "inspector",
-						skipFiles = { "<node_internals>/**/*.js" },
-					},
-					-- Debug web application client side
 					{
 						type = "pwa-chrome",
 						request = "launch",
@@ -413,12 +248,6 @@ return {
 						sourceMaps = true,
 						useDataDir = false,
 					},
-					-- Divider for launch.json derived congigs
-					{
-						name = "--- launch.json configs below ---",
-						type = "",
-						request = "launch",
-					},
 				}
 			end
 
@@ -428,9 +257,7 @@ return {
 				port = "${port}",
 				executable = {
 					command = jsexe,
-					args = {
-						"${port}",
-					},
+					args = { "${port}" },
 				},
 			}
 
@@ -440,28 +267,15 @@ return {
 				args = {},
 			}
 
-			-- require("nvim-dap-virtual-text").setup({})
-			--
-			-- -- nvim-dap-virtual-text. Show virtual text for current frame
-			-- vim.g.dap_virtual_text = true
-
-			-- require('dap').set_log_level('INFO')
-			--		dap.defaults.fallback.terminal_win_cmd = "80vsplit new"
-
-			-- Rust
-
-			local extension_path = vim.g.mason_root .. "/packages/codelldb/extension/"
-			local codelldb_path = extension_path .. "adapter/codelldb"
-			local liblldb_path = extension_path .. "lldb/lib/liblldb.dylib"
-			--local cfg = require("rustaceanvim.config")
-
+			-- =========================================
+			-- Rust Setup
+			-- =========================================
 			adapters.codelldb = {
 				type = "server",
 				host = "127.0.0.1",
 				port = 13000,
 			}
 
-			--			adapters.rustaceanvim = cfg.get_codelldb_adapter(codelldb_path, liblldb_path)
 			configurations.rust = {
 				{
 					type = "codelldb",
@@ -475,14 +289,6 @@ return {
 					args = {},
 					sourceLanguages = { "rust" },
 				},
-				-- {
-				-- 	type = "rustaceanvim",
-				-- 	name = "rustaceanvim",
-				-- 	request = "launch",
-				-- 	cwd = "${workspaceFolder}",
-				-- 	terminal = "integrated",
-				-- 	sourceLanguages = { "rust" },
-				-- },
 				{
 					name = "Debug Rust Executable (Picker)",
 					type = "codelldb",
