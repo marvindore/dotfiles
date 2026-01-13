@@ -10,44 +10,44 @@ local function get_tsdk(root_dir)
     return global_tsdk
   end
 
+  local npm_root = vim.fn.system("npm root -g"):gsub("%s+$", "")
+  local npm_global_tsdk = npm_root .. "/typescript/lib"
+  if vim.uv.fs_stat(npm_global_tsdk) then
+    return npm_global_tsdk
+  end
+
   return nil
 end
 
 local mason_vtsls = vim.fn.stdpath("data") .. "/mason/bin/vtsls"
 
-return {
-  cmd = { mason_vtsls, "--stdio" },
+return function(bufnr)
+  -- ✅ Detect root using native API
+  local root = vim.fs.root(bufnr, { "package.json", "tsconfig.json", ".git" })
+  if not root then
+    return nil -- Do NOT start if no root found
+  end
 
-  filetypes = {
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "typescript.tsx",
-    -- astro can stay if you want, but vtsls doesn't handle it natively
-    "astro",
-  },
+  local tsdk = get_tsdk(root)
+  if not tsdk then
+    return nil -- Do NOT start if no TypeScript SDK found
+  end
 
-  root_dir = function(bufnr)
-    return vim.fs.root(bufnr, { "package.json", "tsconfig.json", ".git" })
-  end,
-
-  -- ✅ compute tsdk per buffer
-  init_options = function(bufnr)
-    local root = vim.fs.root(bufnr, { "package.json", "tsconfig.json", ".git" })
-    if not root then
-      error("vtsls: root_dir not found for buffer " .. bufnr)
-    end
-
-    local tsdk = get_tsdk(root)
-    if not tsdk then
-      error("vtsls: TypeScript SDK not found in " .. root)
-    end
-
-    return {
+  return {
+    cmd = { mason_vtsls, "--stdio" },
+    filetypes = {
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "typescript.tsx",
+      "astro",
+    },
+    root_dir = root, -- ✅ Explicitly set root
+    init_options = {
       typescript = {
         tsdk = tsdk,
       },
-    }
-  end,
-}
+    },
+  }
+end
