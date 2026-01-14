@@ -1,3 +1,4 @@
 {{- if ne .chezmoi.os "windows" -}}
-.chezmoiscripts/run_set-xdg-config-home-windows.ps1.tmpl
+.chezmoiscripts/run_after_set-xdg-config-home-windows.cmd.tmpl
+AppData/**
 {{- end -}}
