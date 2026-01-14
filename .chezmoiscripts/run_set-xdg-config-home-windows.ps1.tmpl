@@ -1,0 +1,34 @@
+{{- /* Only emit content when running on Windows. Empty templates are not executed. */ -}}
+{{- if eq .chezmoi.os "windows" -}}
+# Chezmoi Windows script: set XDG_CONFIG_HOME for current user *only if missing*.
+# Runs safely on every `chezmoi apply`, does nothing if the variable already exists.
+
+$Name = "XDG_CONFIG_HOME"
+$Scope = "User"
+$Desired = Join-Path $env:USERPROFILE ".config"
+
+try {
+    # Read current value in User scope (persistent)
+    $Current = [Environment]::GetEnvironmentVariable($Name, $Scope)
+
+    if ([string]::IsNullOrWhiteSpace($Current)) {
+        # Ensure the target directory exists
+        if (-not (Test-Path -LiteralPath $Desired)) {
+            [System.IO.Directory]::CreateDirectory($Desired) | Out-Null
+        }
+
+        # Set the variable for User scope (persistent)
+        [Environment]::SetEnvironmentVariable($Name, $Desired, $Scope)
+
+        Write-Host "Set `$XDG_CONFIG_HOME (User) to: $Desired"
+        Write-Host "NOTE: New processes will see this value. Restart shells/IDEs to pick it up."
+    }
+    else {
+        Write-Host "XDG_CONFIG_HOME (User) already set: $Current — no change."
+    }
+}
+catch {
+    Write-Warning "Failed to set XDG_CONFIG_HOME: $($_.Exception.Message)"
+    exit 1
+}
+{{- end -}}
