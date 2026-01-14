@@ -1,0 +1,12 @@
+{{- if eq .chezmoi.os "windows" -}}
+@echo off
+setlocal
+
+REM Prefer PowerShell 7 if available, else fallback to Windows PowerShell.
+where pwsh.exe >nul 2>&1 && (set "PS=pwsh.exe") || (set "PS=powershell.exe")
+
+REM Launch the real PS script with a per-process policy bypass.
+%PS% -NoProfile -ExecutionPolicy Bypass -File "%LOCALAPPDATA%\chezmoi-scripts\set-xdg-config-home.ps1"
+
+endlocal
+{{- end -}}
