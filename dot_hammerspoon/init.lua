@@ -10,4 +10,4 @@ end)
 -- hs.hotkey.bind({"alt"}, "m", messaging.pick)
 
 -- Handy reload hotkey while you iterate
-hs.hotkey.bind({"cmd"}, "r", hs.reload)
+--hs.hotkey.bind({"cmd"}, "r", hs.reload)
