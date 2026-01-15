@@ -38,7 +38,7 @@ return {
 
 						return vim.g.homeDir .. "/.local/share/mise/shims/python3"
 					end,
-          pytest_discover_instances = true,
+					pytest_discover_instances = true,
 				}),
 				require("neotest-rust"),
 				require("neotest-dotnet")({
@@ -49,14 +49,14 @@ return {
 				}),
 				require("neotest-scala"),
 				-- require "neotest-haskell",
-        require("neotest-jest")({
-        jestCommand = "npm test --",
-        jestConfigFile = "custom.jest.config.ts",
-        env = { CI = true },
-        cwd = function()
-          return vim.fn.getcwd()
-        end,
-      }),
+				require("neotest-jest")({
+					jestCommand = "npm test --",
+					jestConfigFile = "custom.jest.config.ts",
+					env = { CI = true },
+					cwd = function()
+						return vim.fn.getcwd()
+					end,
+				}),
 				require("neotest-go"),
 				require("neotest-plenary"),
 				require("neotest-vim-test")({
