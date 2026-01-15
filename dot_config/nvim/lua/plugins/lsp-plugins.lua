@@ -6,10 +6,10 @@ local rustacean = require("plugins.lsp.rustacean")
 local rustvim = require("plugins.lsp.rustvim")
 
 return {
-  mason,
-  lsp_csharp,
-  lsp_java,
-  lsp_javascript,
-  rustacean,
-  rustvim
+	mason,
+	lsp_csharp,
+	lsp_java,
+	lsp_javascript,
+	rustacean,
+	rustvim,
 }

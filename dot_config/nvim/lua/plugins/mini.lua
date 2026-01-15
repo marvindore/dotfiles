@@ -6,7 +6,7 @@ return {
 			require("mini.ai").setup()
 			local diff = require("mini.diff")
 			diff.setup({
-			  source = diff.gen_source.none()
+				source = diff.gen_source.none(),
 			})
 
 			require("mini.files").setup({

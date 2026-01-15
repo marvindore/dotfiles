@@ -9,7 +9,7 @@ return {
 			keymaps = {
 				clear = "<leader>rc",
 				exit = "<leader>rx",
-        interrupt = "<leader>rI",
+				interrupt = "<leader>rI",
 				send_code_block = "<leader>rs",
 				send_code_block_and_move = "<leader>rn",
 				send_file = "<leader>rf",
@@ -18,13 +18,13 @@ return {
 				send_until_cursor = "<leader>ru",
 				visual_send = "<leader>rv",
 				toggle_repl_with_cmd_1 = "<leader>rm",
-				toggle_repl_with_cmd_2 = "<leader>rM"
+				toggle_repl_with_cmd_2 = "<leader>rM",
 			},
 			config = {
-			  repl_open_cmd = {
-			    view.split.vertical.rightbelow("%35"),
-			    view.split.vertical.rightbelow("%100")
-			  },
+				repl_open_cmd = {
+					view.split.vertical.rightbelow("%35"),
+					view.split.vertical.rightbelow("%100"),
+				},
 				scratch_repl = true, -- discard repls,
 				repl_definition = {
 					cs = {

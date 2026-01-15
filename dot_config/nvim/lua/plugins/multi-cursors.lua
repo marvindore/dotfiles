@@ -76,7 +76,7 @@ return {
 		-- bring back cursors if you accidentally clear them
 		set("n", "<leader>gv", mc.restoreCursors)
 
-    -- duplicate keybinding
+		-- duplicate keybinding
 		-- Align cursor columns.
 		--set("n", "<leader>a", mc.alignCursors)
 
