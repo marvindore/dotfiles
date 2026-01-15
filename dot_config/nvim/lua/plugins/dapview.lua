@@ -131,10 +131,13 @@ return {
 			-- Reopen dapview when switching tabs
 			follow_tab = false,
 		},
-		config = function()
+		-- 1. Accept opts from Lazy
+		config = function(_, opts)
+			-- 2. Initialize the plugin with your opts
+			require("dap-view").setup(opts)
 
-      local dap = require('dap')
-			local dapview = package.loaded["dap-view"] or require("dap-view")
+			local dap = require("dap")
+			local dapview = require("dap-view")
 			local icons = require("config.icons")
 
 			dap.listeners.before.attach.dapui_config = function()
@@ -150,9 +153,18 @@ return {
 				dapview.close()
 			end
 
-			vim.fn.sign_define("DapBreakpoint", { text = icons.emoji.Anger, texthl = "", linehl = "", numhl = "" })
-			vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop, texthl = "", linehl = "", numhl = "" })
-			vim.fn.sign_define("DapStopped", { text = icons.emoji.OrangeDiamond, texthl = "", linehl = "", numhl = "" })
-    end
+			vim.fn.sign_define(
+				"DapBreakpoint",
+				{ text = icons.emoji.Anger, texthl = "", linehl = "", numhl = "" }
+			)
+			vim.fn.sign_define(
+				"DapBreakpointRejected",
+				{ text = icons.emoji.Poop, texthl = "", linehl = "", numhl = "" }
+			)
+			vim.fn.sign_define(
+				"DapStopped",
+				{ text = icons.emoji.OrangeDiamond, texthl = "", linehl = "", numhl = "" }
+			)
+		end,
 	},
 }
