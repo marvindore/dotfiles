@@ -1,46 +1,20 @@
 return {
 	{ "WhoIsSethDaniel/mason-tool-installer.nvim" },
-	-- Automatically install LSPs to stdpath for neovim
-	-- Mason path ~/.local/share/nvim/mason/bin
 	{
 		"mason-org/mason.nvim",
 		lazy = true,
 		opts = {
+			-- Moved PATH here to consolidate config
+			PATH = "append",
 			ui = {
-				---@since 1.0.0
-				-- Whether to automatically check for new versions when opening the :Mason window.
 				check_outdated_packages_on_open = true,
-
-				---@since 1.0.0
-				-- The border to use for the UI window. Accepts same border values as |nvim_open_win()|.
-				-- Defaults to `:h 'winborder'` if nil.
 				border = nil,
-
-				---@since 1.11.0
-				-- The backdrop opacity. 0 is fully opaque, 100 is fully transparent.
 				backdrop = 60,
-
-				---@since 1.0.0
-				-- Width of the window. Accepts:
-				-- - Integer greater than 1 for fixed width.
-				-- - Float in the range of 0-1 for a percentage of screen width.
 				width = 0.8,
-
-				---@since 1.0.0
-				-- Height of the window. Accepts:
-				-- - Integer greater than 1 for fixed height.
-				-- - Float in the range of 0-1 for a percentage of screen height.
 				height = 0.9,
-
 				icons = {
-					---@since 1.0.0
-					-- The list icon to use for installed packages.
 					package_installed = "◍",
-					---@since 1.0.0
-					-- The list icon to use for packages that are installing, or queued for installation.
 					package_pending = "◍",
-					---@since 1.0.0
-					-- The list icon to use for packages that are not installed.
 					package_uninstalled = "◍",
 				},
 			},
@@ -49,11 +23,9 @@ return {
 				"github:Crashdummyy/mason-registry",
 			},
 		},
-		config = function()
-			require("mason").setup({
-				PATH = "append",
-			})
-
+		-- Lazy passes the 'opts' table as the second argument here
+		config = function(_, opts)
+			require("mason").setup(opts)
 
 			vim.api.nvim_create_autocmd("User", {
 				pattern = "MasonToolsUpdateCompleted",
@@ -65,57 +37,50 @@ return {
 			})
 
 			local ensure_installed = {
-				"bashls",
-				"cspell",
-				"dockerls",
-				"jsonls",
+				-- LSP servers
+				"bash-language-server",
+				"dockerfile-language-server",
+				"json-lsp",
+				"yaml-language-server",
 				"lemminx",
-				"lua_ls",
-				"tailwindcss",
-				"yamlls",
-				"sqls",
+				"lua-language-server",
+
+				-- formatters / linters
 				"stylua",
+				"cspell",
 				"vale",
 			}
 
+			if vim.g.enableSql then
+				local sql_addons = { "sqls" }
+				for _, value in ipairs(sql_addons) do
+					table.insert(ensure_installed, value)
+				end
+			end
+
 			if vim.g.enableCsharp then
-				local cSharp_addons = {
-					"csharpier",
-					"netcoredbg",
-					"roslyn"
-				}
+				local cSharp_addons = { "csharpier", "netcoredbg" }
 				for _, value in ipairs(cSharp_addons) do
 					table.insert(ensure_installed, value)
 				end
 			end
 
 			if vim.g.enableGo then
-				local go_addons = {
-					"gopls",
-					"delve",
-				}
+				local go_addons = { "gopls", "delve" }
 				for _, value in ipairs(go_addons) do
 					table.insert(ensure_installed, value)
 				end
 			end
 
 			if vim.g.enableJava then
-				local java_addons = {
-					"java-debug-adapter",
-					"java-test",
-					"jdtls",
-				}
+				local java_addons = { "java-debug-adapter", "java-test", "jdtls" }
 				for _, value in ipairs(java_addons) do
 					table.insert(ensure_installed, value)
 				end
 			end
 
 			if vim.g.enableKotlin then
-				local kotlin_addons = {
-					"ktlint",
-					"kotlin-debug-adapter",
-					"kotlin-lsp",
-				}
+				local kotlin_addons = { "ktlint", "kotlin-debug-adapter", "kotlin-lsp" }
 				for _, value in ipairs(kotlin_addons) do
 					table.insert(ensure_installed, value)
 				end
@@ -123,10 +88,10 @@ return {
 
 			if vim.g.enableJavascript then
 				local javascript_addons = {
-					"angularls",
-					"astro",
+					"angular-language-server",
+					"astro-language-server",
 					"biome",
-					"eslint",
+					"eslint-lsp",
 					"prettier",
 					"js-debug-adapter",
 					"vtsls",
@@ -150,11 +115,7 @@ return {
 			end
 
 			if vim.g.enableRust then
-				local rust_addons = {
-					"rust_analyzer",
-					"codelldb",
-				}
-
+				local rust_addons = { "rust-analyzer", "codelldb" }
 				for _, value in ipairs(rust_addons) do
 					table.insert(ensure_installed, value)
 				end
@@ -167,9 +128,4 @@ return {
 			})
 		end,
 	},
-	-- {
-	-- 	"williamboman/mason-lspconfig.nvim",
-	-- 	config = function()
-	-- 	end,
-	-- },
 }

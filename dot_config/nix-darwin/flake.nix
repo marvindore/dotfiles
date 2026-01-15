@@ -33,6 +33,7 @@
             pkgs.delta
             pkgs.difftastic
             pkgs.docker
+            pkgs.ente-auth
             pkgs.eza
             pkgs.flameshot
             pkgs.fzf

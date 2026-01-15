@@ -1,152 +1,129 @@
 local install_list = {
-        'bash',
-        --'c_sharp',
-        'cmake',
-        'comment',
-        --'cpp',
-        'css',
-        'cuda',
-        --'devicetree',
-        'dockerfile',
-        'gitignore',
-        --'go',
-        --'gomod',
-        --'gowork',
-        'graphql',
-        'html',
-        'http',
-        --'java',
-        'javascript',
-        'jsdoc',
-        'json',
-        'json5',
-        --'jsonnet',
-        --'julia',
-        --'kotlin',
-        'latex',
-        'lua',
-        'make',
-        'markdown',
-        'markdown_inline',
-        --'ocaml',
-        --'ocaml_interface',
-        --'ocamllex',
-        --'php',
-        --'phpdoc',
-        'python',
-        'query',
-        --'tlaplus',
-        'regex',
-        --'rust',
-        --'scala',
-        --'scheme,'
-        'scss',
-        --'solidity',
-        'sql',
-        'svelte',
-        --'swift',
-        'todotxt',
-        'toml',
-        'tsx',
-        'typescript',
-        'vim',
-        'vimdoc',
-        'vue',
-        'yaml',
-        --'zig'
-      }
+	"bash",
+	"cmake",
+	"comment",
+	"css",
+	"cuda",
+	"dockerfile",
+	"gitignore",
+	"graphql",
+	"html",
+	"http",
+	"javascript",
+	"jsdoc",
+	"json",
+	"json5",
+	"latex",
+	"lua",
+	"make",
+	"markdown",
+	"markdown_inline",
+	"python",
+	"query",
+	"regex",
+	"scss",
+	"sql",
+	"svelte",
+	"todotxt",
+	"toml",
+	"tsx",
+	"typescript",
+	"vim",
+	"vimdoc",
+	"vue",
+	"yaml",
+}
 
+-- FIX: Use vim.list_extend instead of table.insert for lists
 if vim.g.enableRust then
-  table.insert(install_list, "rust")
+	table.insert(install_list, "rust")
 end
 
 if vim.g.enableJava then
-  table.insert(install_list, {"java", "kotlin"})
+	vim.list_extend(install_list, { "java", "kotlin" })
 end
 
 if vim.g.enableCsharp then
-  table.insert(install_list, "c_sharp")
+	table.insert(install_list, "c_sharp")
 end
 
 if vim.g.enableGo then
-  table.insert(install_list, { "go", "gomod", "gowork" })
+	vim.list_extend(install_list, { "go", "gomod", "gowork" })
 end
 
 return {
-  'nvim-treesitter/nvim-treesitter',
-  dependencies = {
-    'nvim-treesitter/nvim-treesitter-textobjects',
-  },
-  event = { "BufReadPost", "BufNewFile" },
-  opts = { highlight = { enable = true } },
-  config = function()
-    require 'nvim-treesitter.configs'.setup {
-      configs = {
-        ignore_install = { "help", "vimdoc" }
-      },
-      modules = {},
-      ignore_install = { "help" },
-      ensure_installed = install_list, -- one of 'all', 'maintained' (parsers with maintainers), or a list of languages
-      sync_install = false,
-      auto_install = true,
-      highlight = {
-        enable = true,             -- false will disable the whole extension
-        disable = { "c" }, -- list of language that will be disabled
-      },
-      indent = { enable = true },
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = '<c-space>',
-          node_incremental = '<c-space>',
-          scope_incremental = '<c-s>',
-          node_decremental = '<c-backspace>',
-        },
-      },
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
-          keymaps = {
-            -- You can use the capture groups defined in textobjects.scm
-            ['aa'] = '@parameter.outer',
-            ['ia'] = '@parameter.inner',
-            ['af'] = '@function.outer',
-            ['if'] = '@function.inner',
-            ['ac'] = '@class.outer',
-            ['ic'] = '@class.inner',
-          },
-        },
-        move = {
-          enable = true,
-          set_jumps = true, -- whether to set jumps in the jumplist
-          goto_next_start = {
-            [']m'] = '@function.outer',
-            [']]'] = '@class.outer',
-          },
-          goto_next_end = {
-            [']M'] = '@function.outer',
-            [']['] = '@class.outer',
-          },
-          goto_previous_start = {
-            ['[m'] = '@function.outer',
-            ['[['] = '@class.outer',
-          },
-          goto_previous_end = {
-            ['[M'] = '@function.outer',
-            ['[]'] = '@class.outer',
-          },
-        },
-        swap = {
-          enable = true,
-          swap_next = {
-            ['<leader>a'] = '@parameter.inner',
-          },
-          swap_previous = {
-            ['<leader>A'] = '@parameter.inner',
-          },
-        },
-      },
-    }
-  end
+	"nvim-treesitter/nvim-treesitter",
+	dependencies = {
+		"nvim-treesitter/nvim-treesitter-textobjects",
+	},
+	event = { "BufReadPost", "BufNewFile" },
+	-- 1. All configuration moved to opts
+	opts = {
+		ensure_installed = install_list,
+		sync_install = false,
+		auto_install = true,
+		ignore_install = { "help", "vimdoc" }, -- Combined your duplicate keys
+		modules = {},
+		highlight = {
+			enable = true,
+			disable = { "c" },
+		},
+		indent = { enable = true },
+		incremental_selection = {
+			enable = true,
+			keymaps = {
+				init_selection = "<c-space>",
+				node_incremental = "<c-space>",
+				scope_incremental = "<c-s>",
+				node_decremental = "<c-backspace>",
+			},
+		},
+		textobjects = {
+			select = {
+				enable = true,
+				lookahead = true,
+				keymaps = {
+					["aa"] = "@parameter.outer",
+					["ia"] = "@parameter.inner",
+					["af"] = "@function.outer",
+					["if"] = "@function.inner",
+					["ac"] = "@class.outer",
+					["ic"] = "@class.inner",
+				},
+			},
+			move = {
+				enable = true,
+				set_jumps = true,
+				goto_next_start = {
+					["]m"] = "@function.outer",
+					["]]"] = "@class.outer",
+				},
+				goto_next_end = {
+					["]M"] = "@function.outer",
+					["]["] = "@class.outer",
+				},
+				goto_previous_start = {
+					["[m"] = "@function.outer",
+					["[["] = "@class.outer",
+				},
+				goto_previous_end = {
+					["[M"] = "@function.outer",
+					["[]"] = "@class.outer",
+				},
+			},
+			swap = {
+				enable = true,
+				swap_next = {
+					["<leader>a"] = "@parameter.inner",
+				},
+				swap_previous = {
+					["<leader>A"] = "@parameter.inner",
+				},
+			},
+		},
+	},
+	-- 2. Config now accepts opts and passes them to setup
+	config = function(_, opts)
+		require("nvim-treesitter.configs").setup(opts)
+	end,
 }
