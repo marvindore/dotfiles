@@ -25,7 +25,9 @@
       nixpkgs.config.allowUnfree = true;
       environment.systemPackages =
         [ 
+            pkgs.act
             pkgs.aerospace
+            pkgs.age
             pkgs.atuin
             pkgs.chezmoi
             pkgs.colima
@@ -33,7 +35,6 @@
             pkgs.delta
             pkgs.difftastic
             pkgs.docker
-            pkgs.ente-auth
             pkgs.eza
             pkgs.flameshot
             pkgs.fzf
@@ -69,6 +70,7 @@
       homebrew = {
         enable = true;
         brews = [
+        "bitwarden-cli"
         "mas"
         "opencode"
         ];
@@ -78,8 +80,6 @@
             "jordanbaird-ice"
             "google-chrome"
             "google-drive"
-            "karabiner-elements"
-            "scroll-reverser"
             "scoot"
             "slack"
             "wezterm@nightly"
