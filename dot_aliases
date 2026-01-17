@@ -10,6 +10,9 @@ alias flake='nvim ~/.config/nix-darwin/'
 alias msbuild='$HOME/.local/share/mise/shims/dotnet'
 alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
 
+#bitwarden
+alias bw_unlock='export BW_SESSION=$(bw unlock --raw)'
+
 #git
 
 #Php
@@ -31,62 +34,110 @@ alias l="eza"
 
 alias wiki="nvim ~/vimwiki/index.md"
 
+alias litellm_up="docker compose -f ~/docker/litellm/docker-compose.yml up -d"
+alias litellm_down="docker compose -f ~/docker/litellm/docker-compose.yml down"
+
+# Define path to the driver
+DRIVER_PATH="/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon"
+
 # --- Start Kanata + Virtual HID daemon ---
 function kanata_up() {
-    # Check if karabiner_cli exists in PATH
-    if ! command -v karabiner_cli >/dev/null 2>&1; then
-        echo "Karabiner-Elements CLI not found — please install/start Karabiner-Elements first."
+    # 1. Refresh sudo credentials upfront
+    if ! sudo -v; then
+        echo "Sudo authentication failed."
         return 1
     fi
 
-    echo "Karabiner-Elements CLI detected."
+    echo "--- Starting Stack ---"
 
-    # Optional: wait a short moment for Karabiner to initialize
-    sleep 0.5
+    # 2. Start the Karabiner Driver (Backgrounded)
+    if pgrep -f "Karabiner-VirtualHIDDevice-Daemon" >/dev/null; then
+        echo "Driver process is already running."
+    else
+        echo "Launching Karabiner Driver..."
+        sudo nohup "$DRIVER_PATH" > /tmp/karabiner_driver.log 2>&1 &
+        echo $! | sudo tee /tmp/karabiner_driver.pid >/dev/null
+    fi
 
-    echo "Starting Kanata..."
+    # 3. SAFETY CHECK: Wait for Kernel Registration
+    # We poll the I/O Registry to ensure the driver is truly ready to accept input.
+    # This prevents the race condition that causes system crashes.
+    echo "Waiting for driver to initialize..."
+    local counter=0
+    local max_retries=20 # Wait up to 10 seconds (20 * 0.5s)
+
+    while ! ioreg -l | grep -q "Karabiner-DriverKit-VirtualHIDDevice"; do
+        sleep 0.5
+        ((counter++))
+        
+        if [ $counter -ge $max_retries ]; then
+            echo "❌ CRITICAL ERROR: Driver failed to register with Kernel."
+            echo "Aborting Kanata launch to prevent system crash."
+            return 1
+        fi
+        echo -n "."
+    done
+    echo "" # New line
+    echo "✅ Driver is active in Kernel."
+
+    # 4. Start Kanata (Safe to start now)
+    echo "Launching Kanata..."
     sudo nohup kanata --cfg "$HOME/.config/kanata/config.kbd" \
         >> /tmp/kanata.log 2>&1 &
-    echo $! | sudo tee /tmp/kanata-kanata.pid >/dev/null
+    echo $! | sudo tee /tmp/kanata.pid >/dev/null
 
-    echo "Kanata started!"
+    echo "🚀 Kanata Stack Started Successfully!"
 }
 
-# --- Stop Kanata ---
+# --- Stop Kanata AND the Driver ---
 function kanata_down() {
-    echo "Stopping Kanata..."
+    echo "--- Stopping Stack ---"
 
-    # Kill any process named 'kanata'
-    sudo pkill -x kanata 2>/dev/null || true
+    # 1. Kill Kanata
+    if pgrep -x "kanata" >/dev/null; then
+        echo "Stopping Kanata..."
+        sudo pkill -x kanata
+    else
+        echo "Kanata was not running."
+    fi
 
-    # Kill any process containing 'kanata' in the command line
-    sudo pkill -f "kanata" 2>/dev/null || true
+    # 2. Kill the Driver
+    if pgrep -f "Karabiner-VirtualHIDDevice-Daemon" >/dev/null; then
+        echo "Stopping Karabiner Driver..."
+        sudo pkill -f "Karabiner-VirtualHIDDevice-Daemon"
+    else
+        echo "Driver was not running."
+    fi
 
-    # Kill any remaining child processes Kanata spawned
-    for pid in $(pgrep -f "kanata"); do
-        sudo kill -9 "$pid" 2>/dev/null || true
-    done
+    # 3. Clean up PID files
+    sudo rm -f /tmp/kanata.pid /tmp/karabiner_driver.pid
 
-    # Remove PID files
-    sudo rm -f /tmp/kanata.pid /tmp/kanata-kanata.pid
-
-    echo "Kanata stack stopped."
+    echo "🛑 Stack stopped."
 }
 
 # --- Check status ---
 function kanata_status() {
-    echo "Kanata:"
-    pgrep -fl "kanata --cfg" || echo "not running"
-
-    echo "Karabiner-Elements:"
-    if command -v karabiner_cli >/dev/null 2>&1; then
-        echo "installed"
+    echo "--- Status ---"
+    
+    if pgrep -x "kanata" >/dev/null; then
+        echo "🟢 Kanata: RUNNING (PID: $(pgrep -x kanata))"
     else
-        echo "not installed / not found"
+        echo "🔴 Kanata: STOPPED"
+    fi
+
+    # Check process AND Kernel status
+    if pgrep -f "Karabiner-VirtualHIDDevice-Daemon" >/dev/null; then
+        if ioreg -l | grep -q "Karabiner-DriverKit-VirtualHIDDevice"; then
+             echo "🟢 Driver: RUNNING & LINKED (Ready)"
+        else
+             echo "YA Driver: RUNNING (But not linked to Kernel yet)"
+        fi
+    else
+        echo "🔴 Driver: STOPPED"
     fi
 }
 
-function darwin-update() {
+function darwin_update() {
   echo "Building system configuration as unprivileged user..."
   nix build ~/.config/nix-darwin#darwinConfigurations.mchip.system
 
