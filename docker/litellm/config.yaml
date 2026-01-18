@@ -1,5 +1,8 @@
 model_list:
-  - model_name: gemini-2.5-pro
+  - model_name: gemini-3-pro-preview
     litellm_params:
-      model: gemini-2.5-pro
-      api_key: os.environ/GEMINI_API_KEY
+      model: gemini/gemini-3-pro-preview
+      api_key: "os.environ/GEMINI_API_KEY"
+
+# litellm_settings:
+#   master_key: "os.environ/LITELLM_MASTER_KEY"
