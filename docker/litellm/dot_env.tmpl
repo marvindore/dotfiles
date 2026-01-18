@@ -4,5 +4,5 @@ DEBUG="true"
 
 # Secrets from Bitwarden
 # Syntax: (bitwardenFields "item" "ItemName").FieldName.value
-LITELLM_MASTER_KEY="{{ (bitwardenFields "item" "litellm-secrets").LITELLM_MASTER_KEY.value }}"
+# LITELLM_MASTER_KEY="{{ (bitwardenFields "item" "litellm-secrets").LITELLM_MASTER_KEY.value }}"
 GEMINI_API_KEY="{{ (bitwardenFields "item" "litellm-secrets").GEMINI_API_KEY.value }}"
