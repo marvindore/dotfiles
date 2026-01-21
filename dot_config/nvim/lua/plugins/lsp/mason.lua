@@ -103,10 +103,8 @@ return {
 
 			if vim.g.enablePython then
 				local python_addons = {
-					"basedpyright",
-					"black",
 					"debugpy",
-					"flake8",
+					"pyrefly",
 					"ruff",
 				}
 				for _, value in ipairs(python_addons) do

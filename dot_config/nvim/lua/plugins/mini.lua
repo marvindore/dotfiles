@@ -18,15 +18,19 @@ return {
 			require("mini.bracketed").setup()
 			require("mini.surround").setup({
 				mappings = {
-					add = "Sa",
-					delete = "Sd",
-					find = "Sf",
-					find_left = "SF",
-					highlight = "Sh",
-					replace = "Sr",
-					update_n_lines = "Sn",
+					add = "ysa",
+					delete = "ysd",
+					find = "ysf",
+					find_left = "ysF",
+          highlight = "ysh",
+          replace = "ysr",
+          update_n_lines = "ysn",
 				},
 			})
+      -- THE FIX: Map 'yy' in Visual mode to standard 'y' (Yank)
+      -- This bypasses the wait time created by the 'ys' mapping
+      vim.keymap.set("x", "yy", "y", { desc = "Yank Selection" })
+
 			require("mini.pairs").setup()
 			require("mini.indentscope").setup()
 			require("mini.move").setup({
