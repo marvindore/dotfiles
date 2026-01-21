@@ -238,6 +238,14 @@ function M.enable_servers(opts)
 	if opts.enable_rust ~= nil and opts.enable_rust or g.enableRust then
 		vim.lsp.enable("rust")
 	end
+
+	if opts.enable_python ~= nil and opts.enable_python or g.enablePython then
+	  vim.lsp.enable({"pyrefly", "ruff"})
+  end
+
+  if opts.enable_java ~= nil and opts.enable_java or g.enableJava then
+    vim.lsp.enable({'jdtls'})
+  end
 end
 
 return M
