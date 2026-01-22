@@ -25,7 +25,7 @@ Host github.com
   UseKeychain yes
   IdentityFile ~/.ssh/marvin
 
-{{ else if eq .chezmoi.username "marvin.dore" -}}
+{{ else if (contains "marvin.dore" .chezmoi.username)  -}}
 Host github.com
   HostName github.com
   User marvin-dore_ukg

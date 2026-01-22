@@ -33,7 +33,7 @@ $scoopApps = @(
 $wingetApps = @(
     'Alacritty.Alacritty', 'dandavison.delta', 'Git.Git', 'GitHub.cli', 'GnuPG.GnuPG', 'icsharpcode.ILSpy', 'jdx.mise', 'Neovim.Neovim.Nightly',
     'Nushell.Nushell', 'Postman.Postman', 'JetBrains.IntelliJIDEA.Ultimate', 'JetBrains.Rider',
-    'JetBrains.DataGrip', 'Microsoft.PowerShell', 'Docker.DockerDesktop'
+    'JetBrains.DataGrip', 'Meld.Meld', 'Microsoft.PowerShell', 'Docker.DockerDesktop'
 )
 
 function Show-Menu {
