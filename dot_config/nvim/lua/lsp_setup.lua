@@ -3,6 +3,37 @@
 
 local M = {}
 
+local function package_json_has_angular(path)
+  -- Check if file exists and is readable
+  if vim.fn.filereadable(path) ~= 1 then
+    return false
+  end
+
+  -- Safely open the file
+  local fd = vim.loop.fs_open(path, "r", 438) -- 0666
+  if not fd then
+    return false
+  end
+
+  -- Read file stats
+  local stat = vim.loop.fs_fstat(fd)
+  if not stat then
+    vim.loop.fs_close(fd)
+    return false
+  end
+
+  -- Read file content
+  local content = vim.loop.fs_read(fd, stat.size, 0)
+  vim.loop.fs_close(fd)
+
+  if not content then
+    return false
+  end
+
+  -- Case‑insensitive search for the word "angular"
+  return content:lower():find("angular", 1, true) ~= nil
+end
+
 -- Register the LspAttach autocmd once, early in startup.
 function M.setup_lsp_attach()
 	vim.api.nvim_create_autocmd("LspAttach", {
@@ -220,7 +251,17 @@ function M.enable_servers(opts)
 	vim.lsp.enable({ "bashls", "yamlls", "dockerls", "jsonls", "lemminx" })
 
 	if opts.enable_js ~= nil and opts.enable_js or g.enableJavascript then
-		vim.lsp.enable({ "angularls", "astro", "vtsls" })
+		local project_root = vim.fn.getcwd()
+		local angular_json = project_root .. "/angular.json"
+		local nx_json = project_root .. "/nx.json"
+		local pkg_json = project_root .. "/package.json"
+
+		-- Only enable Angular LSP if angular.json or nx.json exists
+		if vim.fn.filereadable(angular_json) == 1 or vim.fn.filereadable(nx_json) == 1 or package_json_has_angular(pkg_json) then
+			vim.lsp.enable("angularls")
+		end
+
+			vim.lsp.enable({ "astro", "vtsls" })
 	end
 
 	if opts.enable_sql ~= nil and opts.enable_sql or g.enableSql then
@@ -240,12 +281,12 @@ function M.enable_servers(opts)
 	end
 
 	if opts.enable_python ~= nil and opts.enable_python or g.enablePython then
-	  vim.lsp.enable({"pyrefly", "ruff"})
-  end
+		vim.lsp.enable({ "pyrefly", "ruff" })
+	end
 
-  if opts.enable_java ~= nil and opts.enable_java or g.enableJava then
-    vim.lsp.enable({'jdtls'})
-  end
+	if opts.enable_java ~= nil and opts.enable_java or g.enableJava then
+		vim.lsp.enable({ "jdtls" })
+	end
 end
 
 return M
