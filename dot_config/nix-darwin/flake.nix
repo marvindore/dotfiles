@@ -69,11 +69,17 @@
       # `mas search <appName>` then add to masApps like "AppName" = <appID>
       homebrew = {
         enable = true;
+
+        taps = [
+            # "isen-ng/dotnet-sdk-versions"
+        ];
+
         brews = [
         "bitwarden-cli"
         "mas"
         "opencode"
         ];
+
         casks = [
             "hammerspoon"
             "font-jetbrains-mono-nerd-font"
@@ -83,6 +89,7 @@
             "scoot"
             "slack"
             "wezterm@nightly"
+            # "dotnet-sdk6-0-400"
         ];
         masApps = {
           "DaisyDisk" = 411643860;  

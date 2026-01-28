@@ -1,23 +1,44 @@
-local project_root = vim.fn.getcwd()
-local angular_json = project_root .. '/angular.json'
-local nx_json = project_root .. '/nx.json'
+local uv = vim.loop
 
--- Only enable Angular LSP if angular.json or nx.json exists
-if vim.fn.filereadable(angular_json) == 1 or vim.fn.filereadable(nx_json) == 1 then
-  local project_modules = project_root .. '/node_modules'
-  local cmd = {
-    'ngserver', '--stdio',
-    '--tsProbeLocations', project_modules,
-    '--ngProbeLocations', project_modules,
-    '--angularCoreVersion', '15.2.10'
-  }
+local function path_exists(path)
+  return uv.fs_stat(path) ~= nil
+end
 
-  return {
-    cmd = cmd,
-    filetypes = { "typescript", "html", "typescriptreact", "typescript.tsx" },
-    root_dir = project_root, -- explicitly set root
-  }
-else
-  -- Return nil so Neovim won't start this LSP
+local function get_angularls_cmd()
+  local root = vim.fn.getcwd()
+  local nm = root .. "/node_modules"
+  local local_server = nm .. "/.bin/ngserver"
+
+  -- 1) USE PROJECT-LOCAL SERVER IF AVAILABLE
+  if path_exists(local_server) then
+    return {
+      local_server,
+      "--stdio",
+      "--tsProbeLocations", nm,
+      "--ngProbeLocations", nm,
+      '--angularCoreVersion', '15.2.10'
+    }
+  end
+
+  -- 2) FALLBACK TO MASON INSTALL
+  local mason_root = vim.fn.stdpath("data") .. "/mason/packages/angular-language-server"
+  local global_server = vim.fn.stdpath("data") .. "/mason/bin/ngserver"
+
+  if path_exists(global_server) then
+    return {
+      global_server, "--stdio",
+      "--tsProbeLocations", mason_root,
+      "--ngProbeLocations", mason_root,
+    }
+  end
+
+  -- (Optional) final fallback
+  vim.notify("Angular LS not found (project-local or mason).", vim.log.levels.ERROR)
   return nil
 end
+
+  return {
+    cmd = get_angularls_cmd(),
+    filetypes = { "typescript", "html", "typescriptreact", "typescript.tsx" },
+    root_markers = { "angular.json", "nx.json" },
+  }

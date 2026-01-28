@@ -91,3 +91,12 @@ Disable the mission control keyboard shortcuts for Ctl+left and Ctrl+right
 - Drivers: https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice
 - run daemon: `sudo '/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon'`
 
+### Typscript
+Add these packages to project to fix intellisense issues
+npm install --save-dev typescript-plugin-css-modules
+
+Angular:
+npm i -D @angular/language-server@15 @angular/language-service@15 typescript@~4.9
+
+
+
