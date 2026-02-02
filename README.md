@@ -60,7 +60,7 @@ sudo chsh -s $(which zsh) $USER
 
 Setup Vale on MacOS
 ```bash
-cp ~/dotfiles/.config/vale/.vale.ini "~/Library/Application Support/vale/"
+cp "$HOME/.config/vale/.vale.ini" "$HOME/Library/Application Support/vale/"
 ~/.local/share/nvim/mason/packages/vale/vale --config="$HOME/Library/Application Support/vale/.vale.ini" sync
 ```
 Linux
