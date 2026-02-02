@@ -98,5 +98,9 @@ npm install --save-dev typescript-plugin-css-modules
 Angular:
 npm i -D @angular/language-server@15 @angular/language-service@15 typescript@~4.9
 
-
-
+### Bitwarden
+First login then use the alias created to save the session to environment variable for use in chezmoi
+```
+bw login
+bw_unlock
+```
