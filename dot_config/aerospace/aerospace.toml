@@ -137,10 +137,13 @@ automatically-unhide-macos-hidden-apps = false
     alt-7 = 'workspace 7'
     alt-8 = 'workspace 8'
     alt-9 = 'workspace 9'
-    alt-a = 'workspace A' 
+    alt-a = [
+        "exec-and-forget bash -c 'if [ -d \"/Applications/Bruno.app\" ]; then open -a /Applications/Bruno.app; elif [ -x \"/run/current-system/sw/bin/bruno\" ]; then open -a bruno; else echo \"Bruno not found\"; fi'",
+        "workspace A"
+    ]
     alt-b = ['exec-and-forget open /Applications/Google Chrome.app', 'workspace B']
     alt-c = 'workspace C'
-    alt-d = 'workspace D'
+    alt-d = ['exec-and-forget open /Applications/DBeaver.app', 'workspace D']
     alt-e = 'workspace E'
     alt-f = 'workspace F'
     alt-g = 'workspace G'
@@ -258,12 +261,8 @@ if.app-id = 'com.microsoft.rdc.macos'
 run = "move-node-to-workspace V"
 
 [[on-window-detected]]
-if.app-id = 'com.parallels.desktop.console'
+if.app-name-regex-substring = "Parallels"
 run = "move-node-to-workspace V"
-
-[[on-window-detected]]
-if.app-id = 'com.jetbrains.datagrip'
-run = "move-node-to-workspace D"
 
 [[on-window-detected]]
 if.app-id = 'com.microsoft.teams2'

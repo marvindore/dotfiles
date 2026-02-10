@@ -24,8 +24,6 @@ end, { expr = true })
 
 --map("n", "<Space>", "<NOP>", )
 
-map("n", "<LocalLeader>ss", ':source $MYVIMRC<CR>', "Source nvim config")
-
 -- Format on all files not just LSP
 map(
 	"n",
@@ -273,7 +271,8 @@ map("n", "<S-F5>", ":lua require'dap'.close()<cr>", "Debug stop")
 map("n", "<F10>", ":lua require('dap').step_over()<CR>", "Debug step over")
 map("n", "<F11>", ":lua require('dap').step_into()<CR>", "Debug step into")
 map("n", "<S-F11>", ":lua require('dap').step_out()<CR>", "Debug step out")
-map("n", "<leader>do", ":lua require('dap').step_out()<CR>", "Debug step out")
+map("n", "<leader>do", ":lua require('dap').step_over()<CR>", "Debug step over")
+map("n", "<leader>dO", ":lua require('dap').step_out()<CR>", "Debug step out")
 
 map("n", "<leader>db", ":lua require('lib.dap').toggle_breakpoint()<CR>", "Debug toggle breakpoint")
 map("n", "<leader>dr", ":lua require'dap'.restart()<cr>", "Debug restart")
@@ -323,10 +322,12 @@ map("n", "<leader>dvr", ":lua require('dap-view.views').switch_to_view('repl')<c
 map("n", "<leader>dvS", ":lua require('dap-view.views').switch_to_view('sessions')<cr>", "DapView sessions")
 
 -- symbols
-map("n", "<LocalLeader>aa", "<cmd>AerialToggle!<cr>", "Symbols outline")
+map("n", "<LocalLeader>ss", "<cmd>AerialToggle!<cr>", "Symbols outline")
 map("n", "<LocalLeader>{", "<cmd>AerialPrev!<cr>", "Symbols outline")
 map("n", "<LocalLeader>}", "<cmd>AerialNext!<cr>", "Symbols outline")
-map("n", "<LocalLeader>af", "<cmd>call aerial#fzf()<cr>", "Symbols Fzf")
+map("n", "<LocalLeader>sf", "<cmd>call aerial#fzf()<cr>", "Symbols Fzf")
+
+map("n", "<localLeader>at", "<cmd>TSContext toggle<cr>", "Toggle TSContext")
 
 -- change list
 map("n", "<leader>Cl", ":changes<CR>", "Change list")
@@ -442,7 +443,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 })
 
 local home = vim.loop.os_homedir() -- Get the home directory dynamically
-local notes_path = home .. "/dotfiles/cheatsheets" -- Append the notes directory
+local notes_path = home .. "/cheatsheets/" -- Append the notes directory
 
 vim.api.nvim_create_user_command("Notes", function()
 	vim.cmd.edit(notes_path)

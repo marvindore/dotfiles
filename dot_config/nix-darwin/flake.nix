@@ -32,6 +32,7 @@
             pkgs.chezmoi
             pkgs.colima
             pkgs.bat
+            pkgs.bruno
             pkgs.delta
             pkgs.difftastic
             pkgs.docker
@@ -44,6 +45,7 @@
             pkgs.gnupg
             pkgs.httpie
             pkgs.ilspycmd
+            pkgs.iproute2mac
             pkgs.jc
             pkgs.jq
             pkgs.k9s

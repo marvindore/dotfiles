@@ -7,10 +7,10 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 
 packages=(
-  "atuin" "bruno" "difftastic" "tree-sitter" "bat" "bitwarden"
+  "act" "atuin" "bruno" "difftastic" "tree-sitter" "bat" "bitwarden"
   "exa" "fzf" "gh" "git" "git-delta"
-  "gnupg" "httpie" "jc" "jq" "k9s" "logseq" "mise" "nushell"
-  "serie" "sst/tap/opencode" "ripgrep" "starship" "tealdeer" 
+  "gnupg" "httpie" "iproute2mac" "jc" "jq" "k9s" "logseq" "miller" "mise" 
+  "serie" "sst/tap/opencode" "ripgrep" "starship"
   "wezterm@nightly" "zellij" "zoxide"
 )
 
