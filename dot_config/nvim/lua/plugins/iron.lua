@@ -7,7 +7,7 @@ return {
 
 		iron.setup({
 			keymaps = {
-				clear = "<leader>rc",
+				clear = "<leader>rC",
 				exit = "<leader>rx",
 				interrupt = "<leader>rI",
 				send_code_block = "<leader>rs",
@@ -15,7 +15,7 @@ return {
 				send_file = "<leader>rf",
 				send_paragraph = "<leader>rp",
 				send_line = "<leader>rl",
-				send_until_cursor = "<leader>ru",
+				send_until_cursor = "<leader>rc",
 				visual_send = "<leader>rv",
 				toggle_repl_with_cmd_1 = "<leader>rm",
 				toggle_repl_with_cmd_2 = "<leader>rM",

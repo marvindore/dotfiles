@@ -1,50 +1,50 @@
 {
-  "$schema": "https://opencode.ai/config.json",
-  // 1. PROVIDER
-  "provider": {
-    "litellm": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "litellm",
-      "options": {
-        "baseURL": "http://localhost:4000/v1",
-        "apiKey": "litellm" 
-      },
-      "models": {
-        "gemini/gemini-3-pro-preview": {
-          "name": "gemini-3-pro-preview"
+    "$schema": "https://opencode.ai/config.json",
+    // 1. PROVIDER
+    "provider": {
+        "litellm": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "litellm",
+            "options": {
+                "baseURL": "http://localhost:4000/v1",
+                "apiKey": "litellm"
+            },
+            "models": {
+                "gemini/gemini-3-pro-preview": {
+                    "name": "gemini-3-pro-preview"
+                }
+            }
         }
-      }
+    },
+    // 2. PERMISSIONS (Crucial for flow)
+    // By default, OpenCode might "ask" before running commands. 
+    // This config auto-allows reading/writing but keeps 'bash' safe.
+    "permission": {
+        "read": "allow", // Allow reading files without asking
+        "edit": "allow", // Allow editing files without asking
+        "bash": "ask", // Always ASK before running terminal commands (Safety)
+        "webfetch": "allow" // Allow fetching URLs (docs, libraries)
+    },
+    // 3. TOOLS (Enable/Disable specific capabilities)
+    // Most are enabled by default, but you can force them here.
+    "tools": {
+        "bash": true, // Enable terminal access
+        "mcp": true // Enable Model Context Protocol (if you use it later)
+    },
+    "keybinds": {
+        "input_newline": "ctrl+n"
+    },
+    // 4. AGENTS (Advanced Workflows)
+    // Define custom "personas". You can switch to these in OpenCode.
+    "agent": {
+        "architect": {
+            "description": "Planning and high-level design",
+            "model": "litellm/gemini/gemini-3-pro-preview", // Use your specific model
+            "tools": {
+                "edit": false, // Architect can only READ and PLAN, not code.
+                "bash": false
+            },
+            "prompt": "You are a software architect. Focus on system design, directories, and scalability. Do not write implementation code."
+        }
     }
-  },
-
-  // 2. PERMISSIONS (Crucial for flow)
-  // By default, OpenCode might "ask" before running commands. 
-  // This config auto-allows reading/writing but keeps 'bash' safe.
-  "permission": {
-    "read": "allow",      // Allow reading files without asking
-    "edit": "allow",      // Allow editing files without asking
-    "bash": "ask",        // Always ASK before running terminal commands (Safety)
-    "webfetch": "allow"   // Allow fetching URLs (docs, libraries)
-  },
-
-  // 3. TOOLS (Enable/Disable specific capabilities)
-  // Most are enabled by default, but you can force them here.
-  "tools": {
-    "bash": true,         // Enable terminal access
-    "mcp": true           // Enable Model Context Protocol (if you use it later)
-  },
-
-  // 4. AGENTS (Advanced Workflows)
-  // Define custom "personas". You can switch to these in OpenCode.
-  "agent": {
-    "architect": {
-      "description": "Planning and high-level design",
-      "model": "litellm/gemini/gemini-3-pro-preview", // Use your specific model
-      "tools": {
-        "edit": false,    // Architect can only READ and PLAN, not code.
-        "bash": false
-      },
-      "prompt": "You are a software architect. Focus on system design, directories, and scalability. Do not write implementation code."
-    }
-  }
 }

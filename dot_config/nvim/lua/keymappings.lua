@@ -419,7 +419,8 @@ map("n", "<leader>ts", ':lua require("neotest").run.stop()<CR>', "Test stop")
 map("n", "<leader>ta", ':lua require("neotest").run.attach()<CR>', "Test attach")
 map("n", "<leader>tt", ':lua require("neotest").summary.toggle()<CR>', "Test toggle summary")
 map("n", "<leader>to", ':lua require("neotest").output.open()<CR>', "Test toggle summary output")
-map("n", "<leader>tp", ':lua require("neotest").output_panel.toggle()<CR>', "Test toggle output panel")
+map("n", "<leader>tpp", ':lua require("neotest").output_panel.toggle()<CR>', "Test toggle output panel")
+map("n", "<leader>tpc", 'Neotest output_panel clear<cr>', "Test output clear")
 map("n", "<leader>tw", ':lua require("neotest").watch.toggle()<CR>', "Test toggle watch")
 
 -- trouble
