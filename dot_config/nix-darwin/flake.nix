@@ -73,7 +73,7 @@
         enable = true;
 
         taps = [
-            # "isen-ng/dotnet-sdk-versions"
+            "isen-ng/dotnet-sdk-versions"
         ];
 
         brews = [
@@ -83,6 +83,7 @@
         ];
 
         casks = [
+            "dbeaver-community"
             "hammerspoon"
             "font-jetbrains-mono-nerd-font"
             "jordanbaird-ice"
@@ -91,7 +92,7 @@
             "scoot"
             "slack"
             "wezterm@nightly"
-            # "dotnet-sdk6-0-400"
+            "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
         ];
         masApps = {
           "DaisyDisk" = 411643860;  

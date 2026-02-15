@@ -246,6 +246,10 @@ end
 function M.enable_servers(opts)
 	opts = opts or {}
 	local g = vim.g
+	
+  -- 🚀 THE FIX: Manually inject Mason binaries into the Neovim PATH
+	-- This must run before vim.lsp.enable()
+	vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
 
 	vim.lsp.enable("lua_ls")
 	vim.lsp.enable({ "bashls", "yamlls", "dockerls", "jsonls", "lemminx" })
