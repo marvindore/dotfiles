@@ -137,6 +137,12 @@ function kanata_status() {
     fi
 }
 
+function darwin_update_versions() {
+    cd ~/.config/nix-darwin/
+    nix flake update
+    cd -
+}
+
 function darwin_update() {
   echo "Building system configuration as unprivileged user..."
   nix build ~/.config/nix-darwin#darwinConfigurations.mchip.system

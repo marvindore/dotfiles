@@ -17,7 +17,8 @@ export PATH="/opt/homebrew/sbin:$PATH"
 
 # Add .NET Core SDK tools
 export PATH="$PATH:$HOME/.dotnet/tools"
-#export PATH="$PATH:/opt/homebrew/opt/dotnet@6/bin"
+export PATH="/usr/local/share/dotnet:$PATH" # Add the actual dotnet binary location to PATH
+export DOTNET_ROOT="/usr/local/share/dotnet" # Recommended: Set DOTNET_ROOT so the CLI can find its own SDKs
 
 # Set MANPAGER
 # Uncomment only one
@@ -125,13 +126,6 @@ ulimit -n 10240
 export GOPATH=$HOME/go
 #export GOROOT=$HOME/.asdf/shims
 export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin:${GOPATH}/bin"
-
-# dotnet
-#export DOTNET_ROOT="$HOME/.dotnet"
-#export PATH="$PATH:/home/marvin/.dotnet"
-# if [[ -f "~/.asdf/plugins/dotnet/set-dotnet-env.zsh" ]]; then
-#     . ~/.asdf/plugins/dotnet/set-dotnet-env.zsh
-# fi
 
 # pnpm
 export PNPM_HOME="$HOME/.local/share/pnpm"

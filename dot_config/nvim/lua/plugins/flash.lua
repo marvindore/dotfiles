@@ -1,18 +1,66 @@
-return {
-	"folke/flash.nvim",
-	event = "VeryLazy",
-	---@type Flash.Config
-	opts = {
-		modes = {
-			char = { enabled = false },
+vim.pack.add({
+	{
+		src = "https://github.com/folke/flash.nvim",
+		data = {
+			-- Lazy load only when these specific keys are pressed
+			keys = {
+				{
+					lhs = "s",
+					rhs = function()
+						require("flash").jump()
+					end,
+					mode = { "n", "x", "o" },
+					desc = "Flash",
+				},
+				{
+					lhs = "S",
+					rhs = function()
+						require("flash").jump({ search = { forward = false, wrap = false, multi_window = false } })
+					end,
+					mode = { "n", "x", "o" },
+					desc = "Flash Backward",
+				},
+				{
+					lhs = "r",
+					rhs = function()
+						require("flash").remote()
+					end,
+					mode = { "o" },
+					desc = "Remote Flash",
+				},
+				{
+					lhs = "R",
+					rhs = function()
+						require("flash").treesitter_search()
+					end,
+					mode = { "o", "x" },
+					desc = "Treesitter Search",
+				},
+				{
+					lhs = "<c-s>",
+					rhs = function()
+						require("flash").toggle()
+					end,
+					mode = { "c" },
+					desc = "Toggle Flash Search",
+				},
+			},
+
+			after = function(_)
+				require("flash").setup({
+					modes = {
+						char = { enabled = false },
+					},
+				})
+			end,
 		},
 	},
-  -- stylua: ignore
-  keys = {
-    { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-    { "S", mode = { "n", "x", "o" }, function() require("flash").jump({ search = { forward = false, wrap = false, multi_window = false } }) end, desc = "Flash Backward" },
-    { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
-    { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-    { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
-  },
-}
+}, {
+	-- Hand the data over to lze for lazy-loading, it won't trigger until the
+	-- exact millisecond you trigger a keymap press
+	load = function(p)
+		local spec = p.spec.data or {}
+		spec.name = p.spec.name
+		require("lze").load(spec)
+	end,
+})

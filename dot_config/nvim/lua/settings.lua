@@ -12,7 +12,6 @@ vim.cmd("hi Cursor guibg=green")
 vim.cmd [[
 hi DiagnosticUnderlineError guisp='Red' gui=underline
 hi DiagnosticUnderlineWarn guisp='Cyan' gui=undercurl
-set termguicolors
 ]]
 -- spell checker
 opt.spelllang = 'en_us'
@@ -53,7 +52,9 @@ vim.o.conceallevel = 0 -- So that I can see `` in markdown files
 vim.o.clipboard = 'unnamedplus' -- Copy paste between vim and everything else
 vim.cmd[[ set dir=~/neovim/swaps ]]
 
---vim.opt.foldmethod="indent"
+-- keep folding enabled but don't fold all lines by default
+vim.opt.foldlevel = 99
+vim.opt.foldlevelstart = 99
 
 vim.opt.tabstop=4
 vim.opt.shiftwidth=4
