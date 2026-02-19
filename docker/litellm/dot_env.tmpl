@@ -2,10 +2,31 @@
 PORT="4000"
 DEBUG="true"
 
-# Secrets from Bitwarden
-# Syntax: (bitwardenFields "item" "ItemName").FieldName.value
-{{- if and (env "CHEZMOI_SECRETS") (lookPath "bw") -}}
-# LITELLM_MASTER_KEY="{{ (bitwardenFields "item" "litellm-secrets").LITELLM_MASTER_KEY.value }}"
+{{- /* Helper: read a secret by service name using macOS 'security' */ -}}
+{{- define "keychainGet" -}}
+  {{- $service := . -}}
+  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
+{{- end -}}
+
+{{- /*
+## Evaluate the two conditions up front to keep the if/else simple
+## example creation of key:
+##   security add-generic-password -a GEMINI_API_KEY     -s "chezmoi_gemini_key"     -w "YOUR-GEMINI-KEY"
+##   security find-generic-password -s "chezmoi_gemini_key" -w
+*/ -}}
+{{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") -}}
+{{- $useBW       := and (env "CHEZMOI_SECRETS") (lookPath "bw") -}}
+
+{{- if $useKeychain -}}
+# --- Work machine → Apple Keychain ---
+GEMINI_API_KEY=""
+LITELLM_MASTER_KEY="{{ template "keychainGet" "chezmoi_litellm_master" }}"
+
+{{- else if $useBW -}}
+# --- Bitwarden path (non-work) ---
 GEMINI_API_KEY="{{ (bitwardenFields "item" "litellm-secrets").GEMINI_API_KEY.value }}"
+LITELLM_MASTER_KEY="{{ (bitwardenFields "item" "litellm-secrets").LITELLM_MASTER_KEY.value }}"
+
 {{- else -}}
+# --- Fallback (no secrets available) ---
 {{- end -}}

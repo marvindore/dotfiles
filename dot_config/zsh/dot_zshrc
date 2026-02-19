@@ -5,6 +5,9 @@ source ~/.aliases
 source ~/.secrets
 source ~/.workrc
 
+# Override config path
+export XDG_CONFIG_HOME="$HOME/.config"
+
 # Path
 export PATH=/usr/local/sbin:$PATH
 export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"

@@ -17,13 +17,13 @@ vim.pack.add({
 				{ lhs = "<LocalLeader>fg", rhs = ":lua require('fzf-lua').grep_project()<CR>", mode = "n", desc =  "Fzf Grep" },
 				{ lhs = "<LocalLeader>fG", rhs = ":lua require('fzf-lua').live_grep_glob()<CR>", mode = "n", desc =  "Fzf rg --glob" },
 				{
-					lhs = "<LocalLeader>fd",
+					lhs = "<leader>fd",
 					rhs = ":lua require('fzf-lua').diagnostics_document()<CR>",
 					mode = "n",
 					desc = "Fzf Document Diagnostics",
 				},
 				{
-					lhs = "<LocalLeader>fD",
+					lhs = "<leader>fD",
 					rhs = ":lua require('fzf-lua').diagnostics_workspace()<CR>",
 					mode = "n",
 					desc = "Fzf Workspace Diagnostics",
