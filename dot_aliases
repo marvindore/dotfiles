@@ -138,7 +138,7 @@ function kanata_status() {
     fi
 }
 
-function darwin_update_versions() {
+function darwin_upgrade() {
     cd ~/.config/nix-darwin/
     nix flake update
     cd -
