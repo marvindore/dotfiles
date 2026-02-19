@@ -1,0 +1,13 @@
+{{- define "keychainGet" -}}
+  {{- $service := . -}}
+  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
+{{- end }}
+
+{{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") }}
+
+[user]
+    name = Marvin Dore
+    email = marvin.dore@ukg.com
+{{ if $useKeychain }}
+    key = "{{ template "keychainGet" "chezmoi_gpg_signing_key" }}"
+{{ end }}

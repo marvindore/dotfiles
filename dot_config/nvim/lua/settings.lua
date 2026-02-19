@@ -15,7 +15,7 @@ hi DiagnosticUnderlineWarn guisp='Cyan' gui=undercurl
 ]]
 -- spell checker
 opt.spelllang = 'en_us'
-opt.spell = true
+opt.spell = false -- disable by default
 
 -- diagnostics
 vim.diagnostic.config({ virtual_lines = { current_line = true } })

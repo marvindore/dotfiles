@@ -6,11 +6,11 @@
 -- 1. Custom Floating Terminal Keymaps (Native Neovim -> Zellij)
 -- Note: <C-\> is handled entirely by Zellij via config.kdl, so it is omitted here!
 
--- Lazygit via Zellij Floating Pane
-vim.keymap.set("n", "<leader>gg", function()
-	-- The '-c' flag closes the pane automatically the moment lazygit exits
-	vim.fn.system("zellij action run --floating -c -- lazygit")
-end, { desc = "Lazygit (Zellij)" })
+-- -- Lazygit via Zellij Floating Pane
+-- vim.keymap.set("n", "<leader>gg", function()
+-- 	-- The '-c' flag closes the pane automatically the moment lazygit exits
+-- 	vim.fn.system("zellij action run --floating -c -- lazygit")
+-- end, { desc = "Lazygit (Zellij)" })
 
 -- Explicitly open a *new* floating terminal (if you need multiple floating panes at once)
 -- vim.keymap.set("n", [[<c-\>]], function()

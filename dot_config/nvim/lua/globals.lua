@@ -1,10 +1,8 @@
 local current_os = vim.loop.os_uname().sysname:lower()
 
-vim.g.enableAvante = false
 vim.g.enableCodeCompanion = true
-vim.g.enableCopilot = false
 vim.g.enableCsharp = true
-vim.g.enableGo = true
+vim.g.enableGo = false
 vim.g.enableJavascript = true
 vim.g.enableJava = false
 vim.g.enableKotlin = false
