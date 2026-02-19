@@ -49,6 +49,7 @@
             pkgs.jc
             pkgs.jq
             pkgs.k9s
+            pkgs.lazygit
             pkgs.logseq
             pkgs.miller
             pkgs.mise
@@ -80,6 +81,7 @@
         "bitwarden-cli"
         "mas"
         "opencode"
+        "tree-sitter-cli"
         ];
 
         casks = [
