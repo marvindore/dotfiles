@@ -100,11 +100,25 @@ local spaces = function()
 end
 
 local function python_venv()
-	local venv = os.getenv("VIRTUAL_ENV")
-	if venv then
-		return "🐍 " .. vim.fn.fnamemodify(venv, ":t")
+	-- Try common environment signals (virtualenv, conda, pyenv)
+	local conda = os.getenv("CONDA_DEFAULT_ENV")
+	local venv_path = os.getenv("VIRTUAL_ENV")
+	local pyenv = os.getenv("PYENV_VERSION")
+
+	local name
+	if venv_path and #venv_path > 0 then
+		name = vim.fn.fnamemodify(venv_path, ":t")
+	elseif conda and #conda > 0 then
+		name = conda
+	elseif pyenv and #pyenv > 0 then
+		name = pyenv
+	end
+
+	-- Always return a value in Python buffers: active name or “system”
+	if name then
+		return "🐍 " .. name
 	else
-		return ""
+		return "🐍 system"
 	end
 end
 
@@ -163,7 +177,17 @@ lualine.setup({
 	sections = {
 		lualine_a = { mode },
 		lualine_b = { filename, branch, diff, diagnostics },
-		lualine_c = { python_venv, native_lsp_progress },
+		lualine_c = {
+			{
+				python_venv,
+				cond = function()
+					return vim.bo.filetype == "python"
+				end,
+				-- Optional: colorize the text a bit
+				color = { fg = "#a6e3a1" },
+			},
+			native_lsp_progress,
+		},
 		lualine_x = {
 			function()
 				if package.loaded["auto-session.lib"] then

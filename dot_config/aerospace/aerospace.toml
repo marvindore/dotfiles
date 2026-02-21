@@ -141,7 +141,7 @@ automatically-unhide-macos-hidden-apps = false
         "exec-and-forget bash -c 'if [ -d \"/Applications/Bruno.app\" ]; then open -a /Applications/Bruno.app; elif [ -x \"/run/current-system/sw/bin/bruno\" ]; then open -a bruno; else echo \"Bruno not found\"; fi'",
         "workspace A"
     ]
-    alt-b = ['exec-and-forget open /Applications/Google Chrome.app', 'workspace B']
+    alt-b = ['exec-and-forget open /Applications/Google\ Chrome.app', 'workspace B']
     alt-c = 'workspace C'
     alt-d = ['exec-and-forget open /Applications/DBeaver.app', 'workspace D']
     alt-e = 'workspace E'
