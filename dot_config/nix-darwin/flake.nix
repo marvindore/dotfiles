@@ -48,6 +48,7 @@
             pkgs.iproute2mac
             pkgs.jc
             pkgs.jq
+            pkgs.jujutsu
             pkgs.k9s
             pkgs.lazygit
             pkgs.logseq
