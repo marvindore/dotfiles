@@ -134,16 +134,14 @@ map("i", t("<C-a>"), "<C-o>0", "")
 map("n", "<S-left>", "10zh", "")
 map("n", "<S-right>", "10zl", "")
 
-
-function _G.set_terminal_keymaps()
-	local opts = { buffer = 0 }
-	vim.keymap.set("t", "<esc>", [[<C-\><C-n>]])
-	vim.keymap.set("t", "jk", [[<C-\><C-n>]])
-	vim.keymap.set("t", "<C-h>", [[<Cmd>wincmd h<CR>]])
-	vim.keymap.set("t", "<C-j>", [[<Cmd>wincmd j<CR>]])
-	vim.keymap.set("t", "<C-k>", [[<Cmd>wincmd k<CR>]])
-	vim.keymap.set("t", "<C-l>", [[<Cmd>wincmd l<CR>]])
-end
+-- Terminal 
+--- enter normal mode
+vim.api.nvim_set_keymap("t", "<Esc>", [[<C-\><C-n>]], { noremap = true, silent = true })
+--- navigation
+map("t", "<C-h>", [[<C-\><C-N><C-w>h]], "Terminal move left")
+map("t", "<C-j>", [[<C-\><C-N><C-w>j]], "Terminal move down")
+map("t", "<C-k>", [[<C-\><C-N><C-w>k]], "Terminal move up")
+map("t", "<C-l>", [[<C-\><C-N><C-w>l]], "Terminal move right")
 
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead of term://*
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
@@ -187,10 +185,6 @@ function ToggleReplLayout()
 end
 
 vim.keymap.set("n", "<leader>rt", ToggleReplLayout, { desc = "Toggle REPL layout" })
-
--- Enter normal mode when in terminal buffer
-vim.api.nvim_set_keymap("t", "<Esc>", [[<C-\><C-n>]], { noremap = true, silent = true })
-
 
 -- change list
 map("n", "<leader>Cl", ":changes<CR>", "Change list")
