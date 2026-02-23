@@ -63,7 +63,6 @@
             pkgs.starship
             pkgs.tree-sitter
             pkgs.utm
-            pkgs.zellij
             pkgs.zoxide
             pkgs.zsh
         ];
