@@ -95,6 +95,7 @@ config.keys = {
 	{ mods = "LEADER", key = "UpArrow", action = wezterm.action.AdjustPaneSize({ "Up", 5 }) },
   { mods = "LEADER", key = "Space", action = wezterm.action.RotatePanes "Clockwise" },
   { mods = "LEADER", key = "0", action = wezterm.action.PaneSelect { mode = "SwapWithActive" }},
+  { mods = "LEADER", key = "t", action = wezterm.action.SpawnTab 'CurrentPaneDomain'},
 
   --------------------------------------------------
   ---Session / Workspace Management
