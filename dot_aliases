@@ -10,6 +10,8 @@ alias flake='nvim ~/.config/nix-darwin/'
 alias msbuild='$HOME/.local/share/mise/shims/dotnet'
 alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
 
+alias ca="CHEZMOI_SECRETS=1 chezmoi apply"
+
 #bitwarden
 alias bw_unlock='export BW_SESSION=$(bw unlock --raw)'
 
