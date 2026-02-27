@@ -1,6 +1,30 @@
--- Only load this entire file if C# is enabled
+-- Only load this entire file if C# is enabled AND we're in a .NET context
 if not vim.g.enableCsharp then
-	return
+  return
+end
+
+-- Decide based on the *current buffer* or the *initial CWD* Neovim started in.
+local function in_dotnet_context_startup()
+  local buf = 0
+  local ft = vim.bo[buf].filetype
+
+  -- If we already have a C#-related buffer, that's enough.
+  if ft == "cs" or ft == "razor" or ft == "cshtml" or ft == "csproj" or ft == "fsproj" then
+    return true
+  end
+
+  -- If Neovim was opened without a file (or with a non-C# file),
+  -- check the directory Neovim was started in (CWD) for a .NET project/solution file.
+  local cwd = vim.loop.cwd()
+  local found = vim.fs.find(function(n, _)
+    return n:match("%.sln$") or n:match("%.csproj$") or n:match("%.fsproj$")
+  end, { path = cwd, limit = 1 }) -- note: CWD only, no upward search
+
+  return #found > 0
+end
+
+if not in_dotnet_context_startup() then
+  return
 end
 
 vim.pack.add({
@@ -13,10 +37,104 @@ vim.pack.add({
 		src = "https://github.com/GustavEikaas/easy-dotnet.nvim",
 		data = {
 			-- Lazy load on C# related filetypes
-			ft = { "cs", "razor", "csproj", "sln" },
+			ft = { "cs", "razor", "csproj", "fsproj","sln" },
 
 			-- Lazy load if you type the custom command
-			cmd = { "Secrets" },
+			keys = { 
+					-- -- Group names with which-key, if present
+					-- local has_wk, wk = pcall(require, "which-key")
+					-- if has_wk then
+					-- 	wk.add({
+					-- 		{ "<leader>i", group = "IDE" },
+					-- 		{ "<leader>it", group = "IDE Test" },
+					-- 		{ "<leader>ir", group = "IDE Run" },
+					-- 		{ "<leader>is", group = "IDE Secrets" },
+					-- 		{ "<leader>ib", group = "IDE Build" },
+					-- 		{ "<leader>ic", group = "IDE Clean" },
+					-- 		{ "<leader>id", group = "IDE MSC" },
+					-- 	})
+					-- end
+					-- -- Easy .NET helpers
+					-- -- Debug: requires coroutine context (solution parsing)
+          { mode = "n", lhs = "<leader>idd", rhs =function()
+						coroutine.wrap(function()
+							require("easy-dotnet").debug_default()
+						end)()
+					end, desc = "Dotnet Debug (Default)" },
+
+          { mode ="n", lhs = "<leader>idp", rhs = function()
+						coroutine.wrap(function()
+							require("easy-dotnet").debug_profile_default()
+						end)()
+					end, desc = "Dotnet Debug Profile (Default)" },
+
+					-- Tests
+					-- NOTE: There is no `test_project()` in the public API. Use `test()` (picker) or `test_default()`.
+          { mode ="n", lhs = "<leader>itp", rhs = function()
+						require("easy-dotnet").test() -- picker for project/tests
+					end, "Dotnet Test (Picker)" },
+
+          { mode ="n", lhs = "<leader>itd", rhs = function()
+						require("easy-dotnet").test_default()
+					end, desc = "Dotnet Test (Default)" },
+
+          { mode ="n", lhs = "<leader>its", rhs = function()
+						require("easy-dotnet").test_solution()
+					end, desc = "Dotnet Test Solution" },
+
+					-- Run
+          { mode = {"n"}, lhs = "<leader>irr", rhs = function()
+						require("easy-dotnet").run()
+					end, desc = "Dotnet Run" },
+
+          { mode ="n", lhs = "<leader>irp", rhs = function()
+						require("easy-dotnet").run_profile()
+					end, desc = "Dotnet Run Profile" },
+
+          { mode ="n", lhs = "<leader>irP", rhs = function()
+						require("easy-dotnet").run_profile_default()
+					end, desc = "Dotnet Run Profile Default" },
+
+          { mode ="n", lhs = "<leader>ird", rhs = function()
+						require("easy-dotnet").run_default()
+					end, desc = "Dotnet Run Default" },
+
+					-- Restore
+          { mode = "n", lhs = "<leader>ire", rhs = function()
+						require("easy-dotnet").restore()
+					end, desc = "Dotnet Restore" },
+
+					-- Secrets
+          { mode = "n", lhs = "<leader>ise", rhs = function()
+						require("easy-dotnet").secrets()
+					end, desc = "Dotnet Secrets" },
+
+					-- Build
+          { mode = "n", lhs = "<leader>ibb", rhs = function()
+						require("easy-dotnet").build()
+					end, desc = "Dotnet Build" },
+
+          { mode = "n", lhs = "<leader>ibd", rhs = function()
+						require("easy-dotnet").build_default()
+					end, desc = "Dotnet Build Default" },
+
+          { mode = "n", lhs = "<leader>ibs", rhs = function()
+						require("easy-dotnet").build_solution()
+					end, desc = "Dotnet Build Solution" },
+
+          { mode = "n", lhs = "<leader>ibq", rhs = function()
+						require("easy-dotnet").build_quickfix()
+					end, desc = "Dotnet Build Quickfix" },
+
+          { mode = "n", lhs = "<leader>ibQ", rhs = function()
+						require("easy-dotnet").build_default_quickfix()
+					end, desc = "Dotnet Build Default Quickfix" },
+
+					-- Clean (acts on solution/selection; rename description to avoid confusion)
+          { mode = "n", lhs = "<leader>icp", rhs = function()
+						require("easy-dotnet").clean()
+					end, desc = "Dotnet Clean" },
+			},
 
 			after = function(_)
 				local dotnet = require("easy-dotnet")

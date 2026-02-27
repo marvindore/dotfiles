@@ -3,7 +3,6 @@ vim.pack.add({ "https://github.com/echasnovski/mini.nvim" })
 -- Keymaps
 vim.keymap.set("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", { desc = "Open directory" })
 vim.keymap.set("n", "_", ":lua MiniFiles.open()<cr>", { desc = "Open parent directory" })
-vim.keymap.set("x", "yy", "y", { desc = "Yank Selection" })
 
 -- Configurations
 require("mini.ai").setup()
@@ -17,13 +16,13 @@ require("mini.bracketed").setup()
 
 require("mini.surround").setup({
 	mappings = {
-		add = "ysa",
-		delete = "ysd",
-		find = "ysf",
-		find_left = "ysF",
-		highlight = "ysh",
-		replace = "ysr",
-		update_n_lines = "ysn",
+		add = "<leader>ya",
+		delete = "<leader>yd",
+		find = "<leader>yf",
+		find_left = "<leader>yF",
+		highlight = "<leader>yh",
+		replace = "<leader>yr",
+		update_n_lines = "<leader>yn",
 	},
 })
 

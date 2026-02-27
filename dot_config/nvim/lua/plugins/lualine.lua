@@ -89,6 +89,27 @@ local filename = {
 	end,
 }
 
+
+local filename_only = {
+  "filename",
+  file_status = true,
+  path = 0,  -- 0 = just filename, 1 = relative, 2 = absolute, 3 = absolute+~ for $HOME
+  symbols = {
+    readonly = " ",
+    unnamed = icons.kind.Unnamed,
+    modified = " ",
+  },
+  fmt = function(str)
+    local fn = vim.fn.expand("%:~:.")
+    if vim.startswith(fn, "jdt://") then
+      -- for jdt LS URIs, strip query params as you do now, then take tail
+      fn = fn:gsub("?.*$", "")
+      return vim.fn.fnamemodify(fn, ":t")
+    end
+    return str
+  end,
+}
+
 local fileformat = {
 	"fileformat",
 	symbols = { unix = "", dos = "", mac = "" },
@@ -176,7 +197,7 @@ lualine.setup({
 	},
 	sections = {
 		lualine_a = { mode },
-		lualine_b = { filename, branch, diff, diagnostics },
+		lualine_b = { filename_only, branch, diff, diagnostics },
 		lualine_c = {
 			{
 				python_venv,

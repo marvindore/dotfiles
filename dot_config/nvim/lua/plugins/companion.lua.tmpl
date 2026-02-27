@@ -1,0 +1,175 @@
+{{- define "keychainGet" -}}
+  {{- $service := . -}}
+  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
+{{- end }}
+vim.pack.add({
+  -- 1) Eager deps
+  "https://github.com/nvim-lua/plenary.nvim",
+  "https://github.com/nvim-treesitter/nvim-treesitter",
+  "https://github.com/j-hui/fidget.nvim",
+
+  -- 2) Markdown renderer
+  {
+    src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",
+    data = {
+      ft = { "markdown", "codecompanion" },
+      after = function(_)
+        require("render-markdown").setup({})
+      end,
+    },
+  },
+
+  -- 3) CodeCompanion
+  {
+    src = "https://github.com/olimorris/codecompanion.nvim",
+    data = {
+      cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionCmd" },
+      keys = {
+        { lhs = "<leader>aa", rhs = "<cmd>CodeCompanionChat Toggle<CR>", mode = "n", desc = "CodeCompanion Toggle" },
+        { lhs = "<leader>ax", rhs = "<cmd>CodeCompanionActions<cr>",    mode = "n", desc = "CodeCompanion Actions" },
+        { lhs = "<leader>ac", rhs = "<cmd>CodeCompanionCmd<cr>",         mode = "n", desc = "CodeCompanion Command" },
+      },
+      after = function(_)
+        local opts = {
+          log_level = "DEBUG",
+          display = {
+            action_palette = {
+              width = 95,
+              height = 10,
+              prompt = "Prompt ",
+              provider = "snacks",
+              opts = {
+                show_default_actions = true,
+                show_default_prompt_library = true,
+                title = "CodeCompanion actions",
+              },
+            },
+          },
+          adapters = {
+            -- Global adapter options
+            acp = {
+              opts = { show_presets = false }, -- only show what we define
+            },
+          },
+        }
+
+        ----------------------------------------------------------------------
+        -- Adapters (switch by CHEZMOI_WORK)
+        ----------------------------------------------------------------------
+
+        {{ if (env "CHEZMOI_WORK") }}
+
+        -- WORK = HTTP (LiteLLM) via OpenAI-compatible adapter
+        local work_litellm_adapter = function()
+          return require("codecompanion.adapters").extend("openai_compatible", {
+            name = "LiteLLM",
+            env = {
+              -- Your LiteLLM base URL + key (keychain items from your template)
+              url      = "{{ template "keychainGet" "litellm_work_url" }}",  -- e.g. http://127.0.0.1:4000 or https://your-gateway/v1
+              api_key  = "{{ template "keychainGet" "litellm_work_key" }}",
+              chat_url = "/v1/chat/completions",
+            },
+            schema = {
+              -- Use your router alias or provider/model that your LiteLLM exposes
+              model     = { default = "vertex_ai/claude-sonnet-4-6@default" },
+              num_ctx   = { default = 32000 },
+              temperature = { default = 0.2 },
+            },
+          })
+        end
+
+        -- Interactions (work)
+        opts.interactions = {
+          chat  = {
+            adapter = work_litellm_adapter,
+            slash_commands = {
+              ["buffer"] = { opts = { provider = "snacks" } },
+              ["file"]   = { opts = { provider = "snacks" } },
+            },
+          },
+          inline = { adapter = work_litellm_adapter },
+          cmd    = { adapter = work_litellm_adapter },
+        }
+
+        {{ else }}
+
+        -- PERSONAL = ACP (Gemini CLI as example)
+        local personal_acp_adapter = function()
+          return require("codecompanion.adapters").extend("gemini_cli", {
+            commands = {
+              -- If needed, you can hardcode an absolute path here instead of "gemini"
+              -- default = { "/usr/local/bin/gemini", "--experimental-acp" },
+            },
+            defaults = {
+              auth_method = "gemini-api-key", -- also supports "oauth-personal" / "vertex-ai"
+              timeout = 20000,
+            },
+            env = {
+              GEMINI_API_KEY = "{{ template "keychainGet" "gemini_api_key" }}",
+            },
+          })
+        end
+
+        -- Interactions (personal)
+        opts.interactions = {
+          chat = {
+            adapter = {
+              name  = "gemini_cli",
+              -- model = "gemini-2.0-flash"  -- Optional: set a default ACP-side model if your CLI supports it
+            },
+            slash_commands = {
+              ["buffer"] = { opts = { provider = "snacks" } },
+              ["file"]   = { opts = { provider = "snacks" } },
+            },
+          },
+          inline = { adapter = "gemini_cli" },
+          cmd    = { adapter = "gemini_cli" },
+        }
+
+        {{ end }}
+
+        -- Initialize
+        require("codecompanion").setup(opts)
+
+        ----------------------------------------------------------------------
+        -- Fidget progress (unchanged)
+        ----------------------------------------------------------------------
+        local progress = require("fidget.progress")
+        local handles = {}
+        local group = vim.api.nvim_create_augroup("CodeCompanionFidget", {})
+
+        vim.api.nvim_create_autocmd("User", {
+          pattern = "CodeCompanionRequestStarted",
+          group = group,
+          callback = function(e)
+            handles[e.data.id] = progress.handle.create({
+              title = "CodeCompanion",
+              message = "Thinking... ",
+              lsp_client = { name = e.data.adapter.formatted_name },
+            })
+          end,
+        })
+
+        vim.api.nvim_create_autocmd("User", {
+          pattern = "CodeCompanionRequestFinished",
+          group = group,
+          callback = function(e)
+            local h = handles[e.data.id]
+            if h then
+              h.message = e.data.status == "success" and "Done" or "Failed"
+              h:finish()
+              handles[e.data.id] = nil
+            end
+          end,
+        })
+      end,
+    },
+  },
+}, {
+  -- pass to 'lze' for lazy-loading
+  load = function(p)
+    local spec = p.spec.data or {}
+    spec.name = p.spec.name
+    require("lze").load(spec)
+  end,
+})
