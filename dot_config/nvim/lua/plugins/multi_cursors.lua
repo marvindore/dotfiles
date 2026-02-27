@@ -4,11 +4,11 @@ vim.pack.add({
 		data = {
 			-- Lazy load on your most common multi-cursor triggers
 			keys = {
-				{ lhs = "<up>", mode = { "n", "v" }, desc = "Add cursor above" },
-				{ lhs = "<down>", mode = { "n", "v" }, desc = "Add cursor below" },
-				{ lhs = "<leader>nn", mode = { "n", "v" }, desc = "Match word" },
-				{ lhs = "<c-q>", mode = { "n", "v" }, desc = "Toggle cursor" },
-				{ lhs = "S", mode = { "v" }, desc = "Split visual selection" },
+				-- { lhs = "<up>", rhs = "lua require('multicursor-nvim').lineAddCursor(-1)<cr>",mode = { "n" }, desc = "Add cursor above" },
+				-- { lhs = "<down>", rhs = "lua require('multicursor-nvim').lineAddCursor(1)<cr>" ,mode = { "n" }, desc = "Add cursor below" },
+				{ lhs = "<leader><down>", rhs = ":lua require('multicursor-nvim').matchAddCursor(1)<cr>",mode = { "n", "v" }, desc = "Match word" },
+				{ lhs = "<leader><up>", rhs = ":lua require('multicursor-nvim').matchAddCursor(-1)<cr>",mode = { "n", "v" }, desc = "Match word" },
+				{ lhs = "<leader>*", rhs = ":lua require('multicursor-nvim').matchAllAddCursors()<cr>",mode = { "n", "v" }, desc = "Match word" },
 			},
 
 			-- Replicate `branch = "1.0"`
@@ -24,42 +24,41 @@ vim.pack.add({
 				local set = vim.keymap.set
 
 				-- Standard Cursors
-				set({ "n", "v" }, "<up>", function()
-					mc.lineAddCursor(-1)
-				end)
-				set({ "n", "v" }, "<down>", function()
-					mc.lineAddCursor(1)
-				end)
-				set({ "n", "v" }, "<leader><up>", function()
-					mc.lineSkipCursor(-1)
-				end)
-				set({ "n", "v" }, "<leader><down>", function()
-					mc.lineSkipCursor(1)
-				end)
+				-- set({ "n", "v" }, "<C-up>", function()
+				-- 	mc.lineAddCursor(-1)
+				-- end)
+				-- set({ "n", "v" }, "<C-down>", function()
+				-- 	mc.lineAddCursor(1)
+				-- end)
+				-- set({ "n", "v" }, "<leader><up>", function()
+				-- 	mc.lineSkipCursor(-1)
+				-- end)
+				-- set({ "n", "v" }, "<leader><down>", function()
+				-- 	mc.lineSkipCursor(1)
+				-- end)
 
 				-- Match Word
-				set({ "n", "v" }, "<leader>nn", function()
-					mc.matchAddCursor(1)
-				end)
-				set({ "n", "v" }, "<leader>ns", function()
-					mc.matchSkipCursor(1)
-				end)
-				set({ "n", "v" }, "<leader>nN", function()
+				set({ "n", "v" }, "<leader><up>", function()
 					mc.matchAddCursor(-1)
 				end)
-				set({ "n", "v" }, "<leader>nS", function()
+				set({ "n", "v" }, "<leader><down>", function()
+					mc.matchAddCursor(1)
+				end)
+				set({ "n", "v" }, "<leader><right>", function()
+					mc.matchSkipCursor(1)
+				end)
+				set({ "n", "v" }, "<leader><left>", function()
 					mc.matchSkipCursor(-1)
 				end)
-				set({ "n", "v" }, "<leader>E", mc.matchAllAddCursors)
+				set({ "n", "v" }, "<leader>*", mc.matchAllAddCursors)
 
 				-- Navigation
-				set({ "n", "v" }, "<left>", mc.nextCursor)
-				set({ "n", "v" }, "<right>", mc.prevCursor)
+				-- set({ "n", "v" }, "<left>", mc.nextCursor)
+				-- set({ "n", "v" }, "<right>", mc.prevCursor)
 
 				-- Mouse & Utilities
 				set("n", "<c-leftmouse>", mc.handleMouse)
-				set({ "n", "v" }, "<c-q>", mc.toggleCursor)
-				set({ "n", "v" }, "<leader><c-q>", mc.duplicateCursors)
+				-- set({ "n", "v" }, "<leader><c-q>", mc.duplicateCursors)
 				set("n", "<leader>gv", mc.restoreCursors)
 
 				-- The Escape Logic
@@ -75,14 +74,14 @@ vim.pack.add({
 				end)
 
 				-- Visual Mode Power Tools
-				set("v", "S", mc.splitCursors)
-				set("v", "I", mc.insertVisual)
-				set("v", "A", mc.appendVisual)
-				set("v", "M", mc.matchCursors)
+				-- set("v", "S", mc.splitCursors)
+				-- set("v", "I", mc.insertVisual)
+				-- set("v", "A", mc.appendVisual)
+				-- set("v", "M", mc.matchCursors)
 
 				-- Jumplist
-				set({ "v", "n" }, "<c-i>", mc.jumpForward)
-				set({ "v", "n" }, "<c-o>", mc.jumpBackward)
+				-- set({ "v", "n" }, "<c-i>", mc.jumpForward)
+				-- set({ "v", "n" }, "<c-o>", mc.jumpBackward)
 
 				-- Highlights
 				local hl = vim.api.nvim_set_hl

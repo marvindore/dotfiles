@@ -1,20 +1,4 @@
 vim.pack.add({
-	-- Dependency: snacks.nvim (required for input/picker/terminal integration)
-	{
-		src = "https://github.com/folke/snacks.nvim",
-		data = {
-			-- Note: snacks is often used by many plugins; if you've already defined it
-			-- in another file, this will simply ensure the options are set.
-			after = function(_)
-				require("snacks").setup({
-					input = {},
-					picker = {},
-					terminal = {},
-				})
-			end,
-		},
-	},
-
 	-- The main OpenCode plugin
 	{
 		src = "https://github.com/NickvanDyke/opencode.nvim",

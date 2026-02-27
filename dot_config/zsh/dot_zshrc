@@ -1,3 +1,4 @@
+# .zshrc is loaded only for interactive shells
 #Sublime text symmlink
 #ln -s "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" /usr/local/bin/subl
 
@@ -146,6 +147,9 @@ export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 eval "$(starship init zsh)"
 eval "$(atuin init zsh)" # shell history
 eval "$(mise activate zsh)"
+
+# set no beep for mux leader ctrl+g
+setopt NO_BEEP
 
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd

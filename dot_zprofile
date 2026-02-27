@@ -1,6 +1,10 @@
+# .zprofile is loaded for login shells -> GUI apps
 # Change zsh config path
 export ZDOTDIR=$HOME/.config/zsh
 
 export XDG_SESSION_TYPE=wayland
 export QT_QPA_PLATFORM=wayland
 export GDK_BACKEND=wayland
+
+# Ensure mise shims are available to GUI apps (e.g., PyCharm)
+eval "$(mise activate zsh --shims)"

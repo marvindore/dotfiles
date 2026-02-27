@@ -104,3 +104,23 @@ First login then use the alias created to save the session to environment variab
 bw login
 bw_unlock
 ```
+
+
+### chezmoi helper
+{{- /* Helper: read a secret by service name using macOS 'security' */ -}}
+{{- define "keychainGet" -}}
+  {{- $service := . -}}
+  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
+{{- end -}}
+
+>Evaluate the two conditions up front to keep the if/else simple
+>example creation of key:
+>security add-generic-password -a GEMINI_API_KEY     -s "chezmoi_gemini_key"     -w "YOUR-GEMINI-KEY"
+>security find-generic-password -s "chezmoi_gemini_key" -w
+{{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") -}}
+{{- $useBW       := and (env "CHEZMOI_SECRETS") (lookPath "bw") -}}
+
+{{- if $useKeychain -}}
+GEMINI_API_KEY=""
+LITELLM_MASTER_KEY="{{ template "keychainGet" "chezmoi_litellm_master" }}"
+{{end}}

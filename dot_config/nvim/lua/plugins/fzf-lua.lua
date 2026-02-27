@@ -48,7 +48,7 @@ vim.pack.add({
 				},
 				{
 					lhs = "ml",
-					rhs = 'function() require("fzf-lua").marks({marks = "[A-Za-z]"}) end',
+					rhs = '<cmd>lua require("fzf-lua").marks({marks = "[A-Za-z]"})<CR>',
 					mode = "n",
 					desc = "Filtered Marks (a-z, A-Z)",
 				},

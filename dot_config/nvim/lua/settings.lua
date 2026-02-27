@@ -22,7 +22,7 @@ vim.diagnostic.config({ virtual_lines = { current_line = true } })
 
 --vim.cmd[[set guicursor=n-v-c-i:block]]
 -- disable netrw at the very start of your init.lua (strongly advised)
-vim.g.loaded = 1
+vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
 -- disable language provider support for languages (lua and vimscript plugins only)
@@ -46,7 +46,6 @@ vim.o.pumheight = 10 -- Makes popup menu smaller
 vim.o.cmdheight = 2 -- More space for displaying messages
 vim.o.mouse = 'a' -- Enable your mouse
 vim.o.splitbelow = true -- Horizontal splits will automatically be below
-vim.o.splitright = true -- Vertical splits will automatically be to the right
 vim.o.conceallevel = 0 -- So that I can see `` in markdown files
 --vim.o.timeoutlen = 100 -- By default timeoutlen is 1000 ms, this causes leader key not to work
 vim.o.clipboard = 'unnamedplus' -- Copy paste between vim and everything else
@@ -79,6 +78,7 @@ vim.o.hlsearch=true
 vim.o.splitright=true
 vim.o.splitbelow=true
 vim.o.cursorline=true
+
 vim.o.showcmd=true
 vim.g.syntax=true
 vim.wo.number=true
@@ -117,10 +117,6 @@ vim.api.nvim_set_hl(0, "CmpItemKindCopilot", {fg ="#6CC644"})
 --   pattern = { "*" },
 --   command = [[%s/\s\+$//e]],
 -- })
-
--- set Vim-specific sequences for RGB colors
-vim.cmd[["set t_8f=^[[38;2;%lu;%lu;%lum"]]
-vim.cmd[["set t_8b=^[[48;2;%lu;%lu;%lum"]]
 
 if vim.fn.has('termguicolors') == 1 then
     vim.api.nvim_command('set termguicolors')
@@ -239,7 +235,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "dap-repl",
   callback = function()
-    vim.lsp.stop_client(vim.lsp.get_active_clients({ bufnr = 0 }))
+    vim.lsp.stop_client(vim.lsp.get_clients({ bufnr = 0 }))
   end,
 })
 

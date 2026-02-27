@@ -44,17 +44,17 @@ vim.api.nvim_create_user_command("LspInfo", function()
   local bufnr = vim.api.nvim_get_current_buf()
 
   -- set buffer options
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "nofile")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+  vim.bo[bufnr].buftype   = "nofile"
+  vim.bo[bufnr].swapfile  = false
+  vim.bo[bufnr].bufhidden = "wipe"
+  vim.bo[bufnr].modifiable = true
 
   -- set lines
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.bo[bufnr].modifiable = false
 
   -- optionally set filetype for syntax highlighting
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "lua")
+  vim.bo[bufnr].filetype = "lua"
 end, {})
 
 
@@ -143,15 +143,34 @@ map("t", "<C-j>", [[<C-\><C-N><C-w>j]], "Terminal move down")
 map("t", "<C-k>", [[<C-\><C-N><C-w>k]], "Terminal move up")
 map("t", "<C-l>", [[<C-\><C-N><C-w>l]], "Terminal move right")
 
--- if you only want these mappings for toggle term use term://*toggleterm#* instead of term://*
-vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
+local function toggle_vsplit_term()
+  local term_win = nil
+
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].buftype == "terminal" then
+      term_win = win
+      break
+    end
+  end
+
+  if term_win then
+    -- Close terminal window
+    vim.api.nvim_win_close(term_win, true)
+  else
+    -- Open new vertical terminal
+    vim.cmd("split | terminal")
+  end
+end
+
+vim.keymap.set("n", "<C-\\>", toggle_vsplit_term, { noremap = true, silent = true })
 
 -- Iron Repl
 wk.add({
 	{ "<leader>r", group = "Repl" },
 })
 map("n", "<leader>rr", ":IronRepl<cr>", "Repl toggle")
-map("n", "<leader>rt", ":IronRestart<cr>", "Repl toggle")
+map("n", "<leader>rR", ":IronRestart<cr>", "Repl restart")
 --map("n", "<leader>rc", ":lua require('iron.core').clear()<cr>","Repl clear")
 --map("n", "<leader>rx", ":lua require('iron.core').exit()<cr>","Repl exit")
 --map("n", "<leader>rn", ":lua require('iron.core').send_code_block_and_move()<cr>","Repl send block and move to next")
@@ -202,15 +221,6 @@ map("n", "<leader>md", ":delm! | delm A-Z0-9<CR>", "Marks delete all")
 vim.keymap.set("n", "<leader>1", ":diffget LOCAL<CR>", { desc = "Diffget LOCAL" })
 vim.keymap.set("n", "<leader>2", ":diffget BASE<CR>", { desc = "Diffget BASE" })
 vim.keymap.set("n", "<leader>3", ":diffget REMOTE<CR>", { desc = "Diffget REMOTE" })
-
--- Spring
-local spring_run_mvn = "mvn spring-boot:run -Dspring-boot.run.properties=local"
-local command = ':lua require("toggleterm").exec("' .. spring_run_mvn .. '")<CR>'
-map("n", "<leader>jsr", command)
-map("n", "<leader>jtc", ':lua require("java").test.run_current_class()<CR>', "Java test class")
-map("n", "<leader>jtd", ':lua require("java").test.debug_current_class()<CR>', "Java Debug Test Class")
-map("n", "<leader>jtm", ':lua require("java").test.run_current_method()<CR>', "Java Test Method")
-map("n", "<leader>jtv", ":lua require('java').test.view_last_report()<CR>", "Java Test View")
 
 -- trouble
 wk.add({

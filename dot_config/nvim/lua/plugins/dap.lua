@@ -6,14 +6,6 @@ vim.pack.add({
 	{ src = "https://github.com/jbyuki/one-small-step-for-vimkind", data = { on_require = { "osv" } } },
 	{ src = "https://github.com/leoluz/nvim-dap-go", data = { on_require = { "dap-go" } } },
 	{
-		src = "https://github.com/igorlfs/nvim-dap-view",
-		data = {
-			on_require = { "dap-view" },
-			-- Also wake up if you run the command manually
-			cmd = { "DapViewOpen", "DapViewToggle", "DapViewWatch" },
-		},
-	},
-	{
 		src = "https://github.com/microsoft/vscode-js-debug",
 		data = {
 			-- Lazy load this massive binary folder only when you open a JS/TS file
@@ -48,7 +40,7 @@ vim.pack.add({
 
 				{
 					lhs = "<leader>db",
-					rhs = ":lua require('lib.dap').toggle_breakpoint()<CR>",
+					rhs = ":lua require('utils.dap_breakpoints').toggle_breakpoint()<CR>",
 					mode = "n",
 					desc = "Debug toggle breakpoint",
 				},
@@ -194,6 +186,20 @@ vim.pack.add({
 					coreclr = { "cs", "csharp" },
 					["pwa-node"] = js_langs,
 				}
+
+				-- dap-view: lazy-load by triggering require on session events
+				dap.listeners.before.attach.dapui_config = function()
+					require("dap-view").open()
+				end
+				dap.listeners.before.launch.dapui_config = function()
+					require("dap-view").open()
+				end
+				dap.listeners.before.event_terminated.dapui_config = function()
+					require("dap-view").close()
+				end
+				dap.listeners.before.event_exited.dapui_config = function()
+					require("dap-view").close()
+				end
 			end,
 		},
 	},

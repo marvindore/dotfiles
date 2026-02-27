@@ -94,22 +94,6 @@ vim.pack.add({
     },
   },
 
-  -- treesitter-context (UI add-on; safe to lazy by file events)
-  {
-    src  = "https://github.com/nvim-treesitter/nvim-treesitter-context",
-    name = "nvim-treesitter-context",
-    data = {
-      event = { "BufReadPost", "BufNewFile" },
-      after = function(_)
-        require("treesitter-context").setup({
-          enable = false,
-          line_numbers = true,
-          mode = "cursor",
-          zindex = 20,
-        })
-      end,
-    },
-  },
 }, {
   -- ----- lze bridge loader -----
   load = function(p)
