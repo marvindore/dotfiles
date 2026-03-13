@@ -58,7 +58,7 @@ vim.pack.add({
 					"lua-language-server",
 					"stylua",
 					"cspell",
-					"vale",
+					"harper-ls"
 				}
 
 				-- Conditional Language Tools
@@ -66,7 +66,7 @@ vim.pack.add({
 					vim.list_extend(ensure_installed, { "sqls" })
 				end
 				if vim.g.enableCsharp then
-					vim.list_extend(ensure_installed, { "csharpier", "netcoredbg" })
+					vim.list_extend(ensure_installed, { "csharpier", "netcoredbg", "roslyn" })
 				end
 				if vim.g.enableGo then
 					vim.list_extend(ensure_installed, { "gopls", "delve" })

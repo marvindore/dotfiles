@@ -13,18 +13,18 @@ vim.pack.add({
 
 			after = function(_)
 				require("roslyn").setup({
-					cmd = {
-						"dotnet",
-						vim.fs.joinpath(
-							vim.g.mason_root,
-							"packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"
-						),
-						"--logLevel",
-						"Information",
-						"--extensionLogDirectory",
-						vim.fs.joinpath(vim.uv.os_tmpdir(), "roslyn_ls/logs"),
-						"--stdio",
-					},
+					-- cmd = {
+					-- 	"dotnet",
+					-- 	vim.fs.joinpath(
+					-- 		vim.g.mason_root,
+					-- 		"packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"
+					-- 	),
+					-- 	"--logLevel",
+					-- 	"Information",
+					-- 	"--extensionLogDirectory",
+					-- 	vim.fs.joinpath(vim.uv.os_tmpdir(), "roslyn_ls/logs"),
+					-- 	"--stdio",
+					-- },
 					on_attach = function(client, bufnr)
 						-- Install roslyn after plugin loads if missing
 						local registry = require("mason-registry")

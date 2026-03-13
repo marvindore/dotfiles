@@ -150,10 +150,10 @@ vim.pack.add({
 
 				dotnet.setup({
 					lsp = {
-						enabled = true,
-						roslynator_enabled = true,
-						analyzer_assemblies = {},
-						config = {},
+						enabled = false, -- prevent easydotnet spawning roslyn server and use roslyn from roslyn.nvim instead
+						--roslynator_enabled = true,
+						--analyzer_assemblies = {},
+						--config = {},
 					},
 					debugger = {
 						bin_path = nil,
