@@ -58,3 +58,19 @@ Use A B (two dots) when you want a direct comparison.
 Use A...B (three dots) when you want to see what B adds relative to the shared history with A
 git diff -w // ignore whitespace
 git diff --ignore-space-at-eol
+
+## Worktree
+```
+// Missing remote refs
+git config --add remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+git config --add remote.origin.fetch "+refs/tags/*:refs/tags/*"   # optional
+git fetch --all --prune
+```
+
+### Bare Repo
+ref: [blog](https://nicknisi.com/posts/git-worktrees/)
+```
+mkdir project && cd project
+git clone --bare git@github.com:user/project.git .bare
+echo "gitdir: ./.bare" > .git
+```

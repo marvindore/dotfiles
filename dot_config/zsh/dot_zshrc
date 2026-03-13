@@ -139,8 +139,6 @@ case ":$PATH:" in
 esac
 # pnpm end
 
-export PATH="$HOME/.local/share/mise/shims:$PATH"
-export PATH="$PATH:$HOME/.local/share/mise/installs/python/3.12.0/bin"
 export GOOGLE_APPLICATION_CREDENTIALS="$HOME/gcp-sa-dev.json"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 
@@ -150,6 +148,12 @@ eval "$(mise activate zsh)"
 
 # set no beep for mux leader ctrl+g
 setopt NO_BEEP
+
+# worktrunk
+if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
+
+# telemetry
+export OPENSPEC_TELEMETRY=0
 
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd

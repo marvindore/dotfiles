@@ -8,7 +8,7 @@ vim.pack.add({
 			after = function(_)
 				local lint = require("lint")
 				lint.linters_by_ft = {
-					markdown = { "vale" },
+					--markdown = { "vale" },
 				}
 
 				-- Define the autocommand for triggering the linter

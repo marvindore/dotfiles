@@ -1,0 +1,12 @@
+[merge]
+command = "meld"
+args = [
+  "--auto-merge",
+  "--label", "Destination",
+  "--label", "Base",
+  "--label", "Source",
+  "{{ .Destination }}",  # left  (what's currently on disk)
+  "{{ .Target }}",       # base  (the common ancestor / previous target)
+  "{{ .Source }}",       # right (what chezmoi wants to write)
+  "--output", "{{ .Destination }}"
+]

@@ -146,13 +146,13 @@ end
 function M.enable_servers(opts)
 	opts = opts or {}
 	local g = vim.g
-	
+
   -- 🚀 THE FIX: Manually inject Mason binaries into the Neovim PATH
 	-- This must run before vim.lsp.enable()
 	vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
 
 	vim.lsp.enable("lua_ls")
-	vim.lsp.enable({ "bashls", "yamlls", "dockerls", "jsonls", "lemminx" })
+	vim.lsp.enable({ "bashls", "harper_ls","yamlls", "dockerls", "jsonls", "lemminx" })
 
 	if opts.enable_js ~= nil and opts.enable_js or g.enableJavascript then
 		local project_root = vim.fn.getcwd()
