@@ -155,6 +155,30 @@ if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)
 # telemetry
 export OPENSPEC_TELEMETRY=0
 
+# ==========================================
+# Server Admin SSH + Tmux Wrapper
+# ==========================================
+ssht() {
+# Check if a target was provided
+if [ -z "$1" ]; then
+echo "Usage: ssht [user@]hostname"
+return 1
+fi
+
+local TARGET="$1"
+echo "🚀 Provisioning tmux config to $TARGET..."
+
+# 1. Silently copy the local admin config to the remote user's home directory
+# (We suppress output with -q so it looks clean)
+scp -q ~/.tmux.admin.conf "${TARGET}:~/.tmux.conf"
+
+echo "💻 Connecting to $TARGET..."
+
+# 2. SSH into the server and automatically attach to (or create) an 'admin' session
+ssh -t "$TARGET" "tmux new-session -A -s admin"
+}
+
+
 function y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	yazi "$@" --cwd-file="$tmp"

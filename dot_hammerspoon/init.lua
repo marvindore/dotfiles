@@ -6,6 +6,11 @@ hs.urlevent.bind("messaging", function()
   messaging.pick()
 end)
 
+-- Ctrl + Esc → Ctrl + Shift + Tab
+hs.hotkey.bind({ "ctrl" }, "escape", function()
+    hs.eventtap.keyStroke({ "ctrl", "shift" }, "tab")
+
+end)
 -- Optional: Hammerspoon-only hotkey for quick testing
 -- hs.hotkey.bind({"alt"}, "m", messaging.pick)
 

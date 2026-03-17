@@ -1,0 +1,7 @@
+git:
+  commit:
+    signOff: false # this is the DCO sign-off toggle
+    sign: false # controls showing the signing toggle
+  pagers:
+    - pager: delta --dark --paging=never --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
+      colorArg: always

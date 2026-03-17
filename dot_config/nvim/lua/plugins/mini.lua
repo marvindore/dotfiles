@@ -1,15 +1,30 @@
-vim.pack.add({ "https://github.com/echasnovski/mini.nvim" })
-
--- Keymaps
-vim.keymap.set("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", { desc = "Open directory" })
-vim.keymap.set("n", "_", ":lua MiniFiles.open()<cr>", { desc = "Open parent directory" })
+vim.pack.add({ { src = "https://github.com/echasnovski/mini.nvim" } })
 
 -- Configurations
 require("mini.ai").setup()
 
-local diff = require("mini.diff")
-diff.setup({ source = diff.gen_source.none() })
+-- local diff = require("mini.diff")
+-- diff.setup({ source = diff.gen_source.none() })
 
+require("mini.diff").setup({
+  view = {
+    -- Visualization style. Possible values are 'sign' and 'number'.
+    -- Default: 'number' if line numbers are enabled, 'sign' otherwise.
+    style = 'sign',
+
+    -- Signs used for hunks with 'sign' view
+    signs = { add    = '▏', change = '▏', delete = '▏',},
+
+
+    priority = 199,
+  },
+  mappings = {
+    goto_first = '[C',
+    goto_prev = '[c',
+    goto_next = ']c',
+    goto_last = ']C',
+  }
+})
 require("mini.files").setup({ mappings = { go_in_plus = "<cr>" } })
 require("mini.comment").setup()
 require("mini.bracketed").setup()
@@ -54,3 +69,9 @@ hipatterns.setup({
 		hex_color = hipatterns.gen_highlighter.hex_color(),
 	},
 })
+
+
+-- Keymaps
+vim.keymap.set("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", { desc = "Open directory" })
+vim.keymap.set("n", "_", ":lua MiniFiles.open()<cr>", { desc = "Open parent directory" })
+vim.keymap.set("n", "<leader>gd", function() require("mini.diff").toggle_overlay(0) end, { desc = "Git buffer diff" })

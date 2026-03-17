@@ -6,6 +6,7 @@ vim.pack.add({
 -- 2) Configuration Setup
 local opts = {
   bigfile  = { enabled = true },
+  gh = { enabled = true },
   lazygit  = { enabled = true }, -- Snacks' LazyGit module
   notifier = { enabled = true },
   notify   = { enabled = true },
@@ -59,6 +60,12 @@ set("n", "<leader>fj", function() Snacks.picker.jumps() end, { desc = "Jumps" })
 set("n", "<leader>fq", function() Snacks.picker.qflist() end, { desc = "Quickfix List" })
 set("n", "<S-h>", function() Snacks.picker.buffers() end, { desc = "Buffers" })
 set("n", "<leader>fm", function() Snacks.picker.marks() end, { desc = "Marks" })
+
+-- Github
+set("n", "<leader>gii", function () Snacks.picker.gh_issue() end, { desc = "Browse git issues"})
+set("n", "<leader>giI", function () Snacks.picker.gh_issue({ state = "all" }) end, { desc = "Browse git issues (including closed)"})
+set("n", "<leader>gip", function () Snacks.picker.gh_pr() end, { desc = "Browse git PRs"})
+set("n", "<leader>giP", function () Snacks.picker.gh_pr({ state = "all" }) end, { desc = "Browse git PRs (including closed)"})
 
 -- LSP Pickers
 set("n", "gpd", function() Snacks.picker.lsp_definitions() end, { desc = "Goto Definition" })
