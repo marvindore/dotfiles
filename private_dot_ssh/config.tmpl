@@ -1,6 +1,17 @@
 {{ if and (eq .chezmoi.os "darwin") (eq .chezmoi.username "marvin.dore") -}}
 Include /Users/marvindore/.colima/ssh_config
 
+# ssh multiplexing
+# Host *: Applies this rule to every server you connect to.
+# ControlMaster auto: Tells SSH to look for an existing connection before starting a new one.
+# ControlPath: Dictates where to save the connection file (using the username %r, host %h, and port %p).
+# ControlPersist 10m: Keeps the background connection open for 10 minutes after you log out. (You can change this to 1h for an hour, or even yes
+
+Host *
+  ControlMaster auto
+  ControlPath ~/.ssh/sockets/%r@%h:%p
+  ControlPersist 10m
+
 Host github.com
   HostName github.com
   User marvin-dore_ukg
