@@ -66,6 +66,19 @@ set("n", "<leader>gii", function () Snacks.picker.gh_issue() end, { desc = "Brow
 set("n", "<leader>giI", function () Snacks.picker.gh_issue({ state = "all" }) end, { desc = "Browse git issues (including closed)"})
 set("n", "<leader>gip", function () Snacks.picker.gh_pr() end, { desc = "Browse git PRs"})
 set("n", "<leader>giP", function () Snacks.picker.gh_pr({ state = "all" }) end, { desc = "Browse git PRs (including closed)"})
+set("n", "<leader>giw", function()
+  Snacks.picker.gh_pr({
+    confirm = function(picker, item)
+      if item then
+        picker:close()
+        vim.fn.jobstart({ "gh", "pr", "view", tostring(item.number), "--web" }, {
+          detach = true,
+          env = { BROWSER = "open" },
+        })
+      end
+    end,
+  })
+end, { desc = "PR Open in Browser (pick)" })
 
 -- LSP Pickers
 set("n", "gpd", function() Snacks.picker.lsp_definitions() end, { desc = "Goto Definition" })
