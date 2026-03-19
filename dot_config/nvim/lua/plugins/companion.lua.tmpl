@@ -51,6 +51,17 @@ vim.pack.add({
               opts = { show_presets = false }, -- only show what we define
             },
           },
+          -- Note: CodeCompanion uses 'strategies' (not 'interactions')
+          strategies = {
+            chat = {
+              slash_commands = {
+                ["buffer"] = { opts = { provider = "snacks" } },
+                ["file"]   = { opts = { provider = "snacks" } },
+              },
+            },
+            inline = {},
+            cmd = {},
+          }
         }
 
         ----------------------------------------------------------------------
@@ -60,74 +71,50 @@ vim.pack.add({
         {{ if (env "CHEZMOI_WORK") }}
 
         -- WORK = HTTP (LiteLLM) via OpenAI-compatible adapter
-        local work_litellm_adapter = function()
+        opts.adapters.litellm = function()
           return require("codecompanion.adapters").extend("openai_compatible", {
             name = "LiteLLM",
             env = {
-              -- Your LiteLLM base URL + key (keychain items from your template)
-              url      = "{{ template "keychainGet" "litellm_work_url" }}",  -- e.g. http://127.0.0.1:4000 or https://your-gateway/v1
-              api_key  = "{{ template "keychainGet" "litellm_work_key" }}",
+              -- The 'cmd:' prefix tells CodeCompanion to fetch this at runtime
+              -- (Note: I added | tr -d '\n' to the commands to ensure no rogue newlines from the CLI output break the HTTP request headers).
+              url      = "cmd:security find-generic-password -s 'litellm_work_url' -w | tr -d '\n'",
+              api_key  = "cmd:security find-generic-password -s 'litellm_work_key' -w | tr -d '\n'",
               chat_url = "/v1/chat/completions",
             },
             schema = {
-              -- Use your router alias or provider/model that your LiteLLM exposes
-              model     = { default = "vertex_ai/claude-sonnet-4-6@default" },
-              num_ctx   = { default = 32000 },
+              model       = { default = "vertex_ai/claude-sonnet-4-6@default" },
+              num_ctx     = { default = 32000 },
               temperature = { default = 0.2 },
             },
           })
         end
 
-        -- Interactions (work)
-        opts.interactions = {
-          chat  = {
-            adapter = work_litellm_adapter,
-            slash_commands = {
-              ["buffer"] = { opts = { provider = "snacks" } },
-              ["file"]   = { opts = { provider = "snacks" } },
-            },
-          },
-          inline = { adapter = work_litellm_adapter },
-          cmd    = { adapter = work_litellm_adapter },
-        }
+        opts.strategies.chat.adapter   = "litellm"
+        opts.strategies.inline.adapter = "litellm"
+        opts.strategies.cmd.adapter    = "litellm"
 
         {{ else }}
 
-        -- PERSONAL = ACP (Gemini CLI as example)
-        local personal_acp_adapter = function()
+        -- PERSONAL = ACP (Gemini CLI)
+        opts.adapters.my_gemini_cli = function()
           return require("codecompanion.adapters").extend("gemini_cli", {
-            commands = {
-              -- If needed, you can hardcode an absolute path here instead of "gemini"
-              -- default = { "/usr/local/bin/gemini", "--experimental-acp" },
-            },
+            name = "my_gemini_cli",
             defaults = {
-              auth_method = "gemini-api-key", -- also supports "oauth-personal" / "vertex-ai"
+              auth_method = "gemini-api-key",
               timeout = 20000,
             },
             env = {
-              GEMINI_API_KEY = "{{ template "keychainGet" "gemini_api_key" }}",
+              -- Using Bitwarden CLI at runtime
+              GEMINI_API_KEY = "cmd:bw get notes 'litellm-secrets' | grep GEMINI_API_KEY | cut -d '=' -f2 | tr -d '\n'",
             },
           })
         end
 
-        -- Interactions (personal)
-        opts.interactions = {
-          chat = {
-            adapter = {
-              name  = "gemini_cli",
-              -- model = "gemini-2.0-flash"  -- Optional: set a default ACP-side model if your CLI supports it
-            },
-            slash_commands = {
-              ["buffer"] = { opts = { provider = "snacks" } },
-              ["file"]   = { opts = { provider = "snacks" } },
-            },
-          },
-          inline = { adapter = "gemini_cli" },
-          cmd    = { adapter = "gemini_cli" },
-        }
+        opts.strategies.chat.adapter   = "my_gemini_cli"
+        opts.strategies.inline.adapter = "my_gemini_cli"
+        opts.strategies.cmd.adapter    = "my_gemini_cli"
 
         {{ end }}
-
         -- Initialize
         require("codecompanion").setup(opts)
 
