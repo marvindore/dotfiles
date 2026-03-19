@@ -24,7 +24,7 @@ require("plugins.mini")
 require("plugins.aerial")
 require("plugins.auto-session")
 require("plugins.blink")
-require("plugins.vgit")
+require("plugins.diffview")
 require("plugins.companion")
 if vim.g.enableCopilot then require("plugins.copilot") end
 if vim.g.enableCopilot then require("plugins.copilot-chat") end

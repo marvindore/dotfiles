@@ -10,6 +10,8 @@ alias flake='nvim ~/.config/nix-darwin/'
 alias msbuild='$HOME/.local/share/mise/shims/dotnet'
 alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
 
+alias nvimc='nvim --cmd "cd $(chezmoi source-path)/dot_config/nvim"'
+
 alias ca="CHEZMOI_SECRETS=1 chezmoi apply"
 alias oc="opencode"
 

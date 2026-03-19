@@ -106,7 +106,7 @@ function M.setup_lsp_attach()
 					vim.diagnostic.enable()
 				end
 			end
-			map("n", "<leader>dh", toggle_diagnostics, "Toggle Diagnostics")
+			map("n", "<leader>td", toggle_diagnostics, "Toggle Diagnostics")
 
 			-- --- Server-specific settings/keymaps -----------------------------------
 			if client then
