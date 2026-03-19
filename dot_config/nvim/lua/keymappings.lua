@@ -143,27 +143,28 @@ map("t", "<C-j>", [[<C-\><C-N><C-w>j]], "Terminal move down")
 map("t", "<C-k>", [[<C-\><C-N><C-w>k]], "Terminal move up")
 map("t", "<C-l>", [[<C-\><C-N><C-w>l]], "Terminal move right")
 
-local function toggle_vsplit_term()
-  local term_win = nil
-
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.bo[buf].buftype == "terminal" then
-      term_win = win
-      break
-    end
-  end
-
-  if term_win then
-    -- Close terminal window
-    vim.api.nvim_win_close(term_win, true)
-  else
-    -- Open new vertical terminal
-    vim.cmd("split | terminal")
-  end
-end
-
-vim.keymap.set("n", "<C-\\>", toggle_vsplit_term, { noremap = true, silent = true })
+-- local function toggle_vsplit_term()
+--   local term_win = nil
+--
+--   for _, win in ipairs(vim.api.nvim_list_wins()) do
+--     local buf = vim.api.nvim_win_get_buf(win)
+--     if vim.bo[buf].buftype == "terminal" then
+--       term_win = win
+--       break
+--     end
+--   end
+--
+--   if term_win then
+--     -- Close terminal window
+--     vim.api.nvim_win_close(term_win, true)
+--   else
+--     -- Open new vertical terminal
+--     vim.cmd("split | terminal")
+--   end
+-- end
+--
+-- vim.keymap.set("n", "<C-\\>", toggle_vsplit_term, { noremap = true, silent = true })
+-- NOTE: <c-\> is now handled by Snacks.terminal.toggle() in lua/plugins/zellij.lua
 
 -- Iron Repl
 wk.add({

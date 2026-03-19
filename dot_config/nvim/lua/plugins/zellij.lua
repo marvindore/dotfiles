@@ -18,9 +18,14 @@
 -- end, { desc = "New Floating Terminal (Zellij)" })
 
 -- Explicitly open a *new* tiled terminal on the side
-vim.keymap.set("n", [[<c-\>]], function()
-	vim.fn.system("zellij action new-pane --direction right")
-end, { desc = "New Side Terminal (Zellij)" })
+-- vim.keymap.set("n", [[<c-\>]], function()
+-- 	vim.fn.system("zellij action new-pane --direction right")
+-- end, { desc = "New Side Terminal (Zellij)" })
+
+-- vim.keymap.set({ "n", "t" }, [[<c-\>]], function()
+-- 	Snacks.terminal.toggle()
+-- end, { desc = "Toggle Terminal (Snacks)" })
+-- NOTE: <c-\> is registered in lua/plugins/snacks.lua after Snacks.setup()
 
 -- 2. Zellij Navigation Plugin (Lazy Loaded)
 vim.pack.add({
