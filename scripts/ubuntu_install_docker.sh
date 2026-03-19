@@ -37,3 +37,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plug
 
 echo "--- Docker installation complete! ---"
 echo "You can verify the installation by running: sudo docker run hello-world"
+
+"-- Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+sudo usermod -a -G docker $USER
+newgrp docker
