@@ -13,6 +13,7 @@ local opts = {
   picker   = {
     enabled = true,
     opts = { formatters = { truncate = false } },
+    --layout = { preset = "ivy" },
     win = {
       input   = { keys = { ["<c-]>"] = { "focus_preview", mode = { "n", "i" } } } },
       list    = { keys = { ["<c-]>"] = { "focus_preview", mode = { "n" } } } },
@@ -83,10 +84,10 @@ set("n", "<leader>fe", function() Snacks.explorer() end, { desc = "File Explorer
 set("n", "<leader>fs", function() Snacks.picker.smart() end, { desc = "Smart Find Files" })
 set("n", "<leader>ff", function() Snacks.picker.files() end, { desc = "Find Files" })
 set("n", "<leader>fF", function() Snacks.picker.files({ hidden = true }) end, { desc = "Find Hidden Files" })
-set("n", "<leader>fc", function() Snacks.picker.files({ cwd = vim.fn.expand("%:p:h") }) end, { desc = "Find File In Current Dir" })
+set("n", "<leader>f.", function() Snacks.picker.files({ cwd = vim.fn.expand("%:p:h") }) end, { desc = "Find File In Current Dir" })
 set("n", "<leader>fg", function() Snacks.picker.grep() end, { desc = "Grep Files" })
 set("n", "<leader>fG", function() Snacks.picker.grep({ hidden = true }) end, { desc = "Grep Hidden Files" })
-set("n", "<leader>fr", function() Snacks.picker.resume() end, { desc = "Resume Find" })
+set("n", "<leader>f.", function() Snacks.picker.resume() end, { desc = "Resume Find" })
 set("n", "<leader>fj", function() Snacks.picker.jumps() end, { desc = "Jumps" })
 set("n", "<leader>fq", function() Snacks.picker.qflist() end, { desc = "Quickfix List" })
 set("n", "<S-h>", function() Snacks.picker.buffers() end, { desc = "Buffers" })

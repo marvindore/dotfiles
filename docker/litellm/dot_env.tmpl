@@ -1,32 +1,41 @@
-# Standard Config
+# -----------------------------
+# LiteLLM .env (macOS Keychain)
+# -----------------------------
+# This file is a chezmoi template. It resolves secrets from macOS Keychain
+# at render time using `security find-generic-password -s <service> -w`.
+# If a secret is missing, the value will be empty and LiteLLM will error at runtime.
+
+# Server basics
 PORT="4000"
 DEBUG="true"
 
-{{- /* Helper: read a secret by service name using macOS 'security' */ -}}
-{{- define "keychainGet" -}}
-  {{- $service := . -}}
-  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
-{{- end -}}
+# --- Secrets from macOS Keychain ---
+# Expected Keychain services (create them once):
+#   /usr/bin/security add-generic-password -a "$USER" -s "gemini_api_key"       -w "YOUR-GEMINI-KEY"       -U
+#   /usr/bin/security add-generic-password -a "$USER" -s "litellm_master_key"   -w "YOUR-LITELLM-MASTER"  -U
+#
+# To list keychains or inspect items:
+#   /usr/bin/security list-keychains
+#   /usr/bin/security find-generic-password -s "gemini_api_key" -w
+#   /usr/bin/security find-generic-password -s "litellm_master_key" -w
+#
+# (Docs: `security` subcommands and flags)  https://ss64.com/mac/security.html
+# (Examples: getting passwords with -w)     https://scriptingosx.com/2021/04/get-password-from-keychain-in-shell-scripts/
+# --------------------------------------------------------------------------------
 
-{{- /*
-## Evaluate the two conditions up front to keep the if/else simple
-## example creation of key:
-##   security add-generic-password -a GEMINI_API_KEY     -s "chezmoi_gemini_key"     -w "YOUR-GEMINI-KEY"
-##   security find-generic-password -s "chezmoi_gemini_key" -w
-*/ -}}
-{{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") -}}
-{{- $useBW       := and (env "CHEZMOI_SECRETS") (lookPath "bw") -}}
+# Gemini upstream key for LiteLLM providers that need it
+GEMINI_API_KEY="{{ output "/bin/sh" "-c" "/usr/bin/security find-generic-password -s 'gemini_api_key' -w 2>/dev/null | tr -d '\r\n' || true" }}"
 
-{{- if $useKeychain -}}
-# --- Work machine → Apple Keychain ---
-GEMINI_API_KEY=""
-LITELLM_MASTER_KEY="{{ template "keychainGet" "chezmoi_litellm_master" }}"
+# LiteLLM proxy master key (used by LiteLLM for admin routes / virtual keys)
+LITELLM_MASTER_KEY="{{ output "/bin/sh" "-c" "/usr/bin/security find-generic-password -s 'litellm_master_key' -w 2>/dev/null | tr -d '\r\n' || true" }}"
 
-{{- else if $useBW -}}
-# --- Bitwarden path (non-work) ---
-GEMINI_API_KEY="{{ (bitwardenFields "item" "litellm-secrets").GEMINI_API_KEY.value }}"
-LITELLM_MASTER_KEY="{{ (bitwardenFields "item" "litellm-secrets").LITELLM_MASTER_KEY.value }}"
+# -------------------------------------------------------------------------------
+# Add more provider keys as needed (uncomment and create corresponding services):
+# ANTHROPIC_API_KEY="{{ output "/bin/sh" "-c" "/usr/bin/security find-generic-password -s 'anthropic_api_key' -w 2>/dev/null | tr -d '\r\n' || true" }}"
+# OPENAI_API_KEY="{{     output "/bin/sh" "-c" "/usr/bin/security find-generic-password -s 'openai_api_key'     -w 2>/dev/null | tr -d '\r\n' || true" }}"
+# MISTRAL_API_KEY="{{     output "/bin/sh" "-c" "/usr/bin/security find-generic-password -s 'mistral_api_key'    -w 2>/dev/null | tr -d '\r\n' || true" }}"
+# -------------------------------------------------------------------------------
 
-{{- else -}}
-# --- Fallback (no secrets available) ---
-{{- end -}}
+# If a value renders empty, confirm the keychain item exists (names must match).
+# You can also set auto-lock/timeout for your login keychain to require prompts:
+#   /usr/bin/security set-keychain-settings -l -u -t 300 ~/Library/Keychains/login.keychain-db

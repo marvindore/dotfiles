@@ -37,6 +37,7 @@
             pkgs.difftastic
             pkgs.docker
             pkgs.eza
+            pkgs.fd
             pkgs.flameshot
             pkgs.fzf
             pkgs.gcc

@@ -1,68 +1,27 @@
 vim.pack.add({
-	-- The main OpenCode plugin
+	"https://github.com/nvim-lua/plenary.nvim",
 	{
-		src = "https://github.com/NickvanDyke/opencode.nvim",
+		src = "https://github.com/sudo-tee/opencode.nvim",
 		data = {
-			-- Trigger loading on these keymaps
+			cmd = { "Opencode" },
 			keys = {
-				{ lhs = "<leader>oa", mode = { "n", "x" }, desc = "Ask opencode…" },
-				{ lhs = "<leader>ox", mode = { "n", "x" }, desc = "Execute opencode action…" },
-				{ lhs = "<leader>oo", mode = { "n", "t" }, desc = "Toggle opencode" },
-				{ lhs = "go", mode = { "n", "x" }, desc = "Add range to opencode" },
-				{ lhs = "goo", mode = { "n" }, desc = "Add line to opencode" },
+				{ lhs = "<leader>oo", mode = { "n" }, desc = "Toggle opencode" },
+				{ lhs = "<leader>oi", mode = { "n" }, desc = "Open opencode input" },
+				{ lhs = "<leader>og", mode = { "n" }, desc = "Open opencode output" },
+				{ lhs = "<leader>oc", mode = { "n", "x" }, desc = "Quick chat (opencode)" },
 			},
-
 			after = function(_)
-				-- 1. Configuration Options
-				vim.g.opencode_opts = {
-					-- Your configuration, if any
-				}
-
 				-- Required for automatic file reloading when the agent edits code
 				vim.o.autoread = true
 
-				local opencode = require("opencode")
-
-				-- 2. Core Keymaps
-				vim.keymap.set({ "n", "x" }, "<leader>oa", function()
-					opencode.ask("@this: ", { submit = true })
-				end, { desc = "Ask opencode…" })
-
-				vim.keymap.set({ "n", "x" }, "<leader>ox", function()
-					opencode.select()
-				end, { desc = "Execute opencode action…" })
-
-				vim.keymap.set({ "n", "t" }, "<leader>oo", function()
-					opencode.toggle()
-				end, { desc = "Toggle opencode" })
-
-				-- 3. Operators (The "go" prefix)
-				-- Using expr maps for the operator pending mode
-				vim.keymap.set({ "n", "x" }, "go", function()
-					return opencode.operator("@this ")
-				end, { desc = "Add range to opencode", expr = true })
-
-				vim.keymap.set("n", "goo", function()
-					return opencode.operator("@this ") .. "_"
-				end, { desc = "Add line to opencode", expr = true })
-
-				-- 4. Session Navigation
-				vim.keymap.set("n", "<leader>ou", function()
-					opencode.command("session.half.page.up")
-				end, { desc = "Scroll opencode up" })
-
-				vim.keymap.set("n", "<leader>od", function()
-					opencode.command("session.half.page.down")
-				end, { desc = "Scroll opencode down" })
-
-				-- 5. Utility Overrides
-				vim.keymap.set("n", "+", "<leader>o+", { desc = "Increment under cursor", noremap = true })
-				vim.keymap.set(
-					"n",
-					"<leader>-",
-					"<leader>o-",
-					{ desc = "Decrement under cursor", unique = true, noremap = true }
-				)
+				require("opencode").setup({
+					keymap = {
+						editor = {
+							["<leader>oo"] = { "toggle", desc = "Toggle Opencode window" },
+							["<leader>og"] = { "open_output", desc = "Open output window" },
+						},
+					},
+				})
 			end,
 		},
 	},

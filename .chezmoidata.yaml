@@ -1,0 +1,31 @@
+#
+# set secrets
+# chezmoi secret keyring set --service=opencode_litellm_key_home --user="$USER"
+# chezmoi secret keyring set --service=opencode_litellm_key_home --user="$USER" --value="hello"
+# chezmoi secret keyring get --service=opencode_litellm_key_home --user="$USER"
+#
+github:
+  workOrgSlug: "{{ .work_org_slug }}"
+
+ssh:
+  # If true on macOS, include Colima’s SSH config (safe to leave true at work).
+  enable_colima_include: true
+
+  # Keys (override here if you use different paths)
+  personalKey: "~/.ssh/marvin"
+  workKey: "~/.ssh/work"
+
+
+opencode:
+  profiles:
+    home:
+      baseURL: "http://192.168.1.50:4000/v1"          # ensure /v1 if OpenAI-compatible
+      displayName: "LiteLLM (Home)"
+      defaultModel: "gemini"
+      apiKeyService: "litellm_api_key"   # Keychain service name for the API key
+
+    work:
+      baseURL: "{{ .work_litellm_url }}"
+      displayName: "LiteLLM (Work)"
+      defaultModel: "vertex_ai/gemini-3-pro-preview"
+      apiKeyService: "litellm_api_key"

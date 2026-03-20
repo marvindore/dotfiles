@@ -1,0 +1,44 @@
+{{- /* Choose the profile: env > config [data].profile > "home" */ -}}
+{{- $profile := (env "CHEZMOI_PROFILE" | default .profile | default "home") -}}
+
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "litellm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "{{ (index .opencode.profiles $profile).displayName }}",
+      "options": {
+        "baseURL": "{{ (index .opencode.profiles $profile).baseURL }}",
+
+        /* Read LiteLLM key from macOS Keychain at apply time. */
+        "apiKey": "{{ $svc := (index .opencode.profiles $profile).apiKeyService }}{{ keyring $svc .chezmoi.username }}"
+      },
+      "models": {
+        "gemini": { "name": "Gemini Flash" },
+        "vertex_ai/gemini-3-pro-preview": { "name": "Gemini 3 Pro (Vertex)" }
+      }
+    }
+  },
+
+  "model": "litellm/{{ (index .opencode.profiles $profile).defaultModel }}",
+
+  "permission": { "read": "allow", "edit": "allow", "bash": "ask", "webfetch": "allow" },
+    "tools": {
+        "bash": true,
+        "mcp": true
+    },
+    "keybinds": {
+        "input_newline": "ctrl+n"
+    },
+    "agent": {
+        "architect": {
+            "description": "Planning and high-level design",
+            "model": "litellm/gemini-3.1-pro-preview",
+            "tools": {
+                "edit": false,
+                "bash": false
+            },
+            "prompt": "You are a software architect. Focus on system design, directories, and scalability. Do not write implementation code."
+        }
+    }
+}

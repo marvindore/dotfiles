@@ -22,6 +22,36 @@ elseif is_linux() then
   zoxide_path = "/usr/bin/zoxide"
 end
 
+-- Resolve an executable via the user's login shell PATH (works for Homebrew, Nix, AppImage, etc.)
+local function find_executable(name)
+  local shell  = os.getenv("SHELL") or "sh"
+  -- 'command -v' outputs nothing on failure (unlike 'which' which prints "not found")
+  local handle = io.popen(shell .. " -l -c 'command -v " .. name .. "' 2>/dev/null")
+  if handle then
+    local result = handle:read("*l")
+    handle:close()
+    -- Only accept absolute paths to avoid "not found" noise
+    if result and result:sub(1, 1) == "/" then
+      return result
+    end
+  end
+  -- Fallback: probe known install locations directly
+  local candidates = {
+    "/opt/homebrew/bin/" .. name,                        -- macOS Homebrew (Apple Silicon)
+    "/usr/local/bin/"   .. name,                         -- macOS Homebrew (Intel) / Linux
+    "/usr/bin/"         .. name,                         -- Linux system package
+    wezterm.home_dir .. "/.nix-profile/bin/" .. name,   -- Nix home-manager
+    wezterm.home_dir .. "/.local/bin/"       .. name,   -- AppImage / manual install
+  }
+  for _, path in ipairs(candidates) do
+    local f = io.open(path, "r")
+    if f then f:close() ; return path end
+  end
+  return name -- last resort: hope it's in PATH at spawn time
+end
+
+local nvim_path = find_executable("nvim")
+
 -- ------------------------------
 -- Hooks
 -- ------------------------------
@@ -87,6 +117,28 @@ workspace_switcher.zoxide_path = zoxide_path
 -- ------------------------------
 -- ------------------------------
 
+-- --------------------------------------------------
+-- Workspace jump helper (Resurrect-aware, auto-clean)
+-- --------------------------------------------------
+
+local function jump_workspace(opts)
+  return wezterm.action_callback(function(win, pane)
+    last_ws = mux.get_active_workspace()
+    -- SwitchToWorkspace with spawn: if the workspace exists it switches to it,
+    -- if not it creates it in the current window (not a new OS window).
+    win:perform_action(
+      act.SwitchToWorkspace {
+        name  = opts.name,
+        spawn = {
+          cwd  = opts.cwd,
+          args = { os.getenv("SHELL") or "bash", "-c", opts.cmd },
+        },
+      },
+      pane
+    )
+  end)
+end
+
 -- --------------------------------
 -- Toggle between current/last workspace
 -- --------------------------------
@@ -134,12 +186,26 @@ end
 -- ------------------------------
 -- Helper: detect Neovim or tmux panes
 -- ------------------------------
+local function pane_process_name(pane)
+  local name = pane:get_foreground_process_name()
+  if not name or name == "" then
+    return nil
+  end
+
+  return name:match("([^/]+)$") or name
+end
+
 local function is_vim_or_tmux(pane)
   -- reliable when smart-splits.nvim sets the user var
-  local is_vim = pane:get_user_vars().IS_NVIM == "true"
-  local is_tmux = process_name:find("tmux") ~= nil
+  local user_vars = pane:get_user_vars() or {}
+  local is_vim = user_vars.IS_NVIM == "true"
+  local process_name = pane_process_name(pane)
+  local is_tmux = process_name and process_name:find("tmux") ~= nil
 
-  return is_vim or is_tmux
+  return is_vim
+    or is_tmux
+    or process_name == "nvim"
+    or process_name == "vim"
 end
 
 local direction_keys = { h = "Left", j = "Down", k = "Up", l = "Right" }
@@ -234,6 +300,9 @@ config.keys = {
   { key = '8', mods = 'SUPER', action = wezterm.action.ActivateTab(8) },
   { key = '9', mods = 'SUPER', action = wezterm.action.ActivateTab(9) },
 
+  -- Windows
+  { mods = "LEADER", key = "z", action = wezterm.action.TogglePaneZoomState},
+
   --------------------------------------------------
   --- Session / Workspace Management
   --------------------------------------------------
@@ -322,22 +391,24 @@ config.keys = {
   --------------------------------------------------
   --- Custom: jump to your config workspace
   --------------------------------------------------
+
   {
     mods = "LEADER",
     key  = "c",
-    action = act.SwitchToWorkspace {
-      name  = "config",
-      spawn = {
-        args = { os.getenv("SHELL") or "bash", "-c", "nvim " .. wezterm.home_dir .. "/.config" },
-      },
+    action = jump_workspace {
+      name = "config",
+      cwd  = chezmoi_dir .. "/dot_config",
+      cmd  = nvim_path .. " " .. chezmoi_dir .. "/dot_config",
     },
   },
   {
     mods = "LEADER",
     key  = "n",
-    action = switch_ws_remember("config", {
-    args = { os.getenv("SHELL") or "bash", "-c", "nvim " .. chezmoi_dir .. "/cheatsheets/" },
-    }),
+    action = jump_workspace {
+      name = "notes",
+      cwd  = chezmoi_dir .. "/cheatsheets",
+      cmd  = nvim_path .. " " .. chezmoi_dir .. "/cheatsheets",
+    },
   },
 }
 
