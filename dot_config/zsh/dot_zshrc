@@ -4,10 +4,11 @@
 
 source ~/.aliases
 source ~/.secrets
-source ~/.workrc
 
 # Override config path
 export XDG_CONFIG_HOME="$HOME/.config"
+
+export CHEZMOI_PROFILE="home"
 
 # Path
 export PATH=/usr/local/sbin:$PATH
@@ -186,3 +187,6 @@ function y() {
 	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
 	rm -f -- "$tmp"
 }
+
+# allow work to overwrite env vars
+source ~/.workrc

@@ -26,3 +26,7 @@ n() {
     nvim "$dir"
   fi
 }
+
+nf() {
+    nvim $(fzf)
+}

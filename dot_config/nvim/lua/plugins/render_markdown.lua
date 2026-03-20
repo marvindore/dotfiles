@@ -8,7 +8,7 @@ vim.pack.add({
 		src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",
 		data = {
 			-- Lazy load on markdown and AI-related filetypes
-			ft = { "markdown", "codecompanion", "opencode" },
+			ft = { "markdown", "codecompanion", "opencode", "opencode_output" },
 
 			after = function(_)
 				require("render-markdown").setup({

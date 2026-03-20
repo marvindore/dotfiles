@@ -1,14 +1,19 @@
-{{- define "keychainGet" -}}
-  {{- $service := . -}}
-  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
-{{- end }}
+-- Neovim + CodeCompanion setup via vim.pack.add
+-- Usage:
+--   - Set CHEZMOI_WORK=1 at work to use LiteLLM (HTTP)
+--   - Unset CHEZMOI_WORK at home to use Gemini CLI (ACP)
+-- Secrets are resolved from macOS Keychain at runtime:
+--   - api_base        -> LiteLLM base URL
+--   - api_key         -> LiteLLM API key
+--   - gemini_api_key  -> Gemini API key
+
 vim.pack.add({
   -- 1) Eager deps
   "https://github.com/nvim-lua/plenary.nvim",
   "https://github.com/nvim-treesitter/nvim-treesitter",
   "https://github.com/j-hui/fidget.nvim",
 
-  -- 2) Markdown renderer
+  -- 2) Markdown renderer (for nicer chat output)
   {
     src = "https://github.com/MeanderingProgrammer/render-markdown.nvim",
     data = {
@@ -27,11 +32,23 @@ vim.pack.add({
       keys = {
         { lhs = "<leader>aa", rhs = "<cmd>CodeCompanionChat Toggle<CR>", mode = "n", desc = "CodeCompanion Toggle" },
         { lhs = "<leader>ax", rhs = "<cmd>CodeCompanionActions<cr>",    mode = "n", desc = "CodeCompanion Actions" },
-        { lhs = "<leader>ac", rhs = "<cmd>CodeCompanionCmd<cr>",         mode = "n", desc = "CodeCompanion Command" },
+        { lhs = "<leader>ac", rhs = "<cmd>CodeCompanionCmd<cr>",        mode = "n", desc = "CodeCompanion Command" },
       },
       after = function(_)
+        -- Decide default adapter at runtime
+        -- Work (CHEZMOI_WORK set): LiteLLM
+        -- Home (CHEZMOI_WORK unset/empty/"0"): Gemini CLI
+        local default_adapter = (function()
+          local v = vim.env.CHEZMOI_WORK
+          return (v ~= nil and v ~= "" and v ~= "0") and "litellm" or "gemini_home"
+        end)()
+
         local opts = {
-          log_level = "DEBUG",
+          -- Logging belongs under opts
+          opts = {
+            log_level = "DEBUG",
+          },
+
           display = {
             action_palette = {
               width = 95,
@@ -45,81 +62,74 @@ vim.pack.add({
               },
             },
           },
+
           adapters = {
-            -- Global adapter options
+            -- ACP adapters live here
             acp = {
-              opts = { show_presets = false }, -- only show what we define
+              opts = { show_presets = false },
+
+              -- Home: Gemini CLI via ACP (extend built-in adapter)
+              gemini_home = function()
+                return require("codecompanion.adapters").extend("gemini_cli", {
+                  name = "Gemini CLI (Home)",
+                  defaults = {
+                    auth_method = "gemini-api-key",
+                    timeout = 20000,
+                    -- If you use MCP servers elsewhere in your config, you can inherit them:
+                    -- mcpServers = "inherit_from_config",
+                  },
+                  env = {
+                    -- Resolve at runtime from macOS Keychain (do not write secrets into config)
+                    GEMINI_API_KEY = "cmd:security find-generic-password -s 'gemini_api_key' -w | tr -d '\n'",
+                  },
+                })
+              end,
+            },
+
+            -- HTTP adapters live here
+            http = {
+              -- Work: LiteLLM via OpenAI-compatible adapter
+              litellm = function()
+                return require("codecompanion.adapters").extend("openai_compatible", {
+                  name = "LiteLLM (Work)",
+                  env = {
+                    -- Resolve at runtime from macOS Keychain
+                    url      = "cmd:security find-generic-password -s 'litellm_api_url' -w | tr -d '\n'",
+                    api_key  = "cmd:security find-generic-password -s 'litellm_api_key'   -w | tr -d '\n'",
+
+                    -- Many OpenAI-compatible proxies use /v1 paths; adjust if your base already includes it
+                    chat_url = "/v1/chat/completions",
+                  },
+                  schema = {
+                    -- Set your default model (as configured/available on your LiteLLM proxy)
+                    model       = { default = "vertex_ai/claude-sonnet-4-6@default" },
+                    num_ctx     = { default = 32000 },
+                    temperature = { default = 0.2 },
+                  },
+                })
+              end,
             },
           },
-          -- Note: CodeCompanion uses 'strategies' (not 'interactions')
+
+          -- Strategies choose which adapter to use
           strategies = {
-            chat = {
+            chat   = {
+              adapter = default_adapter,
               slash_commands = {
                 ["buffer"] = { opts = { provider = "snacks" } },
                 ["file"]   = { opts = { provider = "snacks" } },
               },
             },
-            inline = {},
-            cmd = {},
-          }
+            inline = { adapter = default_adapter },
+            cmd    = { adapter = default_adapter },
+          },
         }
 
-        ----------------------------------------------------------------------
-        -- Adapters (switch by CHEZMOI_WORK)
-        ----------------------------------------------------------------------
-
-        {{ if (env "CHEZMOI_WORK") }}
-
-        -- WORK = HTTP (LiteLLM) via OpenAI-compatible adapter
-        opts.adapters.litellm = function()
-          return require("codecompanion.adapters").extend("openai_compatible", {
-            name = "LiteLLM",
-            env = {
-              -- The 'cmd:' prefix tells CodeCompanion to fetch this at runtime
-              -- (Note: I added | tr -d '\n' to the commands to ensure no rogue newlines from the CLI output break the HTTP request headers).
-              url      = "cmd:security find-generic-password -s 'litellm_work_url' -w | tr -d '\n'",
-              api_key  = "cmd:security find-generic-password -s 'litellm_work_key' -w | tr -d '\n'",
-              chat_url = "/v1/chat/completions",
-            },
-            schema = {
-              model       = { default = "vertex_ai/claude-sonnet-4-6@default" },
-              num_ctx     = { default = 32000 },
-              temperature = { default = 0.2 },
-            },
-          })
-        end
-
-        opts.strategies.chat.adapter   = "litellm"
-        opts.strategies.inline.adapter = "litellm"
-        opts.strategies.cmd.adapter    = "litellm"
-
-        {{ else }}
-
-        -- PERSONAL = ACP (Gemini CLI)
-        opts.adapters.my_gemini_cli = function()
-          return require("codecompanion.adapters").extend("gemini_cli", {
-            name = "my_gemini_cli",
-            defaults = {
-              auth_method = "gemini-api-key",
-              timeout = 20000,
-            },
-            env = {
-              -- Using Bitwarden CLI at runtime
-              GEMINI_API_KEY = "cmd:bw get notes 'litellm-secrets' | grep GEMINI_API_KEY | cut -d '=' -f2 | tr -d '\n'",
-            },
-          })
-        end
-
-        opts.strategies.chat.adapter   = "my_gemini_cli"
-        opts.strategies.inline.adapter = "my_gemini_cli"
-        opts.strategies.cmd.adapter    = "my_gemini_cli"
-
-        {{ end }}
-        -- Initialize
+        -- Initialize CodeCompanion
         require("codecompanion").setup(opts)
 
         ----------------------------------------------------------------------
-        -- Fidget progress (unchanged)
+        -- Fidget progress (nice request progress UI)
         ----------------------------------------------------------------------
         local progress = require("fidget.progress")
         local handles = {}

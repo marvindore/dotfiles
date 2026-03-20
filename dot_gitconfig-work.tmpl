@@ -11,3 +11,6 @@
 {{ if $useKeychain }}
     key = "{{ template "keychainGet" "chezmoi_gpg_signing_key" }}"
 {{ end }}
+
+[url "git@work:{{ template "keychainGet" "company_git_org" }}/"]
+    insteadOf = git@github.com:{{ template "keychainGet" "company_git_org" }}/

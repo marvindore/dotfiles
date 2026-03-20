@@ -1,59 +1,33 @@
-{{ if and (eq .chezmoi.os "darwin") (eq .chezmoi.username "marvin.dore") -}}
-Include /Users/marvindore/.colima/ssh_config
+{{- /* Load data from .chezmoidata.yaml */ -}}
+{{- $workOrg  := .github.workOrgSlug -}}
+{{- $isDarwin := eq .chezmoi.os "darwin" -}}
+{{- $homeKey  := .ssh.personalKey | default "~/.ssh/marvin" -}}
+{{- $workKey  := .ssh.workKey     | default "~/.ssh/work" -}}
+{{- $colimaOn := .ssh.enable_colima_include | default true -}}
 
-# ssh multiplexing
-# Host *: Applies this rule to every server you connect to.
-# ControlMaster auto: Tells SSH to look for an existing connection before starting a new one.
-# ControlPath: Dictates where to save the connection file (using the username %r, host %h, and port %p).
-# ControlPersist 10m: Keeps the background connection open for 10 minutes after you log out. (You can change this to 1h for an hour, or even yes
+# =========================
+# Includes (keep near top)
+# =========================
+{{- if and $isDarwin $colimaOn }}
+Include {{ .chezmoi.homeDir }}/.colima/ssh_config
+{{- end }}
 
-Host *
-  ControlMaster auto
-  ControlPath ~/.ssh/sockets/%r@%h:%p
-  ControlPersist 10m
-
-Host github.com
+# =========================
+# GitHub — HOME / personal
+# Usage: git@home:ORG/REPO.git
+# =========================
+Host home
   HostName github.com
-  User marvin-dore_ukg
-  AddKeysToAgent yes
-  UseKeychain yes
-  IdentityFile ~/.ssh/work
+  User git
+  IdentityFile {{ $homeKey }}
+  IdentitiesOnly yes
 
-Host github-marvin
+# =========================
+# GitHub — WORK ({{ $workOrg }})
+# Usage: git@work:{{ $workOrg }}/REPO.git
+# =========================
+Host work
   HostName github.com
-  User marvindore
-  AddKeysToAgent yes
-  UseKeychain yes
-  IdentityFile ~/.ssh/marvin
-
-{{ else if eq .chezmoi.os "darwin" -}}
-Include /Users/marvindore/.colima/ssh_config
-
-Host github.com
-  HostName github.com
-  User marvindore
-  AddKeysToAgent yes
-  UseKeychain yes
-  IdentityFile ~/.ssh/marvin
-
-{{ else if (contains "marvin.dore" .chezmoi.username)  -}}
-Host github.com
-  HostName github.com
-  User marvin-dore_ukg
-  AddKeysToAgent yes
-  IdentityFile ~/.ssh/work
-
-Host github-marvin
-  HostName github.com
-  User marvindore
-  AddKeysToAgent yes
-  IdentityFile ~/.ssh/marvin
-
-{{ else -}}
-Host github.com
-  HostName github.com
-  User marvindore
-  AddKeysToAgent yes
-  IdentityFile ~/.ssh/marvin
-
-{{ end -}}
+  User git
+  IdentityFile {{ $workKey }}
+  IdentitiesOnly yes

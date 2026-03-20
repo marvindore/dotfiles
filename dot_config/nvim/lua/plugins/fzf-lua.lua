@@ -9,11 +9,15 @@ vim.pack.add({
 			cmd = { "FzfLua" },
 
 			keys = {
-        { lhs = "<leader>fn", rhs = "<cmd>lua require('fzf-lua').files({ cwd = vim.fn.expand('~/.local/share/chezmoi/cheatsheets') })<CR>", mode = "n", desc = "Cheatsheet find"},
-        { lhs = "<leader>fN", rhs = "<cmd>lua require('fzf-lua').live_grep({ cwd = vim.fn.expand('~/.local/share/chezmoi/cheatsheets') })<CR>", mode = "n", desc = "Cheatsheets grep"},
+        { lhs = "<leader>fr", rhs = "<cmd>lua require('fzf-lua').files({ cwd = vim.fn.expand('~/.local/share/chezmoi/runbook') })<CR>", mode = "n", desc = "RunBook find"},
+        { lhs = "<leader>fR", rhs = "<cmd>lua require('fzf-lua').live_grep({ cwd = vim.fn.expand('~/.local/share/chezmoi/runbook') })<CR>", mode = "n", desc = "RunBook grep"},
+        { lhs = "<leader>fc", rhs = "<cmd>lua require('fzf-lua').files({ cwd = vim.fn.expand('~/.local/share/chezmoi/dot_config') })<CR>", mode = "n", desc = "Config find"},
+        { lhs = "<leader>fC", rhs = "<cmd>lua require('fzf-lua').live_grep({ cwd = vim.fn.expand('~/.local/share/chezmoi/dot_config') })<CR>", mode = "n", desc = "Config grep"},
+        { lhs = "<leader>fn", rhs = "<cmd>lua require('fzf-lua').files({ cwd = vim.fn.expand('~/notesplus') })<CR>", mode = "n", desc = "NotesPlus find"},
+        { lhs = "<leader>fN", rhs = "<cmd>lua require('fzf-lua').live_grep({ cwd = vim.fn.expand('~/notesplus') })<CR>", mode = "n", desc = "NotesPlus grep"},
 				{ lhs = "<leader>fo", rhs = ":lua require('fzf-lua').oldfiles()<CR>", mode = "n", desc =  "Fzf open old files" },
 				{ lhs = "<LocalLeader>ff", rhs = ":lua require('fzf-lua').files()<CR>", mode = "n", desc =  "Fzf Files" },
-				{ lhs = "<LocalLeader>fr", rhs = ":lua require('fzf-lua').resume()<CR>", mode = "n", desc =  "Fzf Resume" },
+				{ lhs = "<LocalLeader>f.", rhs = ":lua require('fzf-lua').resume()<CR>", mode = "n", desc =  "Fzf Resume" },
 				{ lhs = "<LocalLeader>fg", rhs = ":lua require('fzf-lua').grep_project()<CR>", mode = "n", desc =  "Fzf Grep" },
 				{ lhs = "<LocalLeader>fG", rhs = ":lua require('fzf-lua').live_grep_glob()<CR>", mode = "n", desc =  "Fzf rg --glob" },
 				{

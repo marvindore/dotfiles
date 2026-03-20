@@ -15,7 +15,7 @@ require("mini.diff").setup({
     -- Signs used for hunks with 'sign' view
     signs = { add    = '▏', change = '▏', delete = '▏',},
 
-
+    -- Priority of used visualization extmarks
     priority = 199,
   },
   mappings = {
@@ -27,7 +27,6 @@ require("mini.diff").setup({
 })
 require("mini.files").setup({ mappings = { go_in_plus = "<cr>" } })
 require("mini.comment").setup()
-require("mini.bracketed").setup()
 
 require("mini.surround").setup({
 	mappings = {

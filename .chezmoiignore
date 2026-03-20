@@ -1,4 +1,8 @@
+README.md
+docs/
+docs/**
 {{- if ne .chezmoi.os "windows" -}}
 .chezmoiscripts/run_after_set-xdg-config-home-windows.cmd.tmpl
+AppData/
 AppData/**
 {{- end -}}

@@ -244,8 +244,17 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 })
 
 local home = vim.loop.os_homedir() -- Get the home directory dynamically
-local notes_path = home .. "/cheatsheets/" -- Append the notes directory
+local runbook_path = vim.g.chezmoi_home .. "/runbook/" -- Append the notes directory
+local notesplus_path = home .. "/notesplus/"
 
-vim.api.nvim_create_user_command("Notes", function()
-	vim.cmd.edit(notes_path)
+vim.api.nvim_create_user_command("RunBook", function()
+	vim.cmd.edit(runbook_path)
 end, {})
+
+vim.api.nvim_create_user_command("NotesPlus", function()
+	vim.fn.mkdir(notesplus_path, "p")
+	vim.cmd.edit(notesplus_path .. "index.md")
+end, {})
+
+vim.keymap.set("n", "<leader>N", ":NotesPlus<CR>", { desc = "Open NotesPlus" })
+
