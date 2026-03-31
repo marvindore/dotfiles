@@ -48,7 +48,9 @@ vim.o.mouse = 'a' -- Enable your mouse
 vim.o.splitbelow = true -- Horizontal splits will automatically be below
 vim.o.conceallevel = 0 -- So that I can see `` in markdown files
 --vim.o.timeoutlen = 100 -- By default timeoutlen is 1000 ms, this causes leader key not to work
-vim.o.clipboard = 'unnamedplus' -- Copy paste between vim and everything else
+vim.schedule(function()
+    opt.clipboard = 'unnamedplus'
+end)
 vim.cmd[[ set dir=~/neovim/swaps ]]
 
 -- keep folding enabled but don't fold all lines by default
@@ -152,16 +154,15 @@ local function get_winbar_path()
 end
 -- Function to get the number of open buffers using the :ls command
 local function get_buffer_count()
-  local buffers = vim.fn.execute("ls")
-  local count = 0
-  -- Match only lines that represent buffers, typically starting with a number followed by a space
-  for line in string.gmatch(buffers, "[^\r\n]+") do
-    if string.match(line, "^%s*%d+") then
-      count = count + 1
+    local count = 0
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
+            count = count + 1
+        end
     end
-  end
-  return count
+    return count
 end
+
 -- Function to update the winbar
 local function update_winbar()
   local home_replaced = get_winbar_path()
@@ -183,44 +184,29 @@ vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
 
 
 -- Python
+-- Don't run this on startup. Run it only when a python file is opened.
 local function set_python_host_prog()
-  local buf_ft = vim.bo.filetype
-  --if buf_ft ~= "python" then return end
-
-  local cwd = vim.fn.getcwd()
-  local venv_paths = {
-    cwd .. "/.venv/bin/python3",
-    cwd .. "/venv/bin/python",
-    cwd .. "/env/bin/python"
-  }
-
-  for _, path in ipairs(venv_paths) do
-    if vim.fn.filereadable(path) == 1 then
-      vim.g.python3_host_prog = path
-      --print("Using virtualenv Python: " .. path)
-
-      -- Update system $PATH if necessary
-      -- local venv_bin = vim.fn.fnamemodify(path, ":h") -- get the bin directory
-      -- local current_path = vim.fn.getenv("PATH")
-      -- local path_parts = vim.split(current_path, ":", { plain = true })
-      --
-      -- if path_parts[1] ~= venv_bin then
-      --   table.insert(path_parts, 1, venv_bin)
-      --   local new_path = table.concat(path_parts, ":")
-      --   vim.fn.setenv("PATH", new_path)
-      --   print("Prepended venv bin to PATH: " .. venv_bin)
-      -- end
-
-      return
+    local cwd = vim.fn.getcwd()
+    local venv_paths = { cwd .. "/.venv/bin/python3", cwd .. "/venv/bin/python" }
+    
+    for _, path in ipairs(venv_paths) do
+        if vim.fn.filereadable(path) == 1 then
+            vim.g.python3_host_prog = path
+            return
+        end
     end
-  end
-
-  -- Fallback to system Python
-  vim.g.python3_host_prog = vim.g.neovim_home .. "/mason/packages/debugpy/venv/bin/python3"
-  --print("Using system Python: " .. vim.g.python3_host_prog)
+    vim.g.python3_host_prog = vim.g.neovim_home .. "/mason/packages/debugpy/venv/bin/python3"
 end
 
-set_python_host_prog()
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "python",
+    callback = function()
+        set_python_host_prog()
+        print("Using python: " .. (vim.g.python3_host_prog or "system"))
+        return true
+    end,
+})
+
 
 -- Autocommand to trigger the function when a Python file is opened
 vim.api.nvim_create_autocmd("FileType", {

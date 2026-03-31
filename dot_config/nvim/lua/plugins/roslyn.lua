@@ -3,35 +3,39 @@ if not vim.g.enableCsharp then
 	return
 end
 
--- 2. Register with the native package manager and lze
-vim.pack.add({
-	{
-		src = "https://github.com/seblyng/roslyn.nvim",
-		data = {
-			-- Lazy load only when you open a C# or Razor file
-			ft = { "cs", "razor" },
+-- 2. Define the spec for lze
+local roslyn_spec = {
+	name = "roslyn.nvim",
+	
+	-- Lazy load only when you open a C# or Razor file
+	ft = { "cs", "razor" },
 
-			after = function(_)
+	-- THE FIX PART 1: Bring the plugin into memory
+	load = function()
+		vim.cmd("packadd roslyn.nvim")
+	end,
+
+after = function(_)
+				-- 1. Check for installation BEFORE trying to setup/start the LSP
+				local registry = require("mason-registry")
+				if not registry.is_installed("roslyn") then
+					vim.notify("Installing Roslyn via Mason... Please restart Neovim after it finishes.", vim.log.levels.INFO)
+					vim.cmd("MasonInstall roslyn")
+					return -- Prevent the crash by aborting setup until installed
+				end
+
+				-- 2. Setup the server
 				require("roslyn").setup({
-					-- cmd = {
-					-- 	"dotnet",
-					-- 	vim.fs.joinpath(
-					-- 		vim.g.mason_root,
-					-- 		"packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"
-					-- 	),
-					-- 	"--logLevel",
-					-- 	"Information",
-					-- 	"--extensionLogDirectory",
-					-- 	vim.fs.joinpath(vim.uv.os_tmpdir(), "roslyn_ls/logs"),
-					-- 	"--stdio",
-					-- },
+					-- THE FIX: Explicitly tell roslyn.nvim to use the Mason DLL via dotnet
+					exe = {
+						"dotnet",
+						vim.fs.joinpath(
+							vim.g.mason_root,
+							"packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"
+						),
+					},
+					
 					on_attach = function(client, bufnr)
-						-- Install roslyn after plugin loads if missing
-						local registry = require("mason-registry")
-						if not registry.is_installed("roslyn") then
-							vim.cmd("MasonInstall roslyn")
-						end
-
 						-- Let client know we got this
 						client.server_capabilities = vim.tbl_deep_extend("force", client.server_capabilities, {
 							semanticTokensProvider = { full = true },
@@ -87,6 +91,7 @@ vim.pack.add({
 							return original_request(method, params, handler, ctx, config)
 						end
 					end,
+					
 					settings = {
 						["csharp|inlay_hints"] = {
 							csharp_enable_inlay_hints_for_implicit_object_creation = true,
@@ -119,8 +124,17 @@ vim.pack.add({
 						},
 					},
 				})
+
+				-- Re-trigger FileType so the server attaches to the CURRENT buffer
+				vim.cmd("doautocmd FileType " .. vim.bo.filetype)
 			end,
-		},
+}
+
+-- 3. Register with the native package manager and lze
+vim.pack.add({
+	{
+		src = "https://github.com/seblyng/roslyn.nvim",
+		data = roslyn_spec,
 	},
 }, {
 	load = function(p)

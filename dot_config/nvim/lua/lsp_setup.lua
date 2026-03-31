@@ -1,195 +1,148 @@
--- lua/lsp_ui.lua
--- LSP UI, keymaps, and global capabilities module for Neovim v0.11+
-
+-- lua/lsp_setup.lua
+-- Optimized LSP configuration for Neovim v0.11+
 local M = {}
 
-local function package_json_has_angular(path)
-  -- Check if file exists and is readable
-  if vim.fn.filereadable(path) ~= 1 then
-    return false
-  end
+-- DEFERRED HELPER: Only runs when a JS/TS file is opened
+local function detect_angular()
+	local root = vim.fn.getcwd()
+	local angular_files = { root .. "/angular.json", root .. "/nx.json" }
 
-  -- Safely open the file
-  local fd = vim.loop.fs_open(path, "r", 438) -- 0666
-  if not fd then
-    return false
-  end
+	for _, file in ipairs(angular_files) do
+		if vim.fn.filereadable(file) == 1 then
+			vim.lsp.enable("angularls")
+			return
+		end
+	end
 
-  -- Read file stats
-  local stat = vim.loop.fs_fstat(fd)
-  if not stat then
-    vim.loop.fs_close(fd)
-    return false
-  end
-
-  -- Read file content
-  local content = vim.loop.fs_read(fd, stat.size, 0)
-  vim.loop.fs_close(fd)
-
-  if not content then
-    return false
-  end
-
-  -- Case‑insensitive search for the word "angular"
-  return content:lower():find("angular", 1, true) ~= nil
+	-- fallback to package.json scanning
+	local pkg_json = root .. "/package.json"
+	if vim.fn.filereadable(pkg_json) == 1 then
+		local f = io.open(pkg_json, "r")
+		if f then
+			local content = f:read("*all"):lower()
+			f:close()
+			if content:find("angular", 1, true) then
+				vim.lsp.enable("angularls")
+			end
+		end
+	end
 end
 
--- Register the LspAttach autocmd once, early in startup.
 function M.setup_lsp_attach()
 	vim.api.nvim_create_autocmd("LspAttach", {
 		callback = function(args)
 			local bufnr = args.buf
 			local client = vim.lsp.get_client_by_id(args.data.client_id)
+			if not client then
+				return
+			end
 
-			-- Local helper to define buffer-local LSP keymaps with a standard prefix
 			local function map(mode, keys, func, desc)
 				vim.keymap.set(mode, keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
 			end
 
-			-- Try loading fzf-lua lazily; skip pickers if it isn’t available
+			-- Helper to use fzf-lua pickers if available
 			local has_fzf, fzf = pcall(require, "fzf-lua")
 
-			local picker_definition = has_fzf and function()
-				fzf.lsp_definitions()
-			end or vim.lsp.buf.definition
-			local picker_references = has_fzf and function()
-				fzf.lsp_references()
-			end or vim.lsp.buf.references
-			local picker_implementations = has_fzf and function()
-				fzf.lsp_implementations()
-			end or vim.lsp.buf.implementation
-			local picker_declaration = has_fzf and function()
-				fzf.lsp_declarations()
-			end or vim.lsp.buf.declaration
-			local picker_typedefs = has_fzf and function()
-				fzf.lsp_typedefs()
-			end or vim.lsp.buf.type_definition
-			local picker_symbols = has_fzf and function()
-				fzf.lsp_document_symbols()
-			end or function()
-				vim.lsp.buf.document_symbol()
-			end
-
-			-- Core LSP keymaps (buffer-local)
-			map("n", "gd", picker_definition, "Go To Definition")
-			map("n", "gr", picker_references, "References")
-			map("n", "gi", picker_implementations, "Go To Implementation")
-			map("n", "gs", picker_symbols, "Document Symbols")
+			map("n", "gd", has_fzf and fzf.lsp_definitions or vim.lsp.buf.definition, "Go To Definition")
+			map("n", "gr", has_fzf and fzf.lsp_references or vim.lsp.buf.references, "References")
+			map("n", "gi", has_fzf and fzf.lsp_implementations or vim.lsp.buf.implementation, "Go To Implementation")
+			map("n", "gs", has_fzf and fzf.lsp_document_symbols or vim.lsp.buf.document_symbol, "Document Symbols")
 			map("n", "K", function()
 				vim.lsp.buf.hover({ border = "rounded" })
 			end, "Hover")
-			map("n", "gt", picker_typedefs, "Go To Type Definition")
+			map("n", "gt", has_fzf and fzf.lsp_typedefs or vim.lsp.buf.type_definition, "Type Definition")
 			map("n", "rn", vim.lsp.buf.rename, "Rename")
 			map("n", "gc", vim.lsp.buf.code_action, "Code Action")
-			map("n", "gD", picker_declaration, "Go To Declaration")
+			map("n", "gD", has_fzf and fzf.lsp_declarations or vim.lsp.buf.declaration, "Go To Declaration")
 
-			-- Workspace & diagnostics
-			map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, "Workspace Add")
-			map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, "Workspace Remove")
+			-- Diagnostics & Hints
 			map("n", "[d", vim.diagnostic.goto_prev, "Prev Diagnostic")
 			map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
-			map("n", "<LocalLeader>do", vim.diagnostic.open_float, "Diagnostics Float")
-			map("n", "<leader>q", vim.diagnostic.setloclist, "Diagnostics to Loclist")
-
-			-- Toggle inlay hints (Neovim v0.11 API)
 			map("n", "<leader>th", function()
 				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 			end, "Toggle Inlay Hints")
 
-			-- Toggle diagnostics visibility (session-global flag)
-			local function toggle_diagnostics()
-				if vim.g.diagnostics_visible then
-					vim.g.diagnostics_visible = false
-					vim.diagnostic.enable(false)
-				else
-					vim.g.diagnostics_visible = true
-					vim.diagnostic.enable()
-				end
+			-- Server-specific logic
+			if client.name == "jdtls" then
+				map("n", "<leader>dvc", require("jdtls").test_class, "Java Test Class")
+				map("n", "<leader>dvm", require("jdtls").test_nearest_method, "Java Test Method")
 			end
-			map("n", "<leader>td", toggle_diagnostics, "Toggle Diagnostics")
-
-			-- --- Server-specific settings/keymaps -----------------------------------
-			if client then
-				if client.name == "jdtls" then
-					map("n", "<leader>dvc", function()
-						require("jdtls").test_class()
-					end, "Java Test Class")
-					map("n", "<leader>dvm", function()
-						require("jdtls").test_nearest_method()
-					end, "Java Test Nearest Method")
-				elseif client.name == "ts_ls" or client.name == "vtsls" then
-					-- Example: turn off formatting to let a formatter handle it
-					client.server_capabilities.documentFormattingProvider = false
-				elseif client.name == "roslyn" then
-        end
-			end
-			-- -----------------------------------------------------------------------
 		end,
 	})
 end
 
--- Optionally set global capabilities via vim.lsp.config("*", ...)
 function M.setup_global_capabilities()
-	local success, blink = pcall(require, "blink.cmp")
-	local capabilities = {
-		workspace = { didChangeWatchedFiles = { dynamicRegistration = true } },
-	}
-	if success then
-		vim.lsp.config("*", {
-			capabilities = blink.get_lsp_capabilities(capabilities),
-		})
-	end
+	-- Use vim.schedule to ensure blink is ready without blocking startup
+	vim.schedule(function()
+		local success, blink = pcall(require, "blink.cmp")
+		if success then
+			vim.lsp.config("*", {
+				capabilities = blink.get_lsp_capabilities({
+					workspace = { didChangeWatchedFiles = { dynamicRegistration = true } },
+				}),
+			})
+		end
+	end)
 end
 
--- Enable servers (register FileType handlers).
--- Accepts booleans (guards) for conditional enablement.
 function M.enable_servers(opts)
 	opts = opts or {}
 	local g = vim.g
 
-  -- 🚀 THE FIX: Manually inject Mason binaries into the Neovim PATH
-	-- This must run before vim.lsp.enable()
-	vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
+	-- Inject Mason PATH (Corrected separator for cross-platform)
+	local sep = vim.fn.has("win32") == 1 and ";" or ":"
+	vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. sep .. vim.env.PATH
 
-	vim.lsp.enable("lua_ls")
-	vim.lsp.enable({ "bashls", "harper_ls","yamlls", "dockerls", "jsonls", "lemminx" })
+	-- 1. Enable generic servers immediately (Very fast)
+	vim.lsp.enable({ "lua_ls", "bashls", "harper_ls", "yamlls", "dockerls", "jsonls", "lemminx" })
 
-	if opts.enable_js ~= nil and opts.enable_js or g.enableJavascript then
-		local project_root = vim.fn.getcwd()
-		local angular_json = project_root .. "/angular.json"
-		local nx_json = project_root .. "/nx.json"
-		local pkg_json = project_root .. "/package.json"
+	-- 2. Setup Autocmds for Heavy/Context-Dependent servers
+	-- This moves the "IF" logic from Startup to File Open
 
-		-- Only enable Angular LSP if angular.json or nx.json exists
-		if vim.fn.filereadable(angular_json) == 1 or vim.fn.filereadable(nx_json) == 1 or package_json_has_angular(pkg_json) then
-			vim.lsp.enable("angularls")
-		end
-
-			vim.lsp.enable({ "astro", "vtsls" })
+	-- JavaScript / TypeScript / Angular
+	if opts.enable_js or g.enableJavascript then
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = { "javascript", "typescript", "typescriptreact", "javascriptreact" },
+			callback = function()
+				vim.lsp.enable({ "vtsls", "astro" })
+				detect_angular() -- This now runs ONLY when you open a JS file
+				return true -- Only run detection once per session
+			end,
+		})
 	end
 
-	if opts.enable_sql ~= nil and opts.enable_sql or g.enableSql then
-		vim.lsp.enable("sql")
+	-- Python
+	if opts.enable_python or g.enablePython then
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = "python",
+			callback = function()
+				vim.lsp.enable({ "pyright", "ruff" })
+				return true
+			end,
+		})
 	end
 
-	if opts.enable_go ~= nil and opts.enable_go or g.enableGo then
-		vim.lsp.enable("go")
+	-- Rust
+	if opts.enable_rust or g.enableRust then
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = "rust",
+			callback = function()
+				vim.lsp.enable("rust_analyzer")
+				return true
+			end,
+		})
 	end
 
-	if opts.enable_pwsh ~= nil and opts.enable_pwsh or g.isWindowsOs then
+	-- Simple Toggles (Fast enough to keep here if desired)
+	if g.enableGo then
+		vim.lsp.enable("gopls")
+	end
+	if g.enableSql then
+		vim.lsp.enable("sqls")
+	end
+	if g.isWindowsOs then
 		vim.lsp.enable("pwsh")
-	end
-
-	if opts.enable_rust ~= nil and opts.enable_rust or g.enableRust then
-		vim.lsp.enable("rust")
-	end
-
-	if opts.enable_python ~= nil and opts.enable_python or g.enablePython then
-		vim.lsp.enable({ "pyrefly", "ruff" })
-	end
-
-	if opts.enable_java ~= nil and opts.enable_java or g.enableJava then
-		vim.lsp.enable({ "jdtls" })
 	end
 end
 
