@@ -25,6 +25,7 @@ export PATH="$PATH:$HOME/.dotnet/tools"
 export PATH="/usr/local/share/dotnet:$PATH" # Add the actual dotnet binary location to PATH
 export DOTNET_ROOT="/usr/local/share/dotnet" # Recommended: Set DOTNET_ROOT so the CLI can find its own SDKs
 
+export CHEZMOI_SOURCE_PATH=$(chezmoi source-path)
 # Set MANPAGER
 # Uncomment only one
 
