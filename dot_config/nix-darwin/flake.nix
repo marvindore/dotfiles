@@ -94,6 +94,7 @@
             "google-drive"
             "scoot"
             "slack"
+            "sol"
             "wezterm@nightly"
             "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
         ];
