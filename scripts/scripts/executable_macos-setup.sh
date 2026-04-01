@@ -11,13 +11,13 @@ packages=(
   "exa" "fzf" "gh" "git" "git-delta"
   "gnupg" "httpie" "iproute2mac" "jc" "jq" "k9s" "logseq" "miller" "mise" 
   "serie" "sst/tap/opencode" "ripgrep" "starship"
-  "wezterm@nightly" "zellij" "zoxide"
+   "zoxide"
 )
 
 casks=(
   "datagrip" "docker" "hammerspoon"
   "jordanbaird-ice", "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font" "google-chrome"
-  "meld" "rider" "scoot" "slack"
+  "meld" "rider" "scoot" "slack" "sol" "wezterm@nightly"
 )
 
 # ------------------------------------------------------------------------------
