@@ -403,11 +403,20 @@ config.keys = {
   },
   {
     mods = "LEADER",
+    key  = "r",
+    action = jump_workspace {
+      name = "notes",
+      cwd  = chezmoi_dir .. "/runbook",
+      cmd  = nvim_path .. " " .. chezmoi_dir .. "/runbook",
+    },
+  },
+  {
+    mods = "LEADER",
     key  = "n",
     action = jump_workspace {
       name = "notes",
-      cwd  = chezmoi_dir .. "/cheatsheets",
-      cmd  = nvim_path .. " " .. chezmoi_dir .. "/cheatsheets",
+      cwd  = wezterm.home_dir .. "/noteplus",
+      cmd  = nvim_path .. " " .. wezterm.home_dir .. "/notesplus",
     },
   },
 }

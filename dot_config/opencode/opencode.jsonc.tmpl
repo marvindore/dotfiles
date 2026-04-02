@@ -8,14 +8,14 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "{{ (index .opencode.profiles $profile).displayName }}",
       "options": {
-        "baseURL": "{{ (index .opencode.profiles $profile).baseURL }}",
+        "baseURL": "{{ .work_litellm_url }}",
 
         /* Read LiteLLM key from macOS Keychain at apply time. */
         "apiKey": "{{ $svc := (index .opencode.profiles $profile).apiKeyService }}{{ keyring $svc .chezmoi.username }}"
       },
       "models": {
         "gemini": { "name": "Gemini Flash" },
-        "vertex_ai/gemini-3-pro-preview": { "name": "Gemini 3 Pro (Vertex)" }
+        "{{ (index .opencode.profiles $profile).defaultModel }}": { "name": "Gemini 3 Pro (Vertex)" }
       }
     }
   },
@@ -33,7 +33,7 @@
     "agent": {
         "architect": {
             "description": "Planning and high-level design",
-            "model": "litellm/gemini-3.1-pro-preview",
+            "model": "litellm/{{ (index .opencode.profiles $profile).defaultModel }}",
             "tools": {
                 "edit": false,
                 "bash": false

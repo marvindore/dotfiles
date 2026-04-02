@@ -1,6 +1,8 @@
 README.md
 docs/
 docs/**
+runbook/
+runbook/**
 {{- if ne .chezmoi.os "windows" -}}
 .chezmoiscripts/run_after_set-xdg-config-home-windows.cmd.tmpl
 AppData/
