@@ -5,7 +5,7 @@ vim.pack.add({
 			-- Lazy load only when these specific keys are pressed
 			keys = {
 				{
-					lhs = "s",
+					lhs = "f",
 					rhs = function()
 						require("flash").jump()
 					end,
@@ -13,7 +13,7 @@ vim.pack.add({
 					desc = "Flash",
 				},
 				{
-					lhs = "S",
+					lhs = "F",
 					rhs = function()
 						require("flash").jump({ search = { forward = false, wrap = false, multi_window = false } })
 					end,

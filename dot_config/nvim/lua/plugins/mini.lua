@@ -30,13 +30,13 @@ require("mini.comment").setup()
 
 require("mini.surround").setup({
 	mappings = {
-		add = "<leader>ya",
-		delete = "<leader>yd",
-		find = "<leader>yf",
-		find_left = "<leader>yF",
-		highlight = "<leader>yh",
-		replace = "<leader>yr",
-		update_n_lines = "<leader>yn",
+		add = "sa",
+		delete = "sd",
+		find = "sf",
+		find_left = "sF",
+		highlight = "sh",
+		replace = "sr",
+		update_n_lines = "sn",
 	},
 })
 

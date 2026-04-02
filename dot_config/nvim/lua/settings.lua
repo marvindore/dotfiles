@@ -145,25 +145,38 @@ if vim.fn.has('win32') == 1 then
 end
 
 -- Set buffer count
+-- Highlights
 vim.cmd([[highlight WinBar1 guifg=LightBlue]])
 vim.cmd([[highlight WinBar2 guifg=LightGreen]])
--- Function to get the full path and replace the home directory with ~
+
+-- Get path for winbar; replace $HOME with ~; handle non-file buffers gracefully
 local function get_winbar_path()
   local full_path = vim.fn.expand("%:p")
+  if full_path == "" then
+    -- Non-file buffer (help, quickfix, etc.)
+    return "[No Name]"
+  end
   return full_path:gsub(vim.fn.expand("$HOME"), "~")
 end
--- Function to get the number of open buffers using the :ls command
-local function get_buffer_count()
-    local count = 0
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].buflisted then
-            count = count + 1
-        end
-    end
-    return count
-end
 
--- Function to update the winbar
+-- Count buffers like :ls (listed buffers)
+local function get_buffer_count()
+  return #vim.fn.getbufinfo({ buflisted = 1 })
+end
+-- If you prefer only normal "file" buffers, use:
+--[[
+local function get_buffer_count()
+  local count = 0
+  for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+    if vim.bo[info.bufnr].buftype == '' then
+      count = count + 1
+    end
+  end
+  return count
+end
+]]
+
+-- Winbar updater
 local function update_winbar()
   local home_replaced = get_winbar_path()
   local buffer_count = get_buffer_count()
@@ -174,14 +187,28 @@ local function update_winbar()
     .. "%#WinBar1#"
     .. home_replaced
     .. "%*%=%#WinBar2#"
-  -- I don't need the hostname as I have it in lualine
-  -- .. vim.fn.systemlist("hostname")[1]
 end
--- Autocmd to update the winbar on BufEnter and WinEnter events
-vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
+
+-- Update on common lifecycle events
+vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete", "BufEnter", "BufWipeout", "WinEnter", "TabEnter" }, {
   callback = update_winbar,
 })
 
+-- After startup (e.g., after session restore), schedule one more update
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    vim.defer_fn(update_winbar, 50)
+  end,
+})
+
+-- If your auto-session emits a post-restore event, hook it as well (safe no-op otherwise)
+vim.api.nvim_create_autocmd("User", {
+  pattern = "AutoSessionRestorePost",
+  callback = function()
+    vim.defer_fn(update_winbar, 10)
+  end,
+})
+-- end buffer count
 
 -- Python
 -- Don't run this on startup. Run it only when a python file is opened.
