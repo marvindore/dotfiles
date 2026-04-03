@@ -2,6 +2,7 @@
 local wezterm = require("wezterm")
 local act     = wezterm.action
 local mux     = wezterm.mux
+local notes_dir = wezterm.home_dir .. "/notesplus"
 
 -- paths
 local chezmoi_dir = wezterm.home_dir .. "/.local/share/chezmoi"
@@ -51,6 +52,15 @@ local function find_executable(name)
 end
 
 local nvim_path = find_executable("nvim")
+
+-- ------------------------------
+-- Functions
+-- ------------------------------
+
+local function nvim_cmd(vim_command)
+  -- -c takes a single Ex command; %q quotes it safely for the shell
+  return string.format("%s -c %q", nvim_path, vim_command)
+end
 
 -- ------------------------------
 -- Hooks
@@ -410,13 +420,22 @@ config.keys = {
       cmd  = nvim_path .. " " .. chezmoi_dir .. "/runbook",
     },
   },
+    {
+      mods = "LEADER",
+      key  = "n",
+      action = jump_workspace {
+        name = "notes",
+        cwd  = notes_dir,
+        cmd  = nvim_cmd("FzfLua files cwd=" .. notes_dir),
+      },
+    },
   {
     mods = "LEADER",
-    key  = "n",
+    key  = "N",
     action = jump_workspace {
-      name = "notes",
-      cwd  = wezterm.home_dir .. "/noteplus",
-      cmd  = nvim_path .. " " .. wezterm.home_dir .. "/notesplus",
+      name = "notes grep",
+      cwd  = notes_dir,
+      cmd  = nvim_cmd("FzfLua live_grep cwd=" .. notes_dir),
     },
   },
 }
@@ -449,7 +468,7 @@ table.insert(config.keys, { key = "x", mods = "LEADER",
 -- ------------------------------
 -- Window / Tabs UI
 -- ------------------------------
-config.hide_tab_bar_if_only_one_tab = false
+config.hide_tab_bar_if_only_one_tab = true
 config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false
 config.tab_and_split_indices_are_zero_based = true
