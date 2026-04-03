@@ -24,14 +24,6 @@ end, { expr = true })
 
 --map("n", "<Space>", "<NOP>", )
 
--- Format on all files not just LSP
-map(
-	"n",
-	"<leader>F",
-	":lua require('conform').format({ lsp_fallback = true, async = false, timeout_ms= 1000})<CR>",
-	"Format"
-)
-
 map("n", "<leader>W", ":WhichKey<cr>", "Which Key")
 
 -- LSP config
