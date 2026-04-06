@@ -1,5 +1,5 @@
 {{- /* Load data from .chezmoidata.yaml */ -}}
-{{- $workOrg  := .work_org_slug -}}
+{{- $workOrg  := .work.org_slug -}}
 {{- $isDarwin := eq .chezmoi.os "darwin" -}}
 {{- $homeKey  := .ssh.personalKey | default "~/.ssh/marvin" -}}
 {{- $workKey  := .ssh.workKey     | default "~/.ssh/work" -}}

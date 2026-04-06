@@ -150,8 +150,8 @@ automatically-unhide-macos-hidden-apps = false
     alt-i = 'workspace I'
     alt-m = ['exec-and-forget open "hammerspoon://messaging"', 'workspace M']
     alt-n = [
-        "exec-and-forget bash -c 'if [ -d \"/Applications/Logseq.app\" ]; then open -a /Applications/Logseq.app; elif [ -x \"/run/current-system/sw/bin/logseq\" ]; then open -a logseq; else echo \"LogSeq not found\"; fi'",
-        "workspace N"
+        "exec-and-forget ~/.local/bin/wezterm-jump n",
+        "workspace T"
     ]
     alt-o = 'workspace O'
     alt-p = 'workspace P'
@@ -189,7 +189,10 @@ automatically-unhide-macos-hidden-apps = false
     alt-shift-g = 'move-node-to-workspace G'
     alt-shift-i = 'move-node-to-workspace I'
     alt-shift-m = 'move-node-to-workspace M'
-    alt-shift-n = 'move-node-to-workspace N'
+    alt-shift-n = [
+        "exec-and-forget ~/.local/bin/wezterm-jump N",
+        "workspace T"
+    ]
     alt-shift-o = 'move-node-to-workspace O'
     alt-shift-p = 'move-node-to-workspace P'
     alt-shift-q = 'move-node-to-workspace Q'
@@ -275,10 +278,6 @@ run = 'move-node-to-workspace M'
 [[on-window-detected]]
 if.app-id = 'com.tinyspeck.slackmacgap'
 run = 'move-node-to-workspace M'
-
-[[on-window-detected]]
-if.app-id = 'com.electron.logseq'
-run = 'move-node-to-workspace N'
 
 [[on-window-detected]]
 if.app-id = 'com.jetbrains.pycharm'

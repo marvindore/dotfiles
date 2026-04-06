@@ -1,11 +1,10 @@
 -- Pull in the wezterm API
 local wezterm = require("wezterm")
+local chezmoi_dir = wezterm.home_dir .. "/.local/share/chezmoi"
 local act     = wezterm.action
 local mux     = wezterm.mux
-local notes_dir = wezterm.home_dir .. "/notesplus"
-
--- paths
-local chezmoi_dir = wezterm.home_dir .. "/.local/share/chezmoi"
+local notes_dir = wezterm.home_dir .. "/notes"
+local runbook_dir = chezmoi_dir .. "/runbook"
 
 -- OS helpers
 local function is_linux()
@@ -416,8 +415,8 @@ config.keys = {
     key  = "r",
     action = jump_workspace {
       name = "notes",
-      cwd  = chezmoi_dir .. "/runbook",
-      cmd  = nvim_path .. " " .. chezmoi_dir .. "/runbook",
+      cwd  = runbook_dir,
+      cmd  = nvim_path .. " " .. runbook_dir,
     },
   },
     {

@@ -4,7 +4,8 @@
 # chezmoi secret keyring set --service=opencode_litellm_key_home --user="$USER" --value="hello"
 # chezmoi secret keyring get --service=opencode_litellm_key_home --user="$USER"
 #
-work_org_slug: "<place_holder>"
+work:
+  org_slug: "<place_holder>"
 
 ssh:
   # If true on macOS, include Colima’s SSH config (safe to leave true at work).
