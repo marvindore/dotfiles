@@ -42,6 +42,7 @@
             pkgs.fzf
             pkgs.gcc
             pkgs.gh
+            pkgs.gnupg
             pkgs.git
             pkgs.gnupg
             pkgs.httpie
@@ -64,6 +65,7 @@
             pkgs.starship
             pkgs.tree-sitter
             pkgs.utm
+            pkgs.zk
             pkgs.zoxide
             pkgs.zsh
         ];
@@ -94,7 +96,6 @@
             "google-drive"
             "scoot"
             "slack"
-            "sol"
             "wezterm@nightly"
             "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
         ];

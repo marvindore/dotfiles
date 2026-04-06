@@ -8,7 +8,7 @@
       "npm": "@ai-sdk/openai-compatible",
       "name": "{{ (index .opencode.profiles $profile).displayName }}",
       "options": {
-        "baseURL": "{{ .work_litellm_url }}",
+        "baseURL": "{{ (index .opencode.profiles $profile).baseURL }}",
 
         /* Read LiteLLM key from macOS Keychain at apply time. */
         "apiKey": "{{ $svc := (index .opencode.profiles $profile).apiKeyService }}{{ keyring $svc .chezmoi.username }}"

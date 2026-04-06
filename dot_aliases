@@ -146,24 +146,62 @@ function kanata_status() {
 }
 
 function darwin_upgrade() {
-    cd ~/.config/nix-darwin/
-    nix flake update
-    cd -
+  local dest_dir="$HOME/.config/nix-darwin"
+  # Dynamically ask chezmoi for the source path
+  local src_dir=$(chezmoi source-path "$dest_dir")
+
+  # Safety check
+  if [ ! -d "$src_dir" ]; then
+    echo "Error: Cannot find chezmoi source directory at $src_dir."
+    echo "Please ensure you have run 'chezmoi add ~/.config/nix-darwin'"
+    return 1
+  fi
+
+  echo "Updating flake.lock in chezmoi source ($src_dir)..."
+  cd "$src_dir" || return 1
+  
+  # Update happens in the source repo
+  nix flake update
+  
+  # Push the freshly updated flake.lock to the system path
+  echo "Applying updated lock file to system path..."
+  chezmoi apply "$dest_dir"
+  
+  cd - > /dev/null
 }
 
 function darwin_update() {
+  local dest_dir="$HOME/.config/nix-darwin"
+  # Dynamically ask chezmoi for the source path
+  local src_dir=$(chezmoi source-path "$dest_dir")
+
+  # Safety check
+  if [ ! -d "$src_dir" ]; then
+    echo "Error: Cannot find chezmoi source directory at $src_dir."
+    echo "Please ensure you have run 'chezmoi add ~/.config/nix-darwin'"
+    return 1
+  fi
+
+  # 1. Move to the source directory to build.
+  cd "$src_dir" || return 1
   echo "Building system configuration as unprivileged user..."
-  nix build ~/.config/nix-darwin#darwinConfigurations.mchip.system
+  nix build .#darwinConfigurations.mchip.system
 
   if [ $? -eq 0 ]; then
-    # this step doesn't need the full path darwinConfigurations.mchip.system
-    # similarly the darwin-rebuild command looks up the systemconfiguration on its own.
+    # 2. If build succeeds, push the exact config/lock to the system
+    echo "Syncing config and lock file to system..."
+    chezmoi apply "$dest_dir"
 
+    # 3. Switch the system using the newly synced destination files
     echo "Build successful. Switching system configuration as root..."
-    sudo darwin-rebuild switch --flake ~/.config/nix-darwin#mchip
+    sudo darwin-rebuild switch --flake "$dest_dir#mchip"
   else
     echo "Nix build failed. Aborting switch."
   fi
+
+  # 4. Manage the garbage collection roots (now located in your source dir)
+  rm -rf ./result
+  cd - > /dev/null
 }
 
 function cht() {
