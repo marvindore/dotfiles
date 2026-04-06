@@ -324,7 +324,7 @@ config.keys = {
   { mods = "LEADER", key = "]", action = remember_then(act.SwitchWorkspaceRelative(-1)) },
 
   -- toggle last workspace
-  { mods = "LEADER", key = "'", action = switch_to_last_ws() },
+  { mods = "LEADER", key = "Space", action = switch_to_last_ws() },
   --------------------------------------------------
   --- Clipboard
   --------------------------------------------------
@@ -468,7 +468,7 @@ table.insert(config.keys, { key = "x", mods = "LEADER",
 -- ------------------------------
 -- Window / Tabs UI
 -- ------------------------------
-config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = false
 config.tab_bar_at_bottom = true
 config.use_fancy_tab_bar = false
 config.tab_and_split_indices_are_zero_based = true

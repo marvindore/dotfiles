@@ -74,3 +74,50 @@ mkdir project && cd project
 git clone --bare git@github.com:user/project.git .bare
 echo "gitdir: ./.bare" > .git
 ```
+
+## Forked Repos
+    # Clone your fork (this will be your base directory)
+    mkdir <REPO_NAME>
+    cd <REPO_NAME>
+    git clone --bare https://github.com/<YOUR_USERNAME>/<REPO_NAME>.git .git
+    
+    # Tell Git to map remote branches to local tracking branches
+    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
+    # Fetch from your fork to update the hidden references
+    git fetch origin
+
+    # Add the original repository as an upstream remote
+    git remote add upstream git@github.com:<ORIGINAL_OWNER>//<REPO_NAME>.git
+
+    # Set the fetch mapping for the upstream remote too
+    git config remote.upstream.fetch "+refs/heads/*:refs/remotes/upstream/*"
+    
+    # Run this from ANY worktree or your base repository
+    git fetch upstream
+
+    # To update your local main branch (run this from your base directory)
+    git worktree add feature-xyz upstream/main
+    git rebase upstream/<MAIN_BRANCH>
+    git push origin feature-xyz
+
+    # Run from inside the worktree directory: ../<REPO_NAME>-<FEATURE_BRANCH_NAME>
+    gh pr create \
+      --repo <ORIGINAL_OWNER>/<REPO_NAME> \
+      --base <MAIN_BRANCH> \
+      --head <YOUR_USERNAME>:<FEATURE_BRANCH_NAME> \
+      --title "Brief description of the PR" \
+      --body "Detailed explanation of what this PR does, fixes, or adds."
+
+    # First, navigate out of the worktree directory you want to delete
+    # (e.g., go back to your base repository)
+    cd ../<REPO_NAME>
+
+    # Remove the worktree directory
+    git worktree remove ../<REPO_NAME>-<FEATURE_BRANCH_NAME>
+
+    # Delete the local branch reference
+    git branch -d <FEATURE_BRANCH_NAME>
+
+    # Delete the remote feature branch from your GitHub fork
+    git push origin --delete <FEATURE_BRANCH_NAME>

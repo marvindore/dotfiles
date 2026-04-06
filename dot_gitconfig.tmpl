@@ -13,6 +13,12 @@
     navigate = true  # use n and N to move between diff sections
     dark = true      # or light = true, or omit for auto-detection
     hyperlinks = true
+    conflict-style = diff3
+    conflict-marker-begin = "▶ ▶ ▶ ▶ ▶"
+    conflict-marker-end = "◀ ◀ ◀ ◀ ◀"
+    # This makes the actual conflict area background dark red/blue
+    minus-emph-style = "bold red 52"
+    plus-emph-style = "bold green 22"
 
 #[merge]
 #    tool = nvim
@@ -26,7 +32,7 @@
 
 [merge]
     tool = meld
-    conflictstyle = diff3   # shows the BASE section in conflict markers
+    conflictstyle = zdiff3   # shows the BASE section in conflict markers
 
 [mergetool]
     keepBackup = false      # don't leave *.orig files
