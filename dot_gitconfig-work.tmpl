@@ -1,3 +1,5 @@
+{{- $profile := (env "CHEZMOI_PROFILE" | default .profile | default "home") -}}
+
 {{- define "keychainGet" -}}
   {{- $service := . -}}
   {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
@@ -12,5 +14,5 @@
     key = "{{ template "keychainGet" "chezmoi_gpg_signing_key" }}"
 {{ end }}
 
-[url "git@work:{{ template "keychainGet" "company_git_org" }}/"]
-    insteadOf = git@github.com:{{ template "keychainGet" "company_git_org" }}/
+[url "git@work:{{ (index . $profile).org_slug }}/"]
+    insteadOf = git@github.com:{{ (index . $profile).org_slug }}/

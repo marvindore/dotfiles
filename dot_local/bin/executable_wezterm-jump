@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Usage: wezterm-jump <leader-key>
+# Focuses WezTerm (opens if needed) then sends LEADER+<key>
+KEY="${1:-n}"
+
+if ! pgrep -x "wezterm-gui" > /dev/null 2>&1; then
+  open -a /Applications/WezTerm.app
+fi
+
+osascript \
+  -e 'tell application "WezTerm" to activate' \
+  -e 'tell application "System Events"' \
+  -e '  repeat 20 times' \
+  -e '    try' \
+  -e '      if frontmost of process "WezTerm" then exit repeat' \
+  -e '    end try' \
+  -e '    delay 0.1' \
+  -e '  end repeat' \
+  -e '  delay 0.1' \
+  -e '  tell process "WezTerm"' \
+  -e '    keystroke "g" using control down' \
+  -e '    delay 0.3' \
+  -e "    keystroke \"$KEY\"" \
+  -e '  end tell' \
+  -e 'end tell'

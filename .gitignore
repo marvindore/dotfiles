@@ -1,3 +1,4 @@
 mise.toml
 result
 .config/chezmoi/chezmoi.*
+.chezmoidata/local_overrides.toml
