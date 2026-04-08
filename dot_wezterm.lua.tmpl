@@ -58,7 +58,8 @@ local nvim_path = find_executable("nvim")
 
 local function nvim_cmd(vim_command)
   -- -c takes a single Ex command; %q quotes it safely for the shell
-  return string.format("%s -c %q", nvim_path, vim_command)
+  local wrapped_command = "autocmd VimEnter * " .. vim_command
+  return string.format("%s +%q", nvim_path, wrapped_command)
 end
 
 -- ------------------------------

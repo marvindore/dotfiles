@@ -15,8 +15,6 @@ alias nvimc='nvim --cmd "cd $(chezmoi source-path)/dot_config/nvim"'
 alias ca="CHEZMOI_SECRETS=1 chezmoi apply"
 alias oc="opencode"
 
-alias mdp="pnpm dlx mdts ./ --port 8521" # markdown browser preview
-
 #bitwarden
 alias bw_unlock='export BW_SESSION=$(bw unlock --raw)'
 
@@ -231,3 +229,15 @@ function cht() {
       curl -s "cht.sh/$lang/$topic" | bat
     fi
 }
+
+# markdown browser preview
+mdp() {
+  if [[ $# -eq 0 ]]; then
+    pnpm dlx mdts --port 8521
+  elif [[ -f "$1" ]]; then
+    pnpm dlx mdts . -g "$1" "${@:2}" --port 8521
+  else
+    pnpm dlx mdts "$@" --port 8521
+  fi
+}
+

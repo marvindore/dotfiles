@@ -74,3 +74,5 @@ hipatterns.setup({
 vim.keymap.set("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", { desc = "Open directory" })
 vim.keymap.set("n", "_", ":lua MiniFiles.open()<cr>", { desc = "Open parent directory" })
 vim.keymap.set("n", "<leader>gd", function() require("mini.diff").toggle_overlay(0) end, { desc = "Git buffer diff" })
+vim.keymap.set("n", "saw", "saiw", { remap = true, desc = "Surround word" })
+

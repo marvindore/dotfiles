@@ -95,7 +95,7 @@ function M.enable_servers(opts)
 	vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. sep .. vim.env.PATH
 
 	-- 1. Enable generic servers immediately (Very fast)
-	vim.lsp.enable({ "lua_ls", "bashls", "harper_ls", "yamlls", "dockerls", "jsonls", "lemminx" })
+	vim.lsp.enable({ "lua_ls", "bashls", "harper_ls", "yamlls", "dockerls", "jsonls", "lemminx", "marksman" })
 
 	-- 2. Setup Autocmds for Heavy/Context-Dependent servers
 	-- This moves the "IF" logic from Startup to File Open

@@ -58,7 +58,8 @@ vim.pack.add({
 					"lua-language-server",
 					"stylua",
 					"cspell",
-					"harper-ls"
+					"harper-ls",
+					"marksman"
 				}
 
 				-- Conditional Language Tools
