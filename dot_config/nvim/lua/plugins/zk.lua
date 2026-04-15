@@ -58,25 +58,58 @@ vim.api.nvim_create_autocmd("FileType", {
 		-- - local file → open
 		-- --------------------------------------------------------
 
+		-- Helper: return markdown link target under cursor if cursor is within the link span
+		local function markdown_target_at_cursor(line, col1)
+			local init = 1
+			while true do
+				local s, e, _text, target = line:find("%[([^%]]+)%]%(([^)]+)%)", init)
+				if not s then
+					break
+				end
+				if col1 >= s and col1 <= e then
+					return target
+				end
+				init = e + 1
+			end
+		end
+
 		vim.keymap.set("n", "<CR>", function()
 			local line = vim.api.nvim_get_current_line()
-			local col = vim.api.nvim_win_get_cursor(0)[2] + 1
+			local row, col0 = unpack(vim.api.nvim_win_get_cursor(0))
+			local col1 = col0 + 1 -- Lua strings are 1-based
 
-			local before = line:sub(1, col)
-			local after = line:sub(col)
-			local link = before:match("%(([^)]+)$") or after:match("^([^)]*)%)")
+			-- 1) Prefer markdown link parsing: [text](target)
+			local target = markdown_target_at_cursor(line, col1)
 
-			if not link then
-				vim.cmd("normal! <CR>")
+			if target then
+				if target:match("^https?://") then
+					vim.ui.open(target)
+				else
+					-- Open local file path directly (predictable and explicit)
+					vim.cmd("edit " .. vim.fn.fnameescape(target))
+				end
 				return
 			end
 
-			if link:match("^https?://") then
-				vim.ui.open(link)
-			else
-				vim.cmd("normal! gf")
+			-- 2) Small improvement: fallback to cfile (URL or path) without normal-mode side effects
+			local cfile = vim.fn.expand("<cfile>")
+			if cfile and cfile ~= "" then
+				if cfile:match("^https?://") then
+					vim.ui.open(cfile)
+					return
+				end
+
+				-- If it looks like a path, try opening it.
+				-- (You can add stronger heuristics here if you want.)
+				if cfile:find("[/\\]") or cfile:match("%.%w+$") then
+					vim.cmd("edit " .. vim.fn.fnameescape(cfile))
+					return
+				end
 			end
-		end, { buffer = buf })
+
+			-- 3) Otherwise preserve default Enter behavior
+			vim.cmd("normal! <CR>")
+		end, { buffer = buf, silent = true })
 
 		-- --------------------------------------------------------
 		-- <CR><CR> → create Zettel from word under cursor
