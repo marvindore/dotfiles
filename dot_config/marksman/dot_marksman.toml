@@ -1,0 +1,10 @@
+[parser]
+ignore = [
+  "**/.git/**",
+  "**/.cache/**",
+  "**/.local/**",
+  "**/.config/**",
+  "**/.codeium/**",
+  "**/node_modules/**",
+  "**/Library/**"
+]

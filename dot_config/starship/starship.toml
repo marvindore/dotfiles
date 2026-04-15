@@ -20,6 +20,7 @@ $character"""
 
 add_newline = true
 palette = 'catppuccin_macchiato'
+command_timeout = 1000
 
 [directory]
 style = 'bold fg:blue'
