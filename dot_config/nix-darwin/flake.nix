@@ -1,192 +1,139 @@
 {
-  description = "nix-darwin system flake";
+  description = "Modern nix-darwin system flake";
 
-      # `darwin-help` command or mynixos.com has list of available settings
-      # https://mynixos.com/nix-darwin/options
-      # sytem preferrences - https://daiderd.com/nix-darwin/manual/index.html 
-        
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nix-darwin.url = "github:LnL7/nix-darwin";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    
+    # The gold standard for Homebrew management in 2025
     nix-homebrew.url = "github:zhaofengli-wip/nix-homebrew";
+    
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
   };
 
   outputs = inputs@{ self, nix-darwin, nixpkgs, nix-homebrew, neovim-nightly-overlay }:
   let
+    # 1. Modular Overlays
     overlays = [
-        (import ./overlays/mise_2025120.nix)
+      (import ./overlays/mise_2025120.nix)
     ];
-    configuration = { pkgs, config, ... }: {
-      # List packages installed in system profile. To search by name, run:
-      # $ nix-env -qaP | grep wget
-      system.primaryUser = "marvindore";
-      nixpkgs.config.allowUnfree = true;
-      environment.systemPackages =
-        [ 
-            pkgs.act
-            pkgs.aerospace
-            pkgs.age
-            pkgs.atuin
-            pkgs.chezmoi
-            pkgs.colima
-            pkgs.bat
-            pkgs.bruno
-            pkgs.delta
-            pkgs.difftastic
-            pkgs.docker
-            pkgs.eza
-            pkgs.fd
-            pkgs.flameshot
-            pkgs.fzf
-            pkgs.gcc
-            pkgs.gh
-            pkgs.gnupg
-            pkgs.git
-            pkgs.gnupg
-            pkgs.httpie
-            pkgs.ilspycmd
-            pkgs.iproute2mac
-            pkgs.jc
-            pkgs.jq
-            pkgs.jujutsu
-            pkgs.k9s
-            pkgs.lazygit
-            pkgs.logseq
-            pkgs.miller
-            pkgs.mise
-            pkgs.meld
-            pkgs.mkalias
-            inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
-            pkgs.ripgrep
-            pkgs.rustup
-            pkgs.serie
-            pkgs.starship
-            pkgs.tree-sitter
-            pkgs.utm
-            pkgs.zk
-            pkgs.zoxide
-            pkgs.zsh
-        ];
 
-      # Must be logged into app store for this to work
-      # Search for mac store apps with 
-      # `mas search <appName>` then add to masApps like "AppName" = <appID>
+    # 2. Reusable Shared Configuration
+    sharedConfig = { pkgs, config, username, ... }: {
+      
+      system.primaryUser = username;
+      nixpkgs.config.allowUnfree = true;
+
+      environment.systemPackages = with pkgs; [ 
+        act aerospace age atuin bat bruno chezmoi colima delta difftastic
+        docker dua eza fd flameshot fzf gcc gdu gh git gnupg httpie
+        ilspycmd iproute2mac jc jq jujutsu k9s lazygit logseq 
+        mas # Required for App Store CLI
+        miller mise meld mkalias ripgrep rustup serie starship
+        tree-sitter utm zk zoxide zsh
+        inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
+      ];
+
       homebrew = {
         enable = true;
+        onActivation = {
+          autoUpdate = true;
+          upgrade = true;
+          cleanup = "zap"; # Removes apps/casks not in this list
+        };
 
-        taps = [
-            "isen-ng/dotnet-sdk-versions"
-        ];
+        # Best Practice: Find IDs using `mas search <name>`
+        masApps = {
+          "Pages" = 361309726;
+          "Numbers" = 361304891;
+          "Keynote" = 361285480;
+        };
 
+        taps = [ "isen-ng/dotnet-sdk-versions" ];
+        
         brews = [
-        "bitwarden-cli"
-        "mas"
-        "opencode"
-        "tree-sitter-cli"
+          "bitwarden-cli"
+          "gemini-cli"
+          "opencode"
+          "tree-sitter-cli"
         ];
 
         casks = [
-            "dbeaver-community"
-            "hammerspoon"
-            "font-jetbrains-mono-nerd-font"
-            "jordanbaird-ice"
-            "google-chrome"
-            "google-drive"
-            "scoot"
-            "slack"
-            "wezterm@nightly"
-            "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
+          "dbeaver-community" "hammerspoon" "jordanbaird-ice"
+          "google-chrome" "google-drive" "scoot" "slack"
+          "wezterm@nightly" "font-jetbrains-mono-nerd-font"
+          "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
         ];
-        masApps = {
-          "DaisyDisk" = 411643860;  
+      };
+
+      nix-homebrew = {
+        enable = true;
+        user = username;
+        enableRosetta = false;
+        autoMigrate = true;
+        # Fix for issue #131: ensure mas is in the path for brew bundle
+        extraEnv = {
+          PATH = "${pkgs.mas}/bin:$PATH";
         };
-        onActivation.cleanup = "zap";
-        onActivation.autoUpdate = true;
-        onActivation.upgrade = true;
       };
 
-      fonts.packages = [ 
-        pkgs.nerd-fonts.jetbrains-mono
-      ];
-
-      # Macos alias for gui apps
-    system.activationScripts.applications.text = let
-      env = pkgs.buildEnv {
-        name = "system-applications";
-        paths = config.environment.systemPackages;
-        pathsToLink = ["/Applications"];
-      };
-    in
-      pkgs.lib.mkForce ''
-      # Set up applications.
-      echo "setting up /Applications..." >&2
-      rm -rf /Applications/Nix\ Apps
-      mkdir -p /Applications/Nix\ Apps
-      find ${env}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
-      while read -r src; do
-        app_name=$(basename "$src")
-        echo "copying $src" >&2
-        ${pkgs.mkalias}/bin/mkalias "$src" "/Applications/Nix Apps/$app_name"
-      done
-          '';
-
+      # macOS System Defaults
       system.defaults = {
-        dock.autohide = true;
-        dock.persistent-apps = [];
+        dock = { autohide = true; persistent-apps = []; };
         loginwindow.GuestEnabled = false;
         NSGlobalDomain.KeyRepeat = 2;
         WindowManager.EnableStandardClickToShowDesktop = false;
       };
 
-      # make nix-darwin manage the nix-daemon
+      # Fix sudo secure_path so brew bundle can find mas
+      security.sudo.extraConfig = ''
+        Defaults secure_path = /run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin
+      '';
+
+      # App Aliases (Fix for Nix GUI apps in Spotlight)
+      system.activationScripts.applications.text = let
+        env = pkgs.buildEnv {
+          name = "system-applications";
+          paths = config.environment.systemPackages;
+          pathsToLink = ["/Applications"];
+        };
+      in pkgs.lib.mkForce ''
+        echo "setting up /Applications..." >&2
+        rm -rf /Applications/Nix\ Apps
+        mkdir -p /Applications/Nix\ Apps
+        find ${env}/Applications -maxdepth 1 -type l -exec readlink '{}' + |
+        while read -r src; do
+          app_name=$(basename "$src")
+          ${pkgs.mkalias}/bin/mkalias "$src" "/Applications/Nix Apps/$app_name"
+        done
+      '';
+
       nix.enable = true;
-
-      # Necessary for using flakes on this system.
       nix.settings.experimental-features = "nix-command flakes";
-
-      # Enable alternative shell support in nix-darwin.
-      # programs.fish.enable = true;
       programs.zsh.enable = true;
-
-      # Set Git commit hash for darwin-version.
-      system.configurationRevision = self.rev or self.dirtyRev or null;
-
-      # Used for backwards compatibility, please read the changelog before changing.
-      # $ darwin-rebuild changelog
       system.stateVersion = 5;
-
-      # TODO: The platform the configuration will be used on. (x86_64-darwin) (aarch64-darwin)
       nixpkgs.hostPlatform = "aarch64-darwin";
+    };
+
+    # 3. Helper for creating system configurations
+    mkDarwinConfig = { system, username, hostname }: nix-darwin.lib.darwinSystem {
+      inherit system;
+      specialArgs = { inherit inputs username; };
+      modules = [
+        { nixpkgs.overlays = overlays; }
+        sharedConfig
+        nix-homebrew.darwinModules.nix-homebrew
+      ];
     };
   in
   {
-    # Build darwin flake using:
-    # $ darwin-rebuild build --flake .#simple
-    darwinConfigurations."mchip" = nix-darwin.lib.darwinSystem {
-      modules = [ 
-      { nixpkgs.overlays = overlays; } 
-      configuration 
-        nix-homebrew.darwinModules.nix-homebrew
-        {
-          nix-homebrew = {
-            # Install Homebrew under the default prefix
-            enable = true;
-
-            # TODO: Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
-            enableRosetta = false;
-
-            # User owning the Homebrew prefix
-            user = "marvindore";
-
-            autoMigrate = false; # true if you have pre-existing homebrew install
-          };
-        }
-      ];
+    darwinConfigurations."mchip" = mkDarwinConfig {
+      system = "aarch64-darwin";
+      username = "marvindore";
+      hostname = "mchip";
     };
 
-    # Expose the package set, including overlays, for convenience
     darwinPackages = self.darwinConfigurations."mchip".pkgs;
   };
 }

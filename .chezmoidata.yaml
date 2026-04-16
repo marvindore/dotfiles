@@ -20,7 +20,7 @@ opencode:
     home:
       baseURL: "http://192.168.1.50:4000/v1"          # ensure /v1 if OpenAI-compatible
       displayName: "LiteLLM (Home)"
-      defaultModel: "vertex_ai/gemini-3.1-pro-preview"
+      defaultModel: "gemini/gemini-3.1-pro-preview"
       apiKeyService: "litellm_api_key"   # Keychain service name for the API key
 
     work:

@@ -14,5 +14,7 @@
     key = "{{ template "keychainGet" "chezmoi_gpg_signing_key" }}"
 {{ end }}
 
+{{ if eq $profile "work" -}}
 [url "git@work:{{ (index . $profile).org_slug }}/"]
     insteadOf = git@github.com:{{ (index . $profile).org_slug }}/
+{{ end }}
