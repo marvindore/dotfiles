@@ -95,6 +95,7 @@ function M.enable_servers(opts)
 	vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin" .. sep .. vim.env.PATH
 
 	-- 1. Enable generic servers immediately (Very fast)
+	-- These names now map directly to files in your lsp/ directory (e.g. lsp/lua_ls.lua)
 	vim.lsp.enable({ "lua_ls", "bashls", "harper_ls", "yamlls", "dockerls", "jsonls", "lemminx", "marksman" })
 
 	-- 2. Setup Autocmds for Heavy/Context-Dependent servers
@@ -117,7 +118,21 @@ function M.enable_servers(opts)
 		vim.api.nvim_create_autocmd("FileType", {
 			pattern = "python",
 			callback = function()
-				vim.lsp.enable({ "pyright", "ruff" })
+				-- Neovim 0.11: Accessing vim.lsp.config.pyrefly lazily loads lsp/pyrefly.lua
+				-- We can then overlay the settings discovered from our .venv
+				if vim.g.python3_host_prog then
+					vim.lsp.config.pyrefly.settings = {
+						python = {
+							pythonPath = vim.g.python3_host_prog,
+							-- Also common for pyrefly and others to help find site-packages:
+							analysis = {
+								extraPaths = { vim.fn.fnamemodify(vim.g.python3_host_prog, ":h:h") .. "/lib/python*/site-packages" }
+							}
+						}
+					}
+				end
+
+				vim.lsp.enable({ "pyrefly", "ruff" })
 				return true
 			end,
 		})

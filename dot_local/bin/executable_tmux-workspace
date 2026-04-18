@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Usage: tmux-workspace <key>
+
+KEY="${1}"
+
+# Define your paths here (adjust these to match your actual system paths)
+CHEZMOI_DIR="$HOME/.local/share/chezmoi"
+RUNBOOK_DIR="$CHEZMOI_DIR/runbook"
+NOTES_DIR="$HOME/notes"
+
+# Map the key to a Session Name, Working Directory, and Command
+case "$KEY" in
+    "c")
+        SESSION="config"
+        CWD="$CHEZMOI_DIR/dot_config"
+        CMD="nvim ."
+        ;;
+    "r")
+        SESSION="runbook"
+        CWD="$RUNBOOK_DIR"
+        CMD="nvim ."
+        ;;
+    "n")
+        SESSION="notes"
+        CWD="$NOTES_DIR"
+        # We use single quotes around the command to safely pass the inner double quotes to tmux
+        CMD='nvim -c "FzfLua files cwd='"$NOTES_DIR"'"'
+        ;;
+    "N")
+        SESSION="notes_grep"
+        CWD="$NOTES_DIR"
+        CMD='nvim -c "FzfLua live_grep cwd='"$NOTES_DIR"'"'
+        ;;
+    *)
+        echo "Error: Unknown workspace key '$KEY'"
+        exit 1
+        ;;
+esac
+
+# 1. Ensure Ghostty is running so you have a visual window
+if ! pgrep -ix "ghostty" > /dev/null 2>&1; then
+    open -a /Applications/Ghostty.app
+    sleep 1 # Brief pause to let Ghostty attach to tmux
+fi
+
+# 2. Check if the tmux session already exists
+if ! tmux has-session -t "$SESSION" 2>/dev/null; then
+    # It doesn't exist. Create it in the background (-d) with the correct directory (-c)
+    tmux new-session -d -s "$SESSION" -c "$CWD"
+    
+    # Send the Neovim command to the new session and press Enter (C-m)
+    tmux send-keys -t "$SESSION" "$CMD" C-m
+fi
+
+# 3. Tell the active tmux client to switch to the session instantly
+tmux switch-client -t "$SESSION"
