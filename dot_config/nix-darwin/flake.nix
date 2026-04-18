@@ -28,10 +28,10 @@
       environment.systemPackages = with pkgs; [ 
         act aerospace age atuin bat bruno chezmoi colima delta difftastic
         docker dua eza fd flameshot fzf gcc gdu gh git gnupg httpie
-        ilspycmd iproute2mac jc jq jujutsu k9s lazygit logseq 
+        ilspycmd imagemagick iproute2mac jc jq jujutsu k9s lazygit logseq 
         mas # Required for App Store CLI
-        miller mise meld mkalias ripgrep rustup serie starship
-        tree-sitter utm zk zoxide zsh
+        miller mise meld mkalias pngpaste ripgrep rustup serie sesh starship
+        tmux tree-sitter utm zk zoxide zsh
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
       ];
 
@@ -59,10 +59,11 @@
           "tree-sitter-cli"
         ];
 
+        # removed "wezterm@nightly"
         casks = [
           "dbeaver-community" "hammerspoon" "jordanbaird-ice"
-          "google-chrome" "google-drive" "scoot" "slack"
-          "wezterm@nightly" "font-jetbrains-mono-nerd-font"
+          "ghostty" "google-chrome" "google-drive" "scoot" "slack"
+          "font-jetbrains-mono-nerd-font"
           "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
         ];
       };

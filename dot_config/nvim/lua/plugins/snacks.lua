@@ -7,6 +7,7 @@ vim.pack.add({
 local opts = {
   bigfile  = { enabled = true },
   gh = { enabled = true },
+  image = { enabled = true },
   lazygit  = { enabled = true }, -- Snacks' LazyGit module
   notifier = { enabled = true },
   notify   = { enabled = true },

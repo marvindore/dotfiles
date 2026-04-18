@@ -151,7 +151,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-i = 'workspace I'
     alt-m = ['exec-and-forget open "hammerspoon://messaging"', 'workspace M']
     alt-n = [
-        "exec-and-forget ~/.local/bin/wezterm-jump n",
+        "exec-and-forget ~/.local/bin/tmux-workspace n",
         "workspace T"
     ]
     alt-o = 'workspace O'
@@ -161,7 +161,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-s = 'workspace S'
 
     alt-t = [
-        "exec-and-forget bash -c 'if [ -d \"/Applications/WezTerm.app\" ]; then open -a /Applications/WezTerm.app; elif [ -x \"/run/current-system/sw/bin/wezterm\" ]; then open -a wezterm; else echo \"WezTerm not found\"; fi'",
+        "exec-and-forget bash -c 'if [ -d \"/Applications/Ghostty.app\" ]; then open -a /Applications/Ghostty.app; elif [ -x \"/run/current-system/sw/bin/ghostty\" ]; then open -a ghostty; else echo \"Ghostty not found\"; fi'",
         "workspace T"
     ]
     alt-u = 'workspace U'
@@ -191,7 +191,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-shift-i = 'move-node-to-workspace I'
     alt-shift-m = 'move-node-to-workspace M'
     alt-shift-n = [
-        "exec-and-forget ~/.local/bin/wezterm-jump N",
+        "exec-and-forget ~/.local/bin/tmux-workspace N",
         "workspace T"
     ]
     alt-shift-o = 'move-node-to-workspace O'
@@ -239,6 +239,10 @@ automatically-unhide-macos-hidden-apps = false
 [[on-window-detected]]
 if.app-name-regex-substring = 'Finder'
 run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = "move-node-to-workspace T"
 
 [[on-window-detected]]
 if.app-id = 'com.github.wez.wezterm'
