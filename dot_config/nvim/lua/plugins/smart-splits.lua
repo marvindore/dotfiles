@@ -79,7 +79,7 @@ require('smart-splits').setup({
   -- and the $KITTY_LISTEN_ON environment variable for Kitty.
   -- You can also set this value by setting `vim.g.smart_splits_multiplexer_integration`
   -- before the plugin is loaded (e.g. for lazy environments).
-  multiplexer_integration = "wezterm", -- nil, wezterm, zellij, tmux, kitty
+  multiplexer_integration = "tmux", -- nil, wezterm, zellij, tmux, kitty
   -- disable multiplexer navigation if current multiplexer pane is zoomed
   -- NOTE: This does not work on Zellij as there is no way to determine the
   -- pane zoom state outside of the Zellij Plugin API, which does not apply here
