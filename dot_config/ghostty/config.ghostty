@@ -1,2 +1,9 @@
+command = "/usr/bin/env zsh -l -c 'tmux attach || tmux'"
+
 theme = Catppuccin Mocha
 macos-non-native-fullscreen = true
+
+# Removes the title bar and traffic light buttons, but keeps rounded window corners
+#macos-titlebar-style = hidden
+# Keeps the title bar, but hides the close/minimize/maximize buttons
+macos-window-buttons = hidden

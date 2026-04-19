@@ -7,17 +7,17 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 
 packages=(
-  "act" "atuin" "bruno" "difftastic" "tree-sitter" "bat" "bitwarden"
-  "exa" "fzf" "gh" "git" "git-delta"
-  "gnupg" "httpie" "iproute2mac" "jc" "jq" "k9s" "logseq" "miller" "mise" 
-  "serie" "sst/tap/opencode" "ripgrep" "starship"
-   "zoxide"
+  "act" "atuin" "bat" "bruno" "difftastic" "dua-cli" "tree-sitter" "bitwarden"
+  "eza" "fzf" "gh" "git" "git-delta"
+  "gnupg" "imagemagick" "iproute2mac" "jc" "jq" "k9s" "miller" "mise" 
+  "pngpaste" "serie" "opencode" "ripgrep" "starship" "tmux"
+  "zoxide"
 )
 
 casks=(
   "datagrip" "docker" "hammerspoon"
-  "jordanbaird-ice", "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font" "google-chrome"
-  "meld" "rider" "scoot" "slack" "sol" "wezterm@nightly"
+  "jordanbaird-ice" "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font" 
+  "ghostty" "google-chrome" "meld" "rider" "scoot" "slack"
 )
 
 # ------------------------------------------------------------------------------
@@ -38,145 +38,14 @@ configure_personal_settings() {
 }
 
 # ------------------------------------------------------------------------------
-# Symlink helper
-# ------------------------------------------------------------------------------
-
-
-link_file_with_prompt() {
-  local source="$1"
-  local target="$2"
-  local target_dir
-
-  target_dir="$(dirname "$target")"
-
-  if [[ ! -d "$target_dir" ]]; then
-    mkdir -p "$target_dir"
-  fi
-
-  if [[ -L "$target" ]]; then
-    # Target is a symlink
-    local existing_link
-    existing_link="$(readlink "$target")"
-    if [[ "$existing_link" == "$source" ]]; then
-      echo "⏭️ Skipped: Symlink already exists and points to correct source → $target"
-      return
-    else
-      echo "⚠️ Symlink '$target' points to '$existing_link' instead of '$source'."
-      read -rp "Replace with new symlink? (y/N): " response
-      if [[ "$response" =~ ^(Y|y|Yes|yes)$ ]]; then
-        rm "$target"
-        ln -s "$source" "$target"
-        echo "✅ Linked: $target → $source"
-      else
-        echo "⏭️ Skipped: $target"
-      fi
-      return
-    fi
-  elif [[ -e "$target" ]]; then
-    # Target is a regular file or directory
-    echo "⚠️ File '$target' exists and is not a symlink."
-    read -rp "Delete and replace with symlink? (y/N): " response
-    if [[ "$response" =~ ^(Y|y|Yes|yes)$ ]]; then
-      rm -rf "$target"
-      ln -s "$source" "$target"
-      echo "✅ Linked: $target → $source"
-    else
-      echo "⏭️ Skipped: $target"
-    fi
-    return
-  else
-    # Target does not exist
-    ln -s "$source" "$target"
-    echo "✅ Linked: $target → $source"
-  fi
-}
-
-# ------------------------------------------------------------------------------
-# Create dotfile symlinks
-# ------------------------------------------------------------------------------
-
-stow_dotfiles_manually() {
-  local context_is_work=false
-  read -rp "Setting up dotfiles for work? (y/N): " response
-
-  if [[ "$response" =~ ^(Y|y|Yes|yes)$ ]]; then
-    context_is_work=true
-  fi
-
-  local context_dir="$HOME/dotfiles"
-
-  if [[ ! -d "$context_dir" ]]; then
-    echo "❌ Dotfiles directory '$context_dir' does not exist."
-    exit 1
-  fi
-
-  echo "🔗 Linking dotfiles from '$context_dir' into $HOME... (supports filenames without spaces)"
-
-  for file in $(find "$context_dir" -path "$context_dir/.git" -prune -o -type f -print); do
-    relative_path="${file#$context_dir/}"
-    target="$HOME/$relative_path"
-    link_file_with_prompt "$file" "$target"
-  done
-
-  if $context_is_work; then
-    link_file_with_prompt "$HOME/dotfiles/.ssh/config-work" "$HOME/.ssh/config"
-  else
-    link_file_with_prompt "$HOME/dotfiles/.ssh/config-marvin" "$HOME/.ssh/config"
-  fi
-
-  sudo ln -s "$HOME/dotfiles/scripts/open-url" /usr/local/bin/open-url
-}
-
-# ------------------------------------------------------------------------------
-# Delete dotfile symlinks
-# ------------------------------------------------------------------------------
-
-unstow_dotfiles_manually() {
-  local context_is_work=false
-  read -rp "Remove dotfiles for work? (y/N): " response
-  if [[ "$response" =~ ^(Y|y|Yes|yes)$ ]]; then
-    context_is_work=true
-  fi
-
-  local context_dir="$HOME/dotfiles"
-
-  if [[ ! -d "$context_dir" ]]; then
-    echo "❌ Dotfiles directory '$context_dir' does not exist."
-    exit 1
-  fi
-  echo "🗑️ Removing symlinks from '$context_dir' in $HOME..."
-
-  find "$context_dir" -path "$context_dir/.git" -prune -o -type f -print | while read -r file; do
-    relative_path="${file#$context_dir/}"
-    target="$HOME/$relative_path"
-    if [[ -L "$target" ]]; then
-      rm "$target"
-      echo "❌ Removed symlink: $target"
-    else
-      echo "⏭️ Skipped (not a symlink): $target"
-    fi
-  done
-
-  local ssh_config="$HOME/.ssh/config"
-  if [[ -L "$ssh_config" ]]; then
-    rm "$ssh_config"
-    echo "❌ Removed symlink: $ssh_config"
-  fi
-
-  sudo rm /usr/local/bin/open-url
-}
-
-# ------------------------------------------------------------------------------
 # Print numbered list
 # ------------------------------------------------------------------------------
 
 print_numbered_list() {
-  echo "0. Create dotfile symlinks"
-  echo "1. Remove dotfile symlinks"
-  echo "2. Configure macOS personal settings"
+  echo "0. Configure macOS personal settings"
 
-  echo "Available packages:"
-  local i=3
+  echo -e "\nAvailable packages:"
+  local i=1
   for pkg in "${packages[@]}"; do
     printf "%2d. %s\n" "$i" "$pkg"
     i=$((i + 1))
@@ -190,17 +59,17 @@ print_numbered_list() {
 }
 
 # ------------------------------------------------------------------------------
-# Parse input like 1,3,5-7 into array of indices
+# Parse input like 0,3,5-7 into array of indices
 # ------------------------------------------------------------------------------
 
 selected=()
 
 parse_selection() {
   local input="$1"
-  local total=$(( ${#packages[@]} + ${#casks[@]} + 3 ))
+  local total=$(( ${#packages[@]} + ${#casks[@]} ))
 
   if [ "$input" = "all" ]; then
-    for ((i=2; i<=total; i++)); do selected+=("$i"); done
+    for ((i=0; i<=total; i++)); do selected+=("$i"); done
     return
   fi
 
@@ -228,29 +97,25 @@ install_selected_items() {
 
   for index in "${selected[@]}"; do
     if (( index == 0 )); then
-      stow_dotfiles_manually
-    elif (( index == 1 )); then
-      unstow_dotfiles_manually
-    elif (( index == 2 )); then
       configure_personal_settings
-    elif (( index >= 3 && index < 3 + total )); then
-      pkg="${packages[index - 3]}"
+    elif (( index >= 1 && index <= total )); then
+      pkg="${packages[index - 1]}"
       if ! brew list "$pkg" &>/dev/null; then
         echo "Installing $pkg..."
         brew install "$pkg"
       else
-        echo "$pkg is already installed, skipping..."
+        echo "⏭️  $pkg is already installed, skipping..."
       fi
-    elif (( index >= 3 + total && index <= 2 + total + ${#casks[@]} )); then
-      cask="${casks[index - 3 - total]}"
+    elif (( index > total && index <= total + ${#casks[@]} )); then
+      cask="${casks[index - 1 - total]}"
       if ! brew list --cask "$cask" &>/dev/null; then
         echo "Installing $cask..."
         brew install --cask "$cask"
       else
-        echo "$cask is already installed, skipping..."
+        echo "⏭️  $cask is already installed, skipping..."
       fi
     else
-      echo "Invalid selection: $index"
+      echo "⚠️  Invalid selection: $index"
     fi
   done
 }
@@ -261,7 +126,7 @@ install_selected_items() {
 
 main() {
   print_numbered_list
-  echo -e "\nEnter numbers to install (e.g. 0,2,4-6 or 'all'):"
+  echo -e "\nEnter numbers to install/configure (e.g. 0,2,4-6 or 'all'):"
   read -r selection
 
   parse_selection "$selection"
