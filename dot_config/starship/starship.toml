@@ -48,7 +48,6 @@ modified = ''    # A simple dot is often easier to read than a complex icon
 untracked = '?'
 deleted = '✖'
 conflicted = ' CONFLICT'
-style_conflicted = 'bold fg:red'
 # Conflict (Urgent) -> Staged/Modified (Work in progress) -> Ahead/Behind (Sync status)
 format = '([$conflicted](bold red) [$staged$modified$deleted$untracked]($style) [$ahead_behind](fg:purple) )'
 

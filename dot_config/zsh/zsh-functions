@@ -30,3 +30,35 @@ n() {
 nf() {
     nvim $(fzf)
 }
+
+# 2. "Find New" - Search ALL folders from home and jump to one
+# This uses 'fd' to find directories and 'fzf' to pick one.
+all() {
+  local dir
+  dir=$(fd --type d --hidden --exclude .git . "$HOME" | fzf) && cd "$dir"
+}
+
+# 3. "Fuzzy Up" - List all parent directories of where you are now
+# Great for jumping to that "intermediate" folder zoxide forgot.
+up() {
+  local parents=()
+  local curr="$PWD"
+  while [[ "$curr" != "/" ]]; do
+    parents+=("$curr")
+    curr=$(dirname "$curr")
+  done
+  local target=$(printf "%s\n" "${parents[@]}" | fzf)
+  [[ -n "$target" ]] && cd "$target"
+}
+
+# Custom Fuzzy CD (Replacement for Alt+C)
+dwn() {
+  # Use fd for speed, pipe to fzf
+  local dir
+  dir=$(fd --type d --hidden --exclude .git . | fzf --height 40% --reverse)
+  
+  # If a directory was selected, cd into it
+  if [[ -n "$dir" ]]; then
+    cd "$dir" || return
+  fi
+}
