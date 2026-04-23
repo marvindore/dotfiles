@@ -5,6 +5,9 @@
 source ~/.aliases
 source ~/.secrets
 
+# https://ghostty.org/docs/help/terminfo
+export TERM=xterm-256color
+
 # Override config path
 export XDG_CONFIG_HOME="$HOME/.config"
 
@@ -194,3 +197,8 @@ function y() {
 
 # allow work to overwrite env vars
 source ~/.workrc
+
+# Launch tmux on boot
+if [[ -n "$PS1" && -z "$TMUX" && "${TERM_PROGRAM}" != "vscode" ]]; then
+  tmux new -A -s main
+fi

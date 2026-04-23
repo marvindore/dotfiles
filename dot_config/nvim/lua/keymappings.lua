@@ -75,6 +75,23 @@ vim.api.nvim_create_user_command("LspRestart", function()
   vim.cmd("edit")
 end, {})
 
+-- Movement
+--MOVE LINE
+--   :m +1        down 1        (normal mode)
+--   :m -2        up 1          (normal mode)
+--   :'<,'>m +1   selection down (visual mode, type :m +1)
+--   ddp          down 1        (no command line)
+--   ddkP         up 1          (no command line)
+--
+-- INDENT
+--   >            right one level (visual selection)
+--   <            left one level  (visual selection)
+--   >>           right one level (normal mode, current line)
+--   <<           left one level  (normal mode, current line)
+--   >ip          indent paragrap
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
+
 -- Remap for dealing with word wrap
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
@@ -122,9 +139,6 @@ map("i", "<C-k>", "<Up>", "Move up")
 map("i", t("<C-e>"), "<C-o>$", "")
 map("i", t("<C-a>"), "<C-o>0", "")
 
--- Scroll
-map("n", "<S-left>", "10zh", "")
-map("n", "<S-right>", "10zl", "")
 
 -- Terminal 
 --- enter normal mode

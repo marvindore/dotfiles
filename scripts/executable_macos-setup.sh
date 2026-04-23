@@ -10,14 +10,14 @@ packages=(
   "act" "atuin" "bat" "bruno" "difftastic" "dua-cli" "tree-sitter" "bitwarden"
   "eza" "fzf" "gh" "git" "git-delta"
   "gnupg" "imagemagick" "iproute2mac" "jc" "jq" "k9s" "miller" "mise" 
-  "pngpaste" "serie" "opencode" "ripgrep" "starship" "tmux"
+  "pngpaste" "serie" "sesh" "opencode" "ripgrep" "starship" "tmux"
   "zoxide"
 )
 
 casks=(
   "datagrip" "docker" "hammerspoon"
   "jordanbaird-ice" "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font" 
-  "ghostty" "google-chrome" "meld" "rider" "scoot" "slack"
+  "ghostty" "google-chrome" "linearmouse" "meld" "rider" "scoot" "slack"
 )
 
 # ------------------------------------------------------------------------------
@@ -102,7 +102,7 @@ install_selected_items() {
       pkg="${packages[index - 1]}"
       if ! brew list "$pkg" &>/dev/null; then
         echo "Installing $pkg..."
-        brew install "$pkg"
+        brew install "$pkg" || echo "⚠️  Failed to install $pkg, continuing..."
       else
         echo "⏭️  $pkg is already installed, skipping..."
       fi
@@ -110,7 +110,7 @@ install_selected_items() {
       cask="${casks[index - 1 - total]}"
       if ! brew list --cask "$cask" &>/dev/null; then
         echo "Installing $cask..."
-        brew install --cask "$cask"
+        brew install --cask "$cask" || echo "⚠️  Failed to install $cask, continuing..."
       else
         echo "⏭️  $cask is already installed, skipping..."
       fi

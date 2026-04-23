@@ -1,5 +1,4 @@
-command = "/usr/bin/env zsh -l -c 'tmux attach || tmux'"
-
+#command = "/usr/bin/env zsh -l -c 'tmux attach || tmux'"
 theme = Catppuccin Mocha
 macos-non-native-fullscreen = true
 

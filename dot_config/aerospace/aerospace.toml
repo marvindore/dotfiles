@@ -149,7 +149,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-f = 'workspace F'
     alt-g = 'workspace G'
     alt-i = 'workspace I'
-    alt-m = ['exec-and-forget open "hammerspoon://messaging"', 'workspace M']
+    alt-m = 'exec-and-forget bash -lc "~/.local/bin/aerospace-messaging"'
     alt-n = [
         "exec-and-forget ~/.local/bin/tmux-workspace n",
         "workspace T"
@@ -238,6 +238,11 @@ automatically-unhide-macos-hidden-apps = false
 # from terminal enter: aerospace list-apps
 [[on-window-detected]]
 if.app-name-regex-substring = 'Finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-name-regex-substring = 'Hammerspoon'
+if.window-title-regex-substring = '^scratchpad$'
 run = 'layout floating'
 
 [[on-window-detected]]
