@@ -25,9 +25,7 @@ command_timeout = 1000
 [directory]
 style = 'bold fg:blue'
 format = '[$path ]($style)'
-truncation_length = 3
-truncation_symbol = '…/'
-truncate_to_repo = false
+truncate_to_repo = true
 
 [directory.substitutions]
 'Documents' = '󰈙'
@@ -42,10 +40,21 @@ format = '[on](white) [$symbol$branch ]($style)'
 
 [git_status]
 style = 'fg:peach'
-format = '([$all_status$ahead_behind]($style) )'
-modified = " "
-untracked = " 󰘓"
+ahead = '⇡${count}'
+behind = '⇣${count}'
+diverged = '⇕'
+staged = '✚'
+modified = ''    # A simple dot is often easier to read than a complex icon
+untracked = '?'
+deleted = '✖'
+conflicted = ' CONFLICT'
+style_conflicted = 'bold fg:red'
+# Conflict (Urgent) -> Staged/Modified (Work in progress) -> Ahead/Behind (Sync status)
+format = '([$conflicted](bold red) [$staged$modified$deleted$untracked]($style) [$ahead_behind](fg:purple) )'
 
+[character]
+success_symbol = '[❯](bold green)'
+error_symbol = '[❯](bold red)'
 [fill]
 symbol = ' '
 
@@ -107,9 +116,9 @@ number_threshold = 1
 format = '[$symbol]($style)'
 
 [cmd_duration]
-min_time = 500
+min_time = 2000 # Only show if the command takes longer than 2 seconds
 style = 'fg:gray'
-format = '[$duration]($style)'
+format = 'took [$duration]($style)'
 
 [palettes.nord]
 dark_blue = '#5E81AC'
