@@ -2,6 +2,9 @@ Cherry pick a range of commits
 > This will cherry-pick 4 commits, head + 3
 git cherry-pick origin/feature-branch~3..origin/feature-branch
 
+**cherry pick without merges**
+`git cherry-pick -S $(git rev-list --reverse --no-merges 2e67e64c^..d4c233be)`
+
 ```md
     # list file names in commit
     git diff-tree --no-commit-id --name-only -r <commitHash>

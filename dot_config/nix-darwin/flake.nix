@@ -62,7 +62,7 @@
         # removed "wezterm@nightly"
         casks = [
           "dbeaver-community" "hammerspoon" "jordanbaird-ice"
-          "ghostty" "google-chrome" "google-drive" "scoot" "slack"
+          "ghostty" "google-chrome" "google-drive" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
         ];

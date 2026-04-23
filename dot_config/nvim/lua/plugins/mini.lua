@@ -45,10 +45,10 @@ require("mini.indentscope").setup()
 
 require("mini.move").setup({
 	mappings = {
-		left = "<S-left>",
-		right = "<S-right>",
-		down = "<S-down>",
-		up = "<S-up>",
+		left = "<C-S-left>",
+		right = "<C-S-right>",
+		down = "<C-S-down>",
+		up = "<C-S-up>",
 		line_left = "",
 		line_right = "",
 		line_down = "",
