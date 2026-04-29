@@ -81,7 +81,6 @@
     program = C:\\Program Files (x86)\\gnupg\\bin\\gpg.exe
 
 [safe]
-
 	directory = C:/Projects
 
 # Force lfs to use https because ssh not working: failing command (GIT_TRACE=1 GIT_CURL_VERBOSE=1 git lfs pull)
@@ -91,8 +90,9 @@
 # User different gitconfig based on directory
 {{ end -}}
 
-[includeIf "gitdir:~/work/"]
-    path = .gitconfig-work
+{{- $profile := (env "CHEZMOI_PROFILE" | default .profile | default "home") -}}
 
-[includeIf "gitdir:C:/"]
+{{ if eq $profile "work" -}}
+[include]
     path = .gitconfig-work
+{{- end }}

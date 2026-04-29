@@ -57,6 +57,8 @@ else
     nvim_running=$(tmux list-panes -t "$SESSION" -F '#{pane_current_command}' 2>/dev/null | grep -c 'nvim')
     if [ "$nvim_running" -eq 0 ]; then
         tmux send-keys -t "$SESSION" "$CMD" C-m
+    else
+        tmux send-keys -t "$SESSION" Escape
     fi
 fi
 

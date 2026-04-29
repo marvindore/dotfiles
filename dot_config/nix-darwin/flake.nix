@@ -138,3 +138,7 @@
     darwinPackages = self.darwinConfigurations."mchip".pkgs;
   };
 }
+
+# defaults write .GlobalPreferences _HIHideMenuBar -bool true
+# defaults write .GlobalPreferences AppleMenuBarVisibleInFullscreen -bool false
+

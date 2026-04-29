@@ -8,3 +8,6 @@ end)
 -- Scratchpad overlay (ctrl + alt + n)
 local Scratchpad = require("scratchpad")
 hs.hotkey.bind({ "ctrl", "shift" }, "n", Scratchpad.toggle)
+
+-- Menu bar
+require("menu-bar")
