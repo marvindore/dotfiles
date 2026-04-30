@@ -156,13 +156,13 @@ local BADGE_CSS = {
     zoom  = "background:#2d8cff22;color:#60a5fa;border:1px solid #2d8cff33",
     meet  = "background:#a6e3a122;color:#a6e3a1;border:1px solid #a6e3a133",
     webex = "background:#89dceb22;color:#89dceb;border:1px solid #89dceb33",
-    goto  = "background:#45475a;color:#a6adc8;border:1px solid #585b7055",
+    ["goto"]  = "background:#45475a;color:#a6adc8;border:1px solid #585b7055",
     link  = "background:#45475a;color:#a6adc8;border:1px solid #585b7055",
     now   = "background:#a6e3a122;color:#a6e3a1;border:1px solid #a6e3a133",
 }
 local BADGE_LBL = {
     teams="Teams", zoom="Zoom", meet="Meet", webex="Webex",
-    goto="GoTo", link="Link", now="● now",
+    ["goto"]="GoTo", link="Link", now="● now",
 }
 local BADGE_BASE = "display:inline-flex;align-items:center;padding:1px 5px;" ..
                    "border-radius:3px;font-size:9px;letter-spacing:.04em;font-weight:600;"
