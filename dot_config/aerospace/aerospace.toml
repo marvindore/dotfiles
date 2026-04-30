@@ -247,7 +247,7 @@ run = 'layout floating'
 
 [[on-window-detected]]
 if.app-name-regex-substring = 'Hammerspoon'
-if.window-title-regex-substring = 'meetings'
+if.window-title-regex-substring = '^meetings$'
 run = 'layout floating'
 
 [[on-window-detected]]
