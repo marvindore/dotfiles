@@ -414,8 +414,8 @@ function M.show()
         if not visible or not webview then return end
         webview:frame(frame)
         webview:alpha(1)
-        local hw = webview:hswindow()
-        if hw then hw:focus() end
+        local hw2 = webview:hswindow()
+        if hw2 then hw2:focus() end
     end
 
     local hw = webview:hswindow()
