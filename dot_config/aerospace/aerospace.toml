@@ -246,6 +246,11 @@ if.window-title-regex-substring = '^scratchpad$'
 run = 'layout floating'
 
 [[on-window-detected]]
+if.app-name-regex-substring = 'Hammerspoon'
+if.window-title-regex-substring = '^meetings$'
+run = 'layout floating'
+
+[[on-window-detected]]
 if.app-id = 'com.mitchellh.ghostty'
 run = "move-node-to-workspace T"
 

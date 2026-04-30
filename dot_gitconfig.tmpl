@@ -1,3 +1,4 @@
+{{- $workOrg  := .work.org_slug -}}
 [user]
 	name = Marvin Dore
 	email = hi@marvindore.com
@@ -81,7 +82,6 @@
     program = C:\\Program Files (x86)\\gnupg\\bin\\gpg.exe
 
 [safe]
-
 	directory = C:/Projects
 
 # Force lfs to use https because ssh not working: failing command (GIT_TRACE=1 GIT_CURL_VERBOSE=1 git lfs pull)
@@ -91,8 +91,7 @@
 # User different gitconfig based on directory
 {{ end -}}
 
-[includeIf "gitdir:~/work/"]
+[includeIf "hasconfig:remote.*.url:git@github.com:{{$workOrg}}/**"]
     path = .gitconfig-work
-
-[includeIf "gitdir:C:/"]
+[includeIf "hasconfig:remote.*.url:https://github.com/{{$workOrg}}/**"]
     path = .gitconfig-work

@@ -23,13 +23,12 @@ case "$KEY" in
     "n")
         SESSION="notes"
         CWD="$NOTES_DIR"
-        # We use single quotes around the command to safely pass the inner double quotes to tmux
-        CMD='nvim -c "FzfLua files cwd='"$NOTES_DIR"'"'
+        CMD="nvim ."
         ;;
     "N")
         SESSION="notes_grep"
         CWD="$NOTES_DIR"
-        CMD='nvim -c "FzfLua live_grep cwd='"$NOTES_DIR"'"'
+        CMD="nvim -c \"lua Snacks.picker.files({ cwd = vim.fn.expand('$NOTES_DIR') })\""
         ;;
     *)
         echo "Error: Unknown workspace key '$KEY'"
@@ -57,6 +56,8 @@ else
     nvim_running=$(tmux list-panes -t "$SESSION" -F '#{pane_current_command}' 2>/dev/null | grep -c 'nvim')
     if [ "$nvim_running" -eq 0 ]; then
         tmux send-keys -t "$SESSION" "$CMD" C-m
+    else
+        tmux send-keys -t "$SESSION" Escape
     fi
 fi
 
