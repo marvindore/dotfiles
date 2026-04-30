@@ -194,6 +194,12 @@ vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete", "BufEnter", "BufWipeout", "
   callback = update_winbar,
 })
 
+-- Exit insert mode when Neovim loses focus (e.g. switching workspaces via AeroSpace).
+-- Without this, a fast workspace switch can leave you in insert mode when you return.
+vim.api.nvim_create_autocmd("FocusLost", {
+  callback = function() vim.cmd("stopinsert") end,
+})
+
 -- After startup (e.g., after session restore), schedule one more update
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()

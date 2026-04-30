@@ -292,5 +292,5 @@ export default {
   // These settings are rarely needed but available for special cases.
 
   // Custom path to the bun executable (auto-detected by default)
-  bun_path: "$HOME/.local/share/mise/installs/bun/1.3.13/bin/bun",
+  bun_path: `${process.env.BUN_PATH}`,
 } satisfies Config;

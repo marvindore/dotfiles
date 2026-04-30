@@ -202,3 +202,6 @@ source ~/.workrc
 if [[ -n "$PS1" && -z "$TMUX" && "${TERM_PROGRAM}" != "vscode" ]]; then
   tmux new -A -s main
 fi
+
+# typescript
+export BUN_PATH="$(command -v bun)"

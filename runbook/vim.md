@@ -1,3 +1,9 @@
+“holding hjkl is the worst form of Vim navigation,” lean harder on:
+
+> w/e/b, f/F/t/T, counts (5j), {} and () motions, gg/G, / search
+> Ctrl-d / Ctrl-u for paging
+> Leap/Flash/Lightspeed/Easymotion-land suggest leaningike plugins for bigger jumps
+
 ### diff compare two files
 ```bash
 # from cli

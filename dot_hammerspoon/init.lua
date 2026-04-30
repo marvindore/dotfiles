@@ -8,3 +8,10 @@ end)
 -- Scratchpad overlay (ctrl + alt + n)
 local Scratchpad = require("scratchpad")
 hs.hotkey.bind({ "ctrl", "shift" }, "n", Scratchpad.toggle)
+
+-- Meeting popup (ctrl + shift + m)
+local Calendar = require("calendar")
+hs.hotkey.bind({ "ctrl", "shift" }, "m", Calendar.toggle)
+
+-- Menu bar
+require("menu-bar")
