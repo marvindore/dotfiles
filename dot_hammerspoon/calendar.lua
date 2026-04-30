@@ -104,6 +104,45 @@ local function fmtTime(h, m)
     return string.format("%d:%02d %s", h12, m, ampm)
 end
 
+-- Returns {url=string, kind=string} or nil.
+-- Scans the event's url field first, then notes for recognized service patterns.
+-- Notes scan only matches known services — no catch-all for notes.
+local LINK_PATTERNS = {
+    { pat = "teams%.microsoft%.com/l/meetup%-join", kind = "teams" },
+    { pat = "zoom%.us/j/",                          kind = "zoom"  },
+    { pat = "meet%.google%.com/",                   kind = "meet"  },
+    { pat = "webex%.com/",                          kind = "webex" },
+    { pat = "gotomeeting%.com/join/",               kind = "goto"  },
+}
+
+local function detectLink(urlField, notes)
+    -- 1. Check url field against known patterns
+    for _, p in ipairs(LINK_PATTERNS) do
+        if urlField:find(p.pat) then
+            return { url = urlField, kind = p.kind }
+        end
+    end
+    -- 2. Any https:// in url field → generic link
+    if urlField:find("https://") then
+        return { url = urlField, kind = "link" }
+    end
+    -- 3. Scan notes for recognized service patterns only
+    for _, p in ipairs(LINK_PATTERNS) do
+        -- Extract URLs from notes text
+        local pos = 1
+        while pos <= #notes do
+            local s, e = notes:find("https://[^%s\"'<>]+", pos)
+            if not s then break end
+            local candidate = notes:sub(s, e)
+            if candidate:find(p.pat) then
+                return { url = candidate, kind = p.kind }
+            end
+            pos = e + 1
+        end
+    end
+    return nil
+end
+
 local function fetchEvents()
     local ok, result = hs.osascript.applescript(AS_FETCH)
     if not ok or type(result) ~= "table" then return {} end
@@ -116,18 +155,14 @@ local function fetchEvents()
         local title, sh, sm, eh, em, calName, urlField, notes, isAllDay, organizer =
             row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]
 
-        -- Skip events that have already ended
-        local endMins = (eh or 0) * 60 + (em or 0)
+        local endMins   = (eh or 0) * 60 + (em or 0)
+        local startMins = (sh or 0) * 60 + (sm or 0)
+        local notesStr  = (notes or ""):sub(1, 3000)
+
         if endMins <= nowMins then goto continue end
 
-        -- Skip all-day events (they have no join link worth showing)
-        -- Per spec: include all-day only if they have a join link
-        -- (detectLink is added in Task 3; for now include all)
-
-        local startMins = (sh or 0) * 60 + (sm or 0)
-
-        -- Cap notes length to avoid memory bloat on large Outlook bodies
-        local notesStr = (notes or ""):sub(1, 3000)
+        local link = detectLink(urlField or "", notesStr)
+        if isAllDay == true and not link then goto continue end
 
         events[#events + 1] = {
             title        = title or "(no title)",
@@ -140,8 +175,8 @@ local function fetchEvents()
             urlField     = urlField or "",
             notes        = notesStr,
             isAllDay     = isAllDay == true,
-            joinUrl      = nil,
-            linkType     = nil,
+            joinUrl      = link and link.url  or nil,
+            linkType     = link and link.kind or nil,
         }
         ::continue::
     end
