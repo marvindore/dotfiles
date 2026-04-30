@@ -134,6 +134,8 @@ local function detectLink(urlField, notes)
             local s, e = notes:find("https://[^%s\"'<>]+", pos)
             if not s then break end
             local candidate = notes:sub(s, e)
+            -- Strip trailing punctuation that appears after URLs in invite bodies
+            candidate = candidate:gsub("[%.%,%)[%]>]+$", "")
             if candidate:find(p.pat) then
                 return { url = candidate, kind = p.kind }
             end
