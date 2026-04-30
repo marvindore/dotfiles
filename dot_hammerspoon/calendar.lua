@@ -60,7 +60,7 @@ tell application "Calendar"
   set minutes of todayStart to 0
   set seconds of todayStart to 0
   set todayEnd to todayStart + (60 * 60 * 24)
-  set result to {}
+  set evList to {}
   repeat with cal in calendars
     set calName to name of cal
     try
@@ -89,11 +89,11 @@ tell application "Calendar"
             end if
           end repeat
         end try
-        set end of result to {evTitle, hours of s, minutes of s, hours of e, minutes of e, calName, evUrl, evDesc, isAD, orgName}
+        set end of evList to {evTitle, hours of s, minutes of s, hours of e, minutes of e, calName, evUrl, evDesc, isAD, orgName}
       end repeat
     end try
   end repeat
-  return result
+  return evList
 end tell
 ]]
 
