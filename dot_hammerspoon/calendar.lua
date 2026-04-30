@@ -147,7 +147,7 @@ end
 
 local function htmlEscape(s)
     if not s then return "" end
-    return s:gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;"):gsub('"',"&quot;")
+    return s:gsub("&","&amp;"):gsub("<","&lt;"):gsub(">","&gt;"):gsub('"',"&quot;"):gsub("'","&#39;")
 end
 
 -- Badge HTML snippets keyed by linkType / "now"
