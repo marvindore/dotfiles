@@ -188,11 +188,15 @@ local function fetchEvents()
         local endMins   = (eh or 0) * 60 + (em or 0)
         local startMins = (sh or 0) * 60 + (sm or 0)
         local notesStr  = (notes or ""):sub(1, 3000)
+        local isAllDayEv = (isAllDay == true)
 
-        if endMins <= nowMins then goto continue end
+        -- Skip timed events that have already ended.
+        -- All-day events report endMins=0 (midnight end), so exempt them from this check.
+        if not isAllDayEv and endMins <= nowMins then goto continue end
 
         local link = detectLink(urlField or "", notesStr)
-        if isAllDay == true and not link then goto continue end
+        -- Skip all-day events with no meeting link (per spec).
+        if isAllDayEv and not link then goto continue end
 
         events[#events + 1] = {
             title        = title or "(no title)",
@@ -204,7 +208,7 @@ local function fetchEvents()
             organizer    = organizer or "",
             urlField     = urlField or "",
             notes        = notesStr,
-            isAllDay     = isAllDay == true,
+            isAllDay     = isAllDayEv,
             joinUrl      = link and link.url  or nil,
             linkType     = link and link.kind or nil,
         }
