@@ -70,3 +70,16 @@ class TestTranscribe:
         ok, err = mod.transcribe("/tmp/x.wav", "unknown-backend", "/usr/bin/false", "/tmp/model.bin", txt)
         assert not ok
         assert "unknown-backend" in err.lower() or "unknown" in err.lower()
+
+    def test_backend_failure_nonzero_exit(self, tmp_path):
+        txt = str(tmp_path / "out.txt")
+        ok, err = mod.transcribe("/tmp/x.wav", "whisper-cpp", "/usr/bin/false", "/tmp/model.bin", txt)
+        assert not ok
+        assert err  # some error message present
+
+    def test_backend_no_output_file(self, tmp_path):
+        txt = str(tmp_path / "out.txt")
+        # /usr/bin/true exits 0 but writes nothing
+        ok, err = mod.transcribe("/tmp/x.wav", "whisper-cpp", "/usr/bin/true", "/tmp/model.bin", txt)
+        assert not ok
+        assert err  # some error message present
