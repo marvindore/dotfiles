@@ -12,7 +12,7 @@ local AGENT_READY_WAIT = 2                        -- seconds to wait after start
 --   MODEL       = "mlx-community/whisper-large-v3"
 local BACKEND      = "whisper-cpp"
 local BACKEND_CMD  = "/opt/homebrew/bin/whisper-cli"
-local MODEL        = os.getenv("HOME") .. "/.cache/whisper/ggml-large-v3-q5_0.bin"
+local MODEL        = "/opt/homebrew/share/whisper-cpp/for-tests-ggml-tiny.bin"  -- swap to: os.getenv("HOME") .. "/.cache/whisper/ggml-large-v3-q5_0.bin"
 
 local PYTHON_CMD      = "/opt/homebrew/bin/python3"  -- python3 (no mlx-whisper needed for whisper-cpp backend)
 local REC_CMD         = "/opt/homebrew/bin/rec"       -- sox_ng; hard-coded path avoids Hammerspoon PATH issues
