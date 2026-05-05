@@ -161,7 +161,8 @@ def main():
         sys.exit(1)
 
     # Step 3: Strip timestamp artifacts
-    raw = open(txt_path).read()
+    with open(txt_path) as fh:
+        raw = fh.read()
     text = strip_timestamps(raw)
 
     # Step 4: Guard empty transcript
@@ -173,6 +174,7 @@ def main():
 
     # Step 6: Verify tmux session + agent
     session   = tmux_target.split(":")[0]
+    # agent_cmd comes from whispr.lua config — must be a trusted, fixed value
     agent_bin = os.path.basename(agent_cmd.split()[0])
 
     def session_exists() -> bool:
@@ -186,6 +188,8 @@ def main():
             ["tmux", "display-message", "-p", "-t", tmux_target, "#{pane_current_command}"],
             capture_output=True, text=True,
         )
+        if r.returncode != 0:
+            return ""
         return r.stdout.strip()
 
     if not session_exists():
