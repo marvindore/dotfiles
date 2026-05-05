@@ -47,8 +47,10 @@ end
 -- rec exit callback
 -- ---------------------------------------------------------------------------
 local function onRecExit(exitCode, _, stderr)
+    recProcess = nil  -- always nil'd here regardless of path
+
     if isSilentDiscard then
-        -- Toggle handler already nilled recProcess and deleted menuItem.
+        -- menuItem already deleted by toggle handler.
         -- Just reset flags — do not start processing.
         isSilentDiscard = false
         wasTerminated   = false
@@ -59,14 +61,12 @@ local function onRecExit(exitCode, _, stderr)
         -- rec crashed on its own (mic denied, device error, etc.)
         hs.alert("Whispr: " .. (stderr ~= "" and stderr or "rec failed (exit " .. exitCode .. ")"))
         clearMenu()
-        recProcess    = nil
         wasTerminated = false
         return
     end
 
     -- Normal stop: wasTerminated == true; rec exits non-zero on SIGTERM (typically 143).
     wasTerminated = false
-    recProcess    = nil
     isProcessing  = true
     if menuItem then menuItem:setTitle("⟳") end
 
@@ -91,7 +91,13 @@ local function onRecExit(exitCode, _, stderr)
           MODEL,
           tostring(AGENT_READY_WAIT) }
     )
-    processTask:start()
+    if not processTask:start() then
+        processTask  = nil
+        isProcessing = false
+        clearMenu()
+        hs.alert("Whispr: failed to launch processing script — check PYTHON_CMD path")
+        return
+    end
 
     -- Timeout: kill hung script after PROCESS_TIMEOUT seconds.
     -- Does NOT touch isProcessing/menuItem — the task exit callback handles cleanup.
@@ -121,7 +127,12 @@ function M.toggle()
             onRecExit,
             { "-q", "-r", "16000", "-c", "1", "-t", "wav", "/tmp/whispr.wav" }
         )
-        recProcess:start()
+        if not recProcess:start() then
+            recProcess = nil
+            clearMenu()
+            hs.alert("Whispr: failed to launch rec — check REC_CMD path")
+            return
+        end
     else
         -- STOP recording
         local elapsed = hs.timer.secondsSinceEpoch() - recStartTime
@@ -130,7 +141,7 @@ function M.toggle()
             isSilentDiscard = true
             wasTerminated   = true
             recProcess:terminate()
-            recProcess = nil  -- toggle handler nils this; exit callback checks isSilentDiscard
+            -- recProcess is nil'd in onRecExit (unified nil point)
             clearMenu()
         else
             wasTerminated = true
