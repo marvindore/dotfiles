@@ -41,9 +41,9 @@ brew install whisper-cpp
 
 Verify:
 ```bash
-whisper-cpp --help 2>&1 | head -5
+/opt/homebrew/bin/whisper-cli --help 2>&1 | head -5
 ```
-Expected: help output from whisper-cpp.
+Expected: help output from whisper-cli.
 
 - [ ] **Step 3: Download the ggml-large-v3-q5_0 model**
 
@@ -76,7 +76,7 @@ Expected: ~1.1 GB file present.
 - [ ] **Step 4: Smoke-test whisper-cpp with the model**
 
 ```bash
-whisper-cpp -m ~/.cache/whisper/ggml-large-v3-q5_0.bin --help 2>&1 | head -3
+/opt/homebrew/bin/whisper-cli -m ~/.cache/whisper/ggml-large-v3-q5_0.bin --help 2>&1 | head -3
 ```
 
 Expected: no "model not found" errors.
@@ -121,7 +121,7 @@ from pathlib import Path
 
 # Stub sys.argv before loading module (module-level arg parsing runs on import)
 sys.argv = ["whispr_process.py", "/tmp/x.wav", "Neo:0.0", "claude",
-            "whisper-cpp", "/opt/homebrew/bin/whisper-cpp",
+            "whisper-cpp", "/opt/homebrew/bin/whisper-cli",
             str(Path.home() / ".cache/whisper/ggml-large-v3-q5_0.bin"), "2"]
 
 spec = importlib.util.spec_from_file_location(
@@ -466,7 +466,7 @@ rec -q -r 16000 -c 1 -t wav /tmp/whispr.wav trim 0 3
   whispr_test:0.0 \
   cat \
   whisper-cpp \
-  /opt/homebrew/bin/whisper-cpp \
+  /opt/homebrew/bin/whisper-cli \
   "$HOME/.cache/whisper/ggml-large-v3-q5_0.bin" \
   2
 ```
@@ -511,7 +511,7 @@ local AGENT_READY_WAIT = 2                        -- seconds to wait after start
 --   BACKEND_CMD = "/opt/homebrew/bin/mlx_whisper"
 --   MODEL       = "mlx-community/whisper-large-v3"
 local BACKEND      = "whisper-cpp"
-local BACKEND_CMD  = "/opt/homebrew/bin/whisper-cpp"
+local BACKEND_CMD  = "/opt/homebrew/bin/whisper-cli"
 local MODEL        = os.getenv("HOME") .. "/.cache/whisper/ggml-large-v3-q5_0.bin"
 
 local PYTHON_CMD      = "/opt/homebrew/bin/python3"  -- python3 (no mlx-whisper needed for whisper-cpp)
