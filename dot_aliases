@@ -25,8 +25,8 @@ alias lz="lazygit"
 alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
 
 # Python
-alias py="python3"
-#alias python="python3"
+alias py="uv run python"
+alias python='uv run python'
 
 # Vim
 alias vd="nvim -d"

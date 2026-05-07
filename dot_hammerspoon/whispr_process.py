@@ -7,29 +7,33 @@ Usage:
                               <backend> <backend_cmd> <model> <ready_wait>
 
 Backends:
-    whisper-cpp  — local .bin model file, Metal-accelerated (default)
+    whisper-cpp  — local .bin model file, Metal-accelerated
                    backend_cmd: /opt/homebrew/bin/whisper-cli
                    model: path to ggml .bin file
     mlx-whisper  — HuggingFace model ID, Apple Neural Engine
-                   backend_cmd: /opt/homebrew/bin/mlx_whisper
+                   backend_cmd: ~/.local/bin/mlx_whisper
                    model: HuggingFace model ID string
+    groq         — Groq cloud API (Whisper Large V3 Turbo)
+                   backend_cmd: ignored
+                   model: whisper model name (e.g. whisper-large-v3-turbo)
+                   Requires GROQ_API_KEY environment variable
 
 Exit codes:
     0 — success (including empty-transcript early exit)
     1 — transcription failed
     2 — tmux error
 """
+import json
 import os
 import re
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 
-# ---------------------------------------------------------------------------
-# Arguments
-# ---------------------------------------------------------------------------
-_, wav_path, tmux_target, agent_cmd, backend, backend_cmd, model, ready_wait_str = sys.argv
-agent_ready_wait = float(ready_wait_str)
+# Hammerspoon launches with a minimal PATH; ensure Homebrew binaries are findable.
+os.environ["PATH"] = "/opt/homebrew/bin:/usr/local/bin:" + os.environ.get("PATH", "")
 
 # ---------------------------------------------------------------------------
 # Find-replace dictionary
@@ -105,12 +109,10 @@ def transcribe(wav_path: str, backend: str, backend_cmd: str, model: str, txt_pa
     Supported backends:
       "whisper-cpp"  — backend_cmd is the whisper-cli binary path;
                        model is a local .bin file path.
-                       Output file: <txt_path> (derived from -of flag + .txt suffix).
       "mlx-whisper"  — backend_cmd is the mlx_whisper binary path;
                        model is a HuggingFace model ID.
-                       Output file: /tmp/whispr.txt (derived from wav stem).
-
-    To add a new backend: add an elif branch here and update whispr.lua constants.
+      "groq"         — cloud API via urllib; backend_cmd is ignored;
+                       model is the Whisper model name.
     """
     output_base = txt_path[:-4]  # strip .txt for whisper-cpp -of flag
 
@@ -133,8 +135,10 @@ def transcribe(wav_path: str, backend: str, backend_cmd: str, model: str, txt_pa
              "--output-dir", os.path.dirname(txt_path)],
             capture_output=True, text=True,
         )
+    elif backend == "groq":
+        return _transcribe_groq(wav_path, model, txt_path)
     else:
-        return False, f"Unknown transcription backend: {backend!r}. Expected 'whisper-cpp' or 'mlx-whisper'."
+        return False, f"Unknown transcription backend: {backend!r}. Expected 'whisper-cpp', 'mlx-whisper', or 'groq'."
 
     if result.returncode != 0:
         return False, result.stderr or f"{backend} exited with code {result.returncode}"
@@ -143,11 +147,81 @@ def transcribe(wav_path: str, backend: str, backend_cmd: str, model: str, txt_pa
     return True, ""
 
 
+def _transcribe_groq(wav_path: str, model: str, txt_path: str) -> tuple:
+    """Transcribe via Groq cloud API using only stdlib (urllib)."""
+    api_key = os.environ.get("GROQ_API_KEY", "")
+    if not api_key:
+        return False, "GROQ_API_KEY environment variable is not set"
+
+    with open(wav_path, "rb") as f:
+        wav_data = f.read()
+
+    # Build multipart/form-data body
+    boundary = "----WhisprBoundary"
+    body = b""
+    # file field
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="file"; filename="whispr.wav"\r\n'
+    body += b"Content-Type: audio/wav\r\n\r\n"
+    body += wav_data
+    body += b"\r\n"
+    # model field
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="model"\r\n\r\n'
+    body += model.encode()
+    body += b"\r\n"
+    # response_format field
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="response_format"\r\n\r\n'
+    body += b"text"
+    body += b"\r\n"
+    # language field
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="language"\r\n\r\n'
+    body += b"en"
+    body += b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
+
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/audio/transcriptions",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        method="POST",
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            text = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8", errors="replace")
+        return False, f"Groq API error {e.code}: {err_body}"
+    except urllib.error.URLError as e:
+        return False, f"Groq API request failed: {e.reason}"
+
+    with open(txt_path, "w") as f:
+        f.write(text)
+
+    return True, ""
+
+
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
 
 def main():
+    args = sys.argv[1:]
+    if len(args) != 7:
+        sys.stderr.write(
+            f"Usage: {sys.argv[0]} <wav> <tmux_target> <agent_cmd> "
+            "<backend> <backend_cmd> <model> <ready_wait>\n"
+        )
+        sys.exit(1)
+
+    wav_path, tmux_target, agent_cmd, backend, backend_cmd, model, ready_wait_str = args
+    agent_ready_wait = float(ready_wait_str)
     txt_path = "/tmp/whispr.txt"
 
     # Step 1: Remove stale transcript (whisper-cpp and mlx-whisper do not overwrite)
@@ -174,7 +248,6 @@ def main():
 
     # Step 6: Verify tmux session + agent
     session   = tmux_target.split(":")[0]
-    # agent_cmd comes from whispr.lua config — must be a trusted, fixed value
     agent_bin = os.path.basename(agent_cmd.split()[0])
 
     def session_exists() -> bool:

@@ -47,6 +47,12 @@ bw_unlock
 ```
 
 ### Chezmoi
+> create a ~/.config/chezmoi/chezmoi.toml file and add the following
+> [data]
+>  profile = "home/work"
+>[data.work]
+>  org_slug = "overwrite_org_slug"
+
 {{- /* Helper: read a secret by service name using macOS 'security' */ -}}
 {{- define "keychainGet" -}}
   {{- $service := . -}}

@@ -178,14 +178,14 @@ end
 
 -- Winbar updater
 local function update_winbar()
-  local home_replaced = get_winbar_path()
   local buffer_count = get_buffer_count()
+  -- Use %{expr} so Neovim evaluates the path per-window at render time,
+  -- not once as a hardcoded string applied globally via vim.opt.winbar.
   vim.opt.winbar = "%#WinBar1#%m "
     .. "%#WinBar2#("
     .. buffer_count
     .. ") "
-    .. "%#WinBar1#"
-    .. home_replaced
+    .. "%#WinBar1#%{expand('%:~')}"
     .. "%*%=%#WinBar2#"
 end
 
