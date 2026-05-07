@@ -1,11 +1,6 @@
 """Unit tests for whispr_process.py pure text-processing functions."""
-import importlib.util, sys
+import importlib.util
 from pathlib import Path
-
-# Stub sys.argv before loading module (module-level arg parsing runs on import)
-sys.argv = ["whispr_process.py", "/tmp/x.wav", "Neo:0.0", "claude",
-            "whisper-cpp", "/opt/homebrew/bin/whisper-cli",
-            str(Path.home() / ".cache/whisper/ggml-large-v3-q5_0.bin"), "2"]
 
 spec = importlib.util.spec_from_file_location(
     "whispr_process",

@@ -18,4 +18,4 @@ require("menu-bar")
 
 -- Whispr: voice dictation → tmux agent (F2 toggle)
 local Whispr = require("whispr")
-hs.hotkey.bind({}, "f2", Whispr.toggle)
+hs.hotkey.bind({}, "f13", Whispr.toggle)

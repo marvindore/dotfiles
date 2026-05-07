@@ -244,7 +244,11 @@ local function initWindow()
 
     webview = hs.webview.new(hs.geometry.rect(-10000, -10000, 100, 100),
                              {developerExtrasEnabled = false}, uc)
-    webview:windowStyle({"titled", "closable", "resizable"})
+    -- Borderless while off-screen: macOS clamps titled windows so their
+    -- title bar remains reachable, which lands them at (0,0) instead of
+    -- (-10000,-10000). Borderless windows have no such constraint.
+    -- The titled style is restored in reveal() just before becoming visible.
+    webview:windowStyle(hs.webview.windowMasks.borderless)
     webview:level(hs.drawing.windowLevels.floating)
     webview:shadow(true)
     webview:allowTextEntry(false)
@@ -416,6 +420,8 @@ function M.show()
 
     local function reveal()
         if not visible or not webview then return end
+        -- Restore titled style before becoming visible (was borderless while off-screen).
+        webview:windowStyle({"titled", "closable", "resizable"})
         webview:frame(frame)
         webview:alpha(1)
         local hw2 = webview:hswindow()
@@ -438,7 +444,15 @@ end
 
 function M.hide()
     cancelFocusTimer()
-    if webview then webview:alpha(0) end
+    -- Move off-screen so the invisible window doesn't intercept clicks
+    -- from apps (e.g. Teams, Chrome) that sit below the floating level.
+    if webview then
+        -- Switch to borderless before moving off-screen so macOS doesn't
+        -- clamp the position to keep a title bar on-screen.
+        webview:windowStyle(hs.webview.windowMasks.borderless)
+        webview:alpha(0)
+        webview:frame(hs.geometry.rect(-10000, -10000, 100, 100))
+    end
     visible = false
     if prevWindow and prevWindow:isVisible() then
         prevWindow:focus()

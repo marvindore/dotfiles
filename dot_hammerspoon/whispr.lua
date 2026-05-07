@@ -1,37 +1,49 @@
 -- whispr.lua
--- Voice-to-agent pipeline: F2 toggle → rec (sox_ng) → whisper-cpp → tmux
+-- Voice-to-agent pipeline: F13 toggle → rec (sox_ng) → whisper/groq → tmux
 --
 -- CONFIGURATION — edit these to customise behaviour:
 local AGENT_CMD        = "claude"                 -- command run in tmux pane (swap to "gemini" etc.)
 local TMUX_TARGET      = "Neo:0.0"               -- session:window.pane
 local AGENT_READY_WAIT = 2                        -- seconds to wait after starting agent
 
--- Transcription backend — swap all three to switch to mlx-whisper:
---   BACKEND     = "mlx-whisper"
---   BACKEND_CMD = "/opt/homebrew/bin/mlx_whisper"
---   MODEL       = "mlx-community/whisper-large-v3"
-local BACKEND      = "whisper-cpp"
-local BACKEND_CMD  = "/opt/homebrew/bin/whisper-cli"
-local MODEL        = "/opt/homebrew/share/whisper-cpp/for-tests-ggml-tiny.bin"  -- swap to: os.getenv("HOME") .. "/.cache/whisper/ggml-large-v3-q5_0.bin"
+-- Transcription backend — change BACKEND to switch; cmd/model are selected automatically.
+local BACKEND = "mlx-whisper"  -- "whisper-cpp" | "mlx-whisper" | "groq"
 
-local PYTHON_CMD      = "/opt/homebrew/bin/python3"  -- python3 (no mlx-whisper needed for whisper-cpp backend)
-local REC_CMD         = "/opt/homebrew/bin/rec"       -- sox_ng; hard-coded path avoids Hammerspoon PATH issues
-local PROCESS_TIMEOUT = 120                           -- seconds before killing hung whispr_process.py
-local MIN_RECORD_SECS = 0.5                           -- discard recordings shorter than this
+local BACKENDS = {
+    ["whisper-cpp"] = {
+        cmd   = "/opt/homebrew/bin/whisper-cli",
+        model = "/opt/homebrew/share/whisper-cpp/ggml-large-v3-q5_0.bin",
+    },
+    ["mlx-whisper"] = {
+        cmd   = os.getenv("HOME") .. "/.local/bin/mlx_whisper",
+        model = "mlx-community/whisper-large-v3-turbo",
+    },
+    ["groq"] = {
+        cmd   = "groq",   -- not a binary; whispr_process.py uses urllib
+        model = "whisper-large-v3-turbo",
+    },
+}
+
+local BACKEND_CMD = BACKENDS[BACKEND].cmd
+local MODEL       = BACKENDS[BACKEND].model
+
+local REC_CMD         = "/opt/homebrew/bin/rec"       -- sox_ng rec binary
+local WAV_PATH        = "/tmp/whispr.wav"
+local PROCESS_TIMEOUT = 120                            -- seconds before killing hung whispr_process.py
+local MIN_RECORD_SECS = 0.5                            -- discard recordings shorter than this
 
 local M = {}
 
 -- ---------------------------------------------------------------------------
 -- State
 -- ---------------------------------------------------------------------------
-local recProcess      = nil    -- hs.task handle for rec; non-nil only while recording
-local processTask     = nil    -- hs.task handle for whispr_process.py
-local processTimer    = nil    -- hs.timer for PROCESS_TIMEOUT
-local isProcessing    = false  -- true while whispr_process.py is running
-local wasTerminated   = false  -- set before terminate() to distinguish SIGTERM from crash
-local isSilentDiscard = false  -- set when recording is too short to process
-local menuItem        = nil    -- transient hs.menubar item (nil when inactive)
-local recStartTime    = nil    -- epoch seconds when recording started
+local recProcess   = nil    -- hs.task handle for rec; non-nil only while recording
+local processTask  = nil    -- hs.task handle for whispr_process.py
+local processTimer = nil    -- hs.timer for PROCESS_TIMEOUT
+local isProcessing = false  -- true while whispr_process.py is running
+local menuItem     = nil    -- transient hs.menubar item (nil when inactive)
+local recStartTime = nil    -- epoch seconds when recording started
+local recAlert     = nil    -- on-screen recording indicator UUID
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -43,36 +55,66 @@ local function clearMenu()
     end
 end
 
+local function clearAlert()
+    if recAlert then
+        hs.alert.closeSpecific(recAlert)
+        recAlert = nil
+    end
+end
+
+local function fileExists(path)
+    local f = io.open(path, "r")
+    if f then f:close(); return true end
+    return false
+end
+
+local function fileSize(path)
+    local f = io.open(path, "r")
+    if not f then return 0 end
+    local size = f:seek("end")
+    f:close()
+    return size or 0
+end
+
 -- ---------------------------------------------------------------------------
 -- rec exit callback
 -- ---------------------------------------------------------------------------
 local function onRecExit(exitCode, _, stderr)
-    recProcess = nil  -- always nil'd here regardless of path
+    recProcess = nil
+    clearAlert()
 
-    if isSilentDiscard then
-        -- menuItem already deleted by toggle handler.
-        -- Just reset flags — do not start processing.
-        isSilentDiscard = false
-        wasTerminated   = false
-        return
+    -- Check elapsed time — discard very short recordings silently
+    local elapsed = 0
+    if recStartTime then
+        elapsed = hs.timer.secondsSinceEpoch() - recStartTime
+        recStartTime = nil
     end
 
-    if not wasTerminated and exitCode ~= 0 then
-        -- rec crashed on its own (mic denied, device error, etc.)
-        hs.alert("Whispr: " .. (stderr ~= "" and stderr or "rec failed (exit " .. exitCode .. ")"))
+    if elapsed < MIN_RECORD_SECS then
         clearMenu()
-        wasTerminated = false
         return
     end
 
-    -- Normal stop: wasTerminated == true; rec exits non-zero on SIGTERM (typically 143).
-    wasTerminated = false
-    isProcessing  = true
+    -- rec exits 0 on SIGINT (clean stop) and non-zero on actual errors
+    if exitCode ~= 0 then
+        hs.alert("Whispr: recorder failed — " .. (stderr ~= "" and stderr or "exit " .. exitCode))
+        clearMenu()
+        return
+    end
+
+    -- Verify WAV was written and has content
+    if not fileExists(WAV_PATH) or fileSize(WAV_PATH) < 100 then
+        clearMenu()
+        return
+    end
+
+    -- Launch transcription + dispatch
+    isProcessing = true
     if menuItem then menuItem:setTitle("⟳") end
 
     local scriptPath = hs.configdir .. "/whispr_process.py"
     processTask = hs.task.new(
-        PYTHON_CMD,
+        "/usr/bin/python3",
         function(code, _, err)
             if processTimer then processTimer:stop(); processTimer = nil end
             processTask  = nil
@@ -83,7 +125,7 @@ local function onRecExit(exitCode, _, stderr)
             end
         end,
         { scriptPath,
-          "/tmp/whispr.wav",
+          WAV_PATH,
           TMUX_TARGET,
           AGENT_CMD,
           BACKEND,
@@ -95,12 +137,10 @@ local function onRecExit(exitCode, _, stderr)
         processTask  = nil
         isProcessing = false
         clearMenu()
-        hs.alert("Whispr: failed to launch processing script — check PYTHON_CMD path")
+        hs.alert("Whispr: failed to launch processing script")
         return
     end
 
-    -- Timeout: kill hung script after PROCESS_TIMEOUT seconds.
-    -- Does NOT touch isProcessing/menuItem — the task exit callback handles cleanup.
     processTimer = hs.timer.doAfter(PROCESS_TIMEOUT, function()
         processTimer = nil
         if processTask then
@@ -111,43 +151,38 @@ local function onRecExit(exitCode, _, stderr)
 end
 
 -- ---------------------------------------------------------------------------
--- Toggle handler — bound to F2 in init.lua
+-- Toggle handler — bound to F13 in init.lua
 -- ---------------------------------------------------------------------------
 function M.toggle()
-    if isProcessing then return end  -- ignore F2 while pipeline is running
+    if isProcessing then
+        hs.alert("⟳ Whispr: processing, please wait…")
+        return
+    end
 
     if recProcess == nil then
         -- START recording
         menuItem = hs.menubar.new()
         if menuItem then menuItem:setTitle("⏺ REC") end
+        recAlert     = hs.alert.show("🎙 Recording…", {}, hs.screen.mainScreen(), 99999)
         recStartTime = hs.timer.secondsSinceEpoch()
 
         recProcess = hs.task.new(
             REC_CMD,
             onRecExit,
-            { "-q", "-r", "16000", "-c", "1", "-t", "wav", "/tmp/whispr.wav" }
+            { "-r", "16000", "-c", "1", "-b", "16", WAV_PATH }
         )
         if not recProcess:start() then
             recProcess = nil
             clearMenu()
-            hs.alert("Whispr: failed to launch rec — check REC_CMD path")
+            clearAlert()
+            hs.alert("Whispr: failed to start recorder — is sox_ng installed?")
             return
         end
+        hs.execute("afplay /System/Library/Sounds/Tink.aiff &")
     else
-        -- STOP recording
-        local elapsed = hs.timer.secondsSinceEpoch() - recStartTime
-        if elapsed < MIN_RECORD_SECS then
-            -- Too short — discard silently
-            isSilentDiscard = true
-            wasTerminated   = true
-            recProcess:terminate()
-            -- recProcess is nil'd in onRecExit (unified nil point)
-            clearMenu()
-        else
-            wasTerminated = true
-            recProcess:terminate()
-            -- recProcess is nil'd in onRecExit's normal-stop path
-        end
+        -- STOP recording: SIGINT → rec finalizes WAV header and exits cleanly
+        hs.execute("afplay /System/Library/Sounds/Pop.aiff &")
+        recProcess:interrupt()
     end
 end
 
