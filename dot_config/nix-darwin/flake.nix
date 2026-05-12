@@ -56,12 +56,13 @@
           "bitwarden-cli"
           "gemini-cli"
           "opencode"
+           "sox_ng"
           "tree-sitter-cli"
         ];
 
         # removed "wezterm@nightly"
         casks = [
-          "dbeaver-community" "hammerspoon" "jordanbaird-ice"
+          "dbeaver-community" "hammerspoon" "hiddenbar"
           "ghostty" "google-chrome" "google-drive" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"

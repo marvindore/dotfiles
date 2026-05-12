@@ -31,6 +31,7 @@ dotnet tool install --global dotnet-ef
 Install tpm
 `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`
 then reload envionment `Ctrl-I`
+
 ### Zellij setup
 ```
 mkdir -p ~/.config/zellij/plugins/
@@ -61,7 +62,7 @@ bw_unlock
 
 >Evaluate the two conditions up front to keep the if/else simple
 >example creation of key:
->security add-generic-password -a GEMINI_API_KEY     -s "chezmoi_gemini_key"     -w "YOUR-GEMINI-KEY"
+>security add-generic-password -a <account_username> -s "chezmoi_gemini_key" -w "YOUR-GEMINI-KEY"
 >security find-generic-password -s "chezmoi_gemini_key" -w
 {{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") -}}
 {{- $useBW       := and (env "CHEZMOI_SECRETS") (lookPath "bw") -}}

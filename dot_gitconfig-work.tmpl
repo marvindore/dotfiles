@@ -8,6 +8,7 @@
 
 {{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") }}
 
+{{- if eq $profile "work" }}
 [user]
     name = Marvin Dore
     email = marvin.dore@ukg.com
