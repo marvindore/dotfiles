@@ -76,6 +76,11 @@
     prompt = false
 	cmd = difft "$LOCAL" "$REMOTE"
 
+[url "git@work:{{ $workOrg }}/"]
+    insteadOf = git@github.com:{{ $workOrg }}/
+[url "git@home:"]
+    insteadOf = git@github.com:
+
 {{ if eq .chezmoi.os "windows" -}}
 [gpg]
 
