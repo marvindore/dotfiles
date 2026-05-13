@@ -1,0 +1,5 @@
+# Example: auto-clone a Hammerspoon Spoon from a git repo on `chezmoi apply`
+# [".hammerspoon/Spoons/SomeName.spoon"]
+#     type = "git-repo"
+#     url = "https://github.com/author/SomeName.spoon"
+#     refreshPeriod = "168h"
