@@ -23,7 +23,7 @@ case "$KEY" in
     "n")
         SESSION="notes"
         CWD="$NOTES_DIR"
-        CMD="nvim ."
+        CMD="nvim -c 'ZkFindOrCreate'"
         ;;
     "N")
         SESSION="notes_grep"
