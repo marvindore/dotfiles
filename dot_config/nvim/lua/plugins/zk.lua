@@ -52,7 +52,7 @@ vim.pack.add({
 local function FindOrCreateNote()
 	local notes_dir = vim.fn.expand("~/notes")
 	require("fzf-lua").fzf_exec(
-		"zk list --format '{{title}}\t{{absPath}}' --sort modified --notebook-dir " .. notes_dir,
+		"zk list --format '{{title}}\t{{absPath}}' --sort modified --notebook-dir " .. vim.fn.shellescape(notes_dir),
 		{
 			prompt = "Notes❯ ",
 			fzf_opts = {
@@ -300,6 +300,6 @@ vim.api.nvim_create_autocmd("FileType", {
 				vim.fn.writefile(lines, path)
 			end
 			vim.cmd("edit " .. vim.fn.fnameescape(path))
-		end, { buffer = event.buf, desc = "Notes: open today's journal" })
+		end, { buffer = buf, desc = "Notes: open today's journal" })
 	end,
 })
