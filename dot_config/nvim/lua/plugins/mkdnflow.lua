@@ -108,7 +108,7 @@ vim.pack.add({
 						MkdnNewListItemBelowInsert = false, -- would override `o`
 						MkdnNewListItemAboveInsert = false, -- would override `O`
 						MkdnExtendList = false,
-						MkdnUpdateNumbering = { "n", "<leader>nn" },
+						MkdnUpdateNumbering = { "n", "<leader>mn" },
 						MkdnIndentListItem = { "i", "<C-t>" },
 						MkdnDedentListItem = { "i", "<C-d>" },
 
