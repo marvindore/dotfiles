@@ -5,12 +5,12 @@ vim.pack.add({
 			-- ✅ These commands will now auto-load zk.nvim
 			cmds = { "ZkNew", "ZkNotes", "ZkTags", "ZkLinks", "ZkBacklinks", "ZkRename", "ZkMatch" },
 			keys = {
-				-- new note
+				-- find or create note (unified picker)
 				{
 					mode = "n",
 					lhs = "<leader>nn",
-					rhs = "<Cmd>ZkNew { title = vim.fn.input('Title: ') }<CR>",
-					desc = "Notes new",
+					rhs = "<Cmd>ZkFindOrCreate<CR>",
+					desc = "Notes find or create",
 				},
 				-- open note
 				{
@@ -41,6 +41,59 @@ vim.pack.add({
 		require("lze").load(spec)
 	end,
 })
+
+-- ============================================================
+-- FindOrCreateNote: unified find-or-create picker (Logseq-style)
+-- Uses fzf-lua with --print-query so selected[1] is always the
+-- typed query, and selected[2] onwards are note entries.
+-- Note: boolean fzf flags must use "" not true in fzf_opts.
+-- ============================================================
+
+local function FindOrCreateNote()
+	local notes_dir = vim.fn.expand("~/notes")
+	require("fzf-lua").fzf_exec(
+		"zk list --format '{{title}}\t{{absPath}}' --sort modified --notebook-dir " .. notes_dir,
+		{
+			prompt = "Notes❯ ",
+			fzf_opts = {
+				["--delimiter"] = "\t",
+				["--with-nth"] = "1",   -- show only title in picker
+				["--print-query"] = "", -- emit query as first output line; selected[1] is always the query
+			},
+			actions = {
+				-- Enter: open selected note, or create if nothing highlighted
+				["default"] = function(selected)
+					if not selected or #selected == 0 then return end
+					if #selected >= 2 then
+						-- selected[1] = query, selected[2] = "title\t/abs/path"
+						local parts = vim.split(selected[2], "\t")
+						if parts[2] and parts[2] ~= "" then
+							vim.cmd("edit " .. vim.fn.fnameescape(parts[2]))
+						end
+					else
+						-- query only, nothing highlighted: create note
+						local title = vim.trim(selected[1])
+						if title ~= "" then
+							require("lze").trigger_load("zk-nvim")
+							require("zk").new({ title = title })
+						end
+					end
+				end,
+				-- Ctrl+N: always create with current query as title
+				["ctrl-n"] = function(selected)
+					if not selected or #selected == 0 then return end
+					local title = vim.trim(selected[1])
+					if title ~= "" then
+						require("lze").trigger_load("zk-nvim")
+						require("zk").new({ title = title })
+					end
+				end,
+			},
+		}
+	)
+end
+
+vim.api.nvim_create_user_command("ZkFindOrCreate", FindOrCreateNote, {})
 
 -- ============================================================
 -- ZK / Markdown UX Enhancements (mkdnflow-like ergonomics)
@@ -219,5 +272,34 @@ vim.api.nvim_create_autocmd("FileType", {
 			buffer = buf,
 			desc = "Toggle TODO",
 		})
+
+		-- --------------------------------------------------------
+		-- Open or create today's journal note
+		-- --------------------------------------------------------
+		vim.keymap.set("n", "<leader>nj", function()
+			local date = os.date("%Y-%m-%d")
+			local journals_dir = vim.fn.expand("~/notes/journals")
+			local path = journals_dir .. "/" .. date .. ".md"
+			vim.fn.mkdir(journals_dir, "p")
+			if vim.fn.filereadable(path) == 0 then
+				local lines = {
+					"---",
+					"title: " .. date,
+					"tags: [journal]",
+					"---",
+					"",
+					"## Notes",
+					"",
+					"",
+					"## Tasks",
+					"",
+					"",
+					"## Decisions",
+					"",
+				}
+				vim.fn.writefile(lines, path)
+			end
+			vim.cmd("edit " .. vim.fn.fnameescape(path))
+		end, { buffer = event.buf, desc = "Notes: open today's journal" })
 	end,
 })
