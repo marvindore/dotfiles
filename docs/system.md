@@ -72,6 +72,15 @@ GEMINI_API_KEY=""
 LITELLM_MASTER_KEY="{{ template "keychainGet" "chezmoi_litellm_master" }}"
 {{end}}
 
+### Scriptkit
+** bookmarks **
+ cat > ~/.scriptkit/plugins/main/scripts/_lib/bookmarks.local.json << 'EOF'
+  [
+    { "name": "Confluence", "url": "https://your-org.atlassian.net/wiki", "keywords": "docs wiki" },
+    { "name": "Jira", "url": "https://your-org.atlassian.net/jira", "keywords": "tickets issues" }
+  ]
+  EOF
+
 ### Apple Security
     >Evaluate the two conditions up front to keep the if/else simple
     > example creation of key:

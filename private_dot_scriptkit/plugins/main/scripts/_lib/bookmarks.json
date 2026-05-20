@@ -1,0 +1,22 @@
+[
+  { "name": "GitHub", "url": "https://github.com", "keywords": "code dev git" },
+  { "name": "Google", "url": "https://google.com", "keywords": "search" },
+  { "name": "Hacker News", "url": "https://news.ycombinator.com", "keywords": "news tech" },
+  { "name": "Gmail", "url": "https://mail.google.com", "keywords": "email mail" },
+  { "name": "Google Calendar", "url": "https://calendar.google.com", "keywords": "calendar schedule meetings" },
+  { "name": "Google Drive", "url": "https://drive.google.com", "keywords": "docs files storage" },
+  { "name": "Google Maps", "url": "https://maps.google.com", "keywords": "maps directions location" },
+  { "name": "YouTube", "url": "https://youtube.com", "keywords": "video watch" },
+  { "name": "Stack Overflow", "url": "https://stackoverflow.com", "keywords": "code dev help" },
+  { "name": "MDN Web Docs", "url": "https://developer.mozilla.org", "keywords": "docs web html css js" },
+  { "name": "Wikipedia", "url": "https://wikipedia.org", "keywords": "wiki encyclopedia" },
+  { "name": "Reddit", "url": "https://reddit.com", "keywords": "news social" },
+  { "name": "LinkedIn", "url": "https://linkedin.com", "keywords": "jobs professional network" },
+  { "name": "Anthropic", "url": "https://anthropic.com", "keywords": "ai claude" },
+  { "name": "Claude", "url": "https://claude.ai", "keywords": "ai chat assistant" },
+  { "name": "ChatGPT", "url": "https://chatgpt.com", "keywords": "ai chat openai" },
+  { "name": "Excalidraw", "url": "https://excalidraw.com", "keywords": "drawing diagram whiteboard" },
+  { "name": "Lobsters", "url": "https://lobste.rs", "keywords": "news tech programming" },
+  { "name": "devdocs.io", "url": "https://devdocs.io", "keywords": "docs api reference" },
+  { "name": "crates.io", "url": "https://crates.io", "keywords": "rust packages registry" }
+]

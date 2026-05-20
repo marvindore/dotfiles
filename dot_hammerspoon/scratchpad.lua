@@ -247,7 +247,7 @@ function M.show()
     -- from both without double-showing or double-focusing.
     local function reveal()
         if not visible or not webview then return end
-        -- Restore titled style before becoming visible (was borderless while off-screen).
+        webview:level(hs.drawing.windowLevels.floating)
         webview:windowStyle({"titled", "closable", "resizable"})
         webview:frame(frame)
         webview:alpha(1)
@@ -282,10 +282,9 @@ function M.hide()
     -- Move off-screen so the invisible window doesn't intercept clicks
     -- from apps (e.g. Teams) that sit below the floating level.
     if webview then
-        -- Switch to borderless before moving off-screen so macOS doesn't
-        -- clamp the position to keep a title bar on-screen.
         webview:windowStyle(hs.webview.windowMasks.borderless)
         webview:alpha(0)
+        webview:level(hs.drawing.windowLevels._MinimumWindowLevelKey)
         webview:frame(hs.geometry.rect(-10000, -10000, 100, 100))
     end
     visible = false

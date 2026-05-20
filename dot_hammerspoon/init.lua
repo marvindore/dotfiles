@@ -19,3 +19,8 @@ require("menu-bar")
 -- Whispr: voice dictation → tmux agent (F2 toggle)
 local Whispr = require("whispr")
 hs.hotkey.bind({}, "f13", Whispr.toggle)
+
+-- Clear all notifications (ctrl+shift+x)
+hs.hotkey.bind({"ctrl", "shift"}, "x", function()
+    hs.execute("killall NotificationCenter")
+end)
