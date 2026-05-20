@@ -48,3 +48,4 @@ nix flake update #which updates the flake.lock file
 #rebuild your config
 darwin-rebuild switch --flake ~/.config/nix-darwin#mchip 
 ```
+
