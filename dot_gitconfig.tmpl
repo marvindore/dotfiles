@@ -91,7 +91,22 @@
 # User different gitconfig based on directory
 {{ end -}}
 
+# Deterministic SSH key selection via host aliases.
+# Longest-prefix match wins, so the work rule beats the personal catch-all.
+# `git@work:` and `git@home:` are defined in ~/.ssh/config with IdentitiesOnly yes.
+[url "git@work:{{$workOrg}}/"]
+    insteadOf = git@github.com:{{$workOrg}}/
+    insteadOf = https://github.com/{{$workOrg}}/
+
+# Only ssh form is rewritten here. Rewriting https://github.com/ would also
+# capture public https submodules in third-party repos and force them through
+# the personal key, breaking unauthenticated read access.
+[url "git@home:"]
+    insteadOf = git@github.com:
+
 [includeIf "hasconfig:remote.*.url:git@github.com:{{$workOrg}}/**"]
     path = .gitconfig-work
 [includeIf "hasconfig:remote.*.url:https://github.com/{{$workOrg}}/**"]
+    path = .gitconfig-work
+[includeIf "hasconfig:remote.*.url:git@work:{{$workOrg}}/**"]
     path = .gitconfig-work

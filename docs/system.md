@@ -47,30 +47,25 @@ bw login
 bw_unlock
 ```
 
-### Chezmoi
-> create a ~/.config/chezmoi/chezmoi.toml file and add the following
-> [data]
->  profile = "home/work"
->[data.work]
->  org_slug = "overwrite_org_slug"
+### Chezmoi per-machine config
 
-{{- /* Helper: read a secret by service name using macOS 'security' */ -}}
-{{- define "keychainGet" -}}
-  {{- $service := . -}}
-  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
-{{- end -}}
+The repo's `<placeholder>` data values come from `.chezmoidata/defaults.toml`.
+Override them locally in `~/.config/chezmoi/chezmoi.toml` — this file is
+per-machine and is intentionally NOT tracked in git (work org slug is private):
 
->Evaluate the two conditions up front to keep the if/else simple
->example creation of key:
->security add-generic-password -a <account_username> -s "chezmoi_gemini_key" -w "YOUR-GEMINI-KEY"
->security find-generic-password -s "chezmoi_gemini_key" -w
-{{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") -}}
-{{- $useBW       := and (env "CHEZMOI_SECRETS") (lookPath "bw") -}}
+```toml
+[data]
+profile = "work"   # or "home"
 
-{{- if $useKeychain -}}
-GEMINI_API_KEY=""
-LITELLM_MASTER_KEY="{{ template "keychainGet" "chezmoi_litellm_master" }}"
-{{end}}
+[data.work]
+  org_slug = "YOUR_ORG_SLUG"
+```
+
+Run `chezmoi edit-config` to create/edit. Re-run `chezmoi apply` after.
+
+OS-specific secret storage:
+- macOS: see "Apple Security" below.
+- Windows: see `docs/windows.md`.
 
 ### Scriptkit
 ** bookmarks **
@@ -81,28 +76,41 @@ LITELLM_MASTER_KEY="{{ template "keychainGet" "chezmoi_litellm_master" }}"
   ]
   EOF
 
-### Apple Security
-    >Evaluate the two conditions up front to keep the if/else simple
-    > example creation of key:
-    > security add-generic-password -a GEMINI_API_KEY     -s "chezmoi_gemini_key"     -w "YOUR-GEMINI-KEY"
-    > security find-generic-password -s "chezmoi_gemini_key" -w
+### Apple Security (macOS Keychain)
 
-    /usr/bin/security list-keychains
-    /usr/bin/security default-keychain
-    /usr/bin/security login-keychain
+Service names referenced by the current templates:
 
-    security add-generic-password \
-      -s company_git_org \
-      -a "$USER" \
-      -w <CompanyOrg> \
-      -U
+| Service              | Used by                          | Required on             |
+|----------------------|----------------------------------|-------------------------|
+| `litellm_api_key`    | `dot_config/opencode/opencode.jsonc.tmpl` (via `keyring`) | every machine that runs opencode |
+| `gemini_api_key`     | `docker/litellm/dot_env.tmpl`    | home (LiteLLM proxy host) only |
+| `litellm_master_key` | `docker/litellm/dot_env.tmpl`    | home (LiteLLM proxy host) only |
 
-    ```
-    -s company_git_org → service name (what keychainGet uses)
-    -a "$USER" → account name (can be anything; username is typical)
-    -w UKGEPIC → the actual value returned
-    -U → update if it already exists
-    ```
+Create entries:
+
+```bash
+security add-generic-password -a "$USER" -s "litellm_api_key"    -w "YOUR-LITELLM-KEY" -U
+security add-generic-password -a "$USER" -s "gemini_api_key"     -w "YOUR-GEMINI-KEY"  -U
+security add-generic-password -a "$USER" -s "litellm_master_key" -w "YOUR-MASTER-KEY" -U
+```
+
+Flags: `-s` service name, `-a` account (the `keyring` template func uses
+`.chezmoi.username` which is your login name on macOS), `-w` value,
+`-U` update if exists.
+
+Read back / inspect:
+
+```bash
+security find-generic-password -s "litellm_api_key" -w
+/usr/bin/security list-keychains
+/usr/bin/security default-keychain
+```
+
+Unrelated: storing the work org slug in Keychain for shell use:
+
+```bash
+security add-generic-password -s company_git_org -a "$USER" -w "<CompanyOrg>" -U
+```
 
 ## Keyboard Remapping
 ### Kanata Setup

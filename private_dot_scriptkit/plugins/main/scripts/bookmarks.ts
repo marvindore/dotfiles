@@ -4,7 +4,7 @@ import bookmarks from "./_lib/bookmarks.json";
 export const metadata = {
   name: "Bookmarks",
   description: "Search and open bookmarks",
-  shortcut: "cmd+b",
+  shortcut: "cmd+shift+b",
 };
 
 type Bookmark = { name: string; url: string; keywords: string };
