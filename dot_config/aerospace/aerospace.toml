@@ -104,8 +104,8 @@ automatically-unhide-macos-hidden-apps = false
 
     alt-z = 'focus-monitor prev'   
     alt-x = 'focus-monitor next'
-    alt-shift-h = 'move-node-to-monitor prev'
-    alt-shift-l = 'move-node-to-monitor next'
+    alt-shift-h = ['move-node-to-monitor prev', 'focus-monitor prev']
+    alt-shift-l = ['move-node-to-monitor next', 'focus-monitor next']
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     alt-slash = 'layout tiles horizontal vertical'
