@@ -107,6 +107,14 @@ vim.pack.add({
               default    = { layout = "diff2_horizontal" },
               merge_tool = { layout = "diff3_horizontal", disable_diagnostics = true },
             },
+            hooks = {
+              diff_buf_read = function(bufnr)
+                -- change local options in buffer
+                vim.opt_local.wrap = true
+                vim.opt_local.linebreak = true
+                vim.opt_local.breakindent = true
+              end,
+            },
             file_panel = {
               listing_style = "tree",
               win_config    = { position = "left", width = 35 },

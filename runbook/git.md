@@ -81,7 +81,7 @@ git clone --bare git@github.com:user/project.git .bare
 echo "gitdir: ./.bare" > .git
 ```
 
-## Forked Repos
+## Forked OpenSource Repos
     # Clone your fork (this will be your base directory)
     mkdir <REPO_NAME>
     cd <REPO_NAME>
@@ -94,7 +94,7 @@ echo "gitdir: ./.bare" > .git
     git fetch origin
 
     # Add the original repository as an upstream remote
-    git remote add upstream git@github.com:<ORIGINAL_OWNER>//<REPO_NAME>.git
+    git remote add upstream <REPO_NAME.git>
 
     # Set the fetch mapping for the upstream remote too
     git config remote.upstream.fetch "+refs/heads/*:refs/remotes/upstream/*"

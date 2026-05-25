@@ -206,24 +206,39 @@ set("n", "<leader>giD", function()
 			local worktree_dir  = vim.fn.stdpath("data") .. "/pr-worktrees"
 			local worktree_path = worktree_dir .. "/pr-" .. pr_number
 
-			local function open_claude()
-				vim.notify("[PR] Opening Claude in worktree for #" .. pr_number, vim.log.levels.INFO)
+			local function open_agent(agent)
+				vim.notify("[PR] Opening " .. agent .. " in worktree for #" .. pr_number, vim.log.levels.INFO)
 				local prompt = string.format(
 					"Review PR #%s. Run `gh pr view %s` first for context, then examine the changed files and give a thorough code review.",
 					pr_number, pr_number
 				)
+				local term_id = "pr-" .. agent .. "-" .. pr_number
+				_G._last_pr_term_id = term_id
 				Snacks.terminal(
-					{ "claude", prompt },
-					{ id = "pr-claude-" .. pr_number, cwd = worktree_path, win = { position = "right" } }
+					{ agent, prompt },
+					{ id = term_id, cwd = worktree_path, win = { position = "right" } }
 				)
 			end
 
-			local function launch_claude(head_ref)
+			local function select_agent()
+				vim.ui.select({ "claude", "gemini", "copilot" }, {
+					prompt = "Select Agent for Review:",
+					format_item = function(choice)
+						return choice:sub(1, 1):upper() .. choice:sub(2)
+					end,
+				}, function(choice)
+					if choice then
+						open_agent(choice)
+					end
+				end)
+			end
+
+			local function launch_review(head_ref)
 				vim.fn.mkdir(worktree_dir, "p")
 
 				if vim.fn.isdirectory(worktree_path) == 1 then
 					vim.notify("[PR] Reusing worktree for #" .. pr_number, vim.log.levels.INFO)
-					open_claude()
+					select_agent()
 					return
 				end
 
@@ -243,13 +258,13 @@ set("n", "<leader>giD", function()
 							end)
 							return
 						end
-						vim.schedule(open_claude)
+						vim.schedule(select_agent)
 					end)
 				end)
 			end
 
 			if item.headRefName then
-				launch_claude(item.headRefName)
+				launch_review(item.headRefName)
 			else
 				vim.system(
 					{ "gh", "pr", "view", pr_number, "--json", "headRefName", "--jq", ".headRefName" },
@@ -268,13 +283,21 @@ set("n", "<leader>giD", function()
 							end)
 							return
 						end
-						vim.schedule(function() launch_claude(head) end)
+						vim.schedule(function() launch_review(head) end)
 					end
 				)
 			end
 		end,
 	})
-end, { desc = "PR Review with Claude (worktree)" })
+end, { desc = "PR Review with AI (worktree)" })
+
+set("n", "<leader>giT", function()
+	if _G._last_pr_term_id then
+		Snacks.terminal.toggle(nil, { id = _G._last_pr_term_id })
+	else
+		vim.notify("[PR] No active review terminal to toggle", vim.log.levels.WARN)
+	end
+end, { desc = "Toggle PR Review Terminal" })
 
 -- LSP Pickers
 set("n", "gpd", function() Snacks.picker.lsp_definitions() end, { desc = "Goto Definition" })
