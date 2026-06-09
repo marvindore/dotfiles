@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { Action, ActionPanel, List } from "@raycast/api";
+import { Action, ActionPanel, List, closeMainWindow } from "@raycast/api";
 
 type Bookmark = { name: string; url: string; keywords: string };
 
@@ -52,7 +52,7 @@ export default function Command() {
             <ActionPanel>
               <Action
                 title="Open in Browser"
-                onAction={() => openUrl(bookmark.url)}
+                onAction={async () => { await closeMainWindow(); openUrl(bookmark.url); }}
               />
             </ActionPanel>
           }
