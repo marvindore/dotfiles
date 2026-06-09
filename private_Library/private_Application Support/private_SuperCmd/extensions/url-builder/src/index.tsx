@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { Action, ActionPanel, Form, List } from "@raycast/api";
+import { Action, ActionPanel, Form, List, closeMainWindow } from "@raycast/api";
 import { useState } from "react";
 
 type Param = { label: string; placeholder: string };
@@ -71,7 +71,7 @@ function TemplateForm({ template, onBack }: { template: Template; onBack: () => 
                 setErrors(newErrors);
                 return;
               }
-              openUrl(buildUrl(template, values as Record<string, string>));
+              closeMainWindow().then(() => openUrl(buildUrl(template, values as Record<string, string>)));
             }}
           />
           <Action title="Back" onAction={onBack} />
@@ -120,8 +120,9 @@ export default function Command() {
             <ActionPanel>
               <Action
                 title={template.params.length === 0 ? "Open URL" : "Fill Parameters"}
-                onAction={() => {
+                onAction={async () => {
                   if (template.params.length === 0) {
+                    await closeMainWindow();
                     openUrl(template.url);
                   } else {
                     setSelected(template);

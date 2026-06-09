@@ -37,6 +37,7 @@
     "ext-bookmarks-index"
   ],
   "recentCommands": [
+    "ext-url-builder-index",
     "system-quit-launcher",
     "ext-bookmarks-index",
     "system-open-extensions-settings",
@@ -53,12 +54,13 @@
     "system-open-extension-store": 3,
     "system-open-extensions-settings": 2,
     "system-create-script-command": 2,
-    "system-quit-launcher": 14,
+    "system-quit-launcher": 15,
     "script-5527587f8f312119": 2,
     "system-emoji-picker": 1,
     "system-open-settings": 1,
     "system-supercmd-speak": 1,
-    "ext-bookmarks-index": 19
+    "ext-bookmarks-index": 19,
+    "ext-url-builder-index": 1
   },
   "hasSeenOnboarding": true,
   "hasSeenWhisperOnboarding": true,
@@ -145,7 +147,20 @@
     "webSearchShowHiddenBangs": false,
     "webSearchSuggestionsEnabled": true
   },
-  "rootSearchRanking": {},
+  "rootSearchRanking": {
+    "command:ext-url-builder-index": {
+      "useCount": 1,
+      "lastUsedAt": 1781023346133,
+      "frecencyScore": 1,
+      "inputHistory": {
+        "bu": {
+          "useCount": 1,
+          "lastUsedAt": 1781023346133,
+          "score": 1
+        }
+      }
+    }
+  },
   "rootSearchAutocompleteEnabled": true,
   "popToRootSearchTimeoutSeconds": 90,
   "installedExtensions": [
