@@ -1,0 +1,19 @@
+[
+  {
+    "name": "GitHub Repository Search",
+    "description": "Search for a repository on GitHub",
+    "url": "https://github.com/search?q={0}&type=repositories",
+    "params": [
+      { "label": "Search Query", "placeholder": "e.g. raycast extension" }
+    ]
+  },
+  {
+    "name": "Google Maps Directions",
+    "description": "Get directions between two locations",
+    "url": "https://www.google.com/maps/dir/{0}/{1}",
+    "params": [
+      { "label": "From", "placeholder": "e.g. New York, NY" },
+      { "label": "To", "placeholder": "e.g. Boston, MA" }
+    ]
+  }
+]

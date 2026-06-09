@@ -1,0 +1,166 @@
+{
+  "globalShortcut": "Command+Control+Shift+Space",
+  "openAtLogin": true,
+  "disabledCommands": [
+    "system-emoji-picker"
+  ],
+  "enabledCommands": [],
+  "scriptCommandFolders": [],
+  "commandHotkeys": {
+    "system-supercmd-whisper": "Command+Shift+W",
+    "system-supercmd-whisper-speak-toggle": "Fn",
+    "system-supercmd-speak": "Command+Shift+S",
+    "system-window-management-left": "Control+Alt+Left",
+    "system-window-management-right": "Control+Alt+Right",
+    "system-window-management-top": "Control+Alt+Up",
+    "system-window-management-bottom": "Control+Alt+Down",
+    "system-window-management-top-left": "Control+Alt+U",
+    "system-window-management-top-right": "Control+Alt+I",
+    "system-window-management-bottom-left": "Control+Alt+J",
+    "system-window-management-bottom-right": "Control+Alt+K",
+    "system-window-management-first-third": "Control+Alt+D",
+    "system-window-management-center-third": "Control+Alt+F",
+    "system-window-management-last-third": "Control+Alt+G",
+    "system-window-management-first-two-thirds": "Control+Alt+E",
+    "system-window-management-center-two-thirds": "Control+Alt+R",
+    "system-window-management-last-two-thirds": "Control+Alt+T",
+    "system-window-management-center": "Control+Alt+C",
+    "system-window-management-fill": "Control+Alt+Return",
+    "system-window-management-increase-size-10": "Control+Alt+=",
+    "system-window-management-decrease-size-10": "Control+Alt+-",
+    "ext-bookmarks-index": "Command+Shift+B",
+    "ext-url-builder-index": "Command+Shift+U"
+  },
+  "commandAliases": {},
+  "pinnedCommands": [
+    "system-open-settings",
+    "ext-bookmarks-index"
+  ],
+  "recentCommands": [
+    "system-quit-launcher",
+    "ext-bookmarks-index",
+    "system-open-extensions-settings",
+    "system-open-extension-store",
+    "script-5527587f8f312119",
+    "system-supercmd-speak",
+    "system-open-settings",
+    "system-emoji-picker",
+    "system-create-script-command",
+    "settings-extensions"
+  ],
+  "recentCommandLaunchCounts": {
+    "settings-extensions": 1,
+    "system-open-extension-store": 3,
+    "system-open-extensions-settings": 2,
+    "system-create-script-command": 2,
+    "system-quit-launcher": 14,
+    "script-5527587f8f312119": 2,
+    "system-emoji-picker": 1,
+    "system-open-settings": 1,
+    "system-supercmd-speak": 1,
+    "ext-bookmarks-index": 19
+  },
+  "hasSeenOnboarding": true,
+  "hasSeenWhisperOnboarding": true,
+  "disableFileSearchResults": false,
+  "ai": {
+    "provider": "openai",
+    "openaiApiKey": "",
+    "anthropicApiKey": "",
+    "geminiApiKey": "",
+    "elevenlabsApiKey": "",
+    "mistralApiKey": "",
+    "supermemoryApiKey": "",
+    "supermemoryClient": "",
+    "supermemoryBaseUrl": "https://api.supermemory.ai",
+    "supermemoryLocalMode": false,
+    "ollamaBaseUrl": "http://localhost:11434",
+    "defaultModel": "",
+    "speechCorrectionModel": "",
+    "speechToTextModel": "whispercpp",
+    "speechLanguage": "en-US",
+    "textToSpeechModel": "edge-tts",
+    "edgeTtsVoice": "en-US-EricNeural",
+    "speechCorrectionEnabled": false,
+    "enabled": true,
+    "llmEnabled": true,
+    "whisperEnabled": true,
+    "readEnabled": true,
+    "openaiCompatibleAppendV1": true,
+    "openaiCompatibleBaseUrl": "",
+    "openaiCompatibleApiKey": "",
+    "openaiCompatibleModel": "",
+    "lmStudioBaseUrl": "http://127.0.0.1:1234/v1",
+    "lmStudioModel": "",
+    "lmStudioApiKey": ""
+  },
+  "hyperKey": {
+    "enabled": false,
+    "sourceKey": "caps-lock",
+    "capsLockTapBehavior": "nothing"
+  },
+  "debugMode": false,
+  "appLanguage": "system",
+  "fontSize": "medium",
+  "uiStyle": "glassy",
+  "baseColor": "#101113",
+  "launcherBackgroundImageEverywhere": false,
+  "launcherBackgroundImageBlurPercent": 25,
+  "launcherBackgroundImageOpacityPercent": 45,
+  "launcherViewMode": "expanded",
+  "navigationStyle": "vim",
+  "clipboardHistoryRetentionDays": null,
+  "clipboardAppBlacklist": [],
+  "emojiPickerEnabled": true,
+  "emojiPickerTriggerPrefix": ":",
+  "emojiPickerExcludedAppBundleIds": [],
+  "browserSearch": {
+    "enabled": true,
+    "alphaChromiumRootSearchEnabled": false,
+    "historyRetentionDays": 90,
+    "profileSourceIds": [],
+    "profiles": [],
+    "profileFilters": {},
+    "resultLimitPerGroup": 2,
+    "resultGroups": [
+      {
+        "kind": "bookmark",
+        "limit": 2
+      },
+      {
+        "kind": "open-tab",
+        "limit": 2
+      },
+      {
+        "kind": "history",
+        "limit": 2
+      }
+    ],
+    "nicknames": [],
+    "webSearchDefaultBangKey": "g",
+    "webSearchBangOverrides": [],
+    "webSearchBangUsage": {},
+    "webSearchDisabledBangKeys": [],
+    "webSearchBangCustomProviders": [],
+    "webSearchShowHiddenBangs": false,
+    "webSearchSuggestionsEnabled": true
+  },
+  "rootSearchRanking": {},
+  "rootSearchAutocompleteEnabled": true,
+  "popToRootSearchTimeoutSeconds": 90,
+  "installedExtensions": [
+    "bookmarks",
+    "url-builder"
+  ],
+  "extensionUninstallTombstones": {
+    "jira-search": 1780504291008
+  },
+  "extensionPreferences": {},
+  "extensionCommandPreferences": {},
+  "extensionCommandArguments": {
+    "bookmarks/index": {},
+    "url-builder/index": {}
+  },
+  "autoQuitApps": [],
+  "autoQuitDefaultTimeoutSeconds": 180
+}

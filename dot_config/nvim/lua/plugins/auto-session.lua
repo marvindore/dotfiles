@@ -24,6 +24,7 @@ require("auto-session").setup({
     "*cache*",
     "~/.config",
     "~/.local",
+    "~/notes",  -- notes workspace always opens via ZkFindOrCreate picker, not session restore
   },
 
   -- Do not save/restore volatile UI buffers (DAP, Trouble, Neotest, etc.)

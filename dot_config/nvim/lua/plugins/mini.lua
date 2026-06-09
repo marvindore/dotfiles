@@ -23,7 +23,12 @@ require("mini.diff").setup({
     goto_prev = '[c',
     goto_next = ']c',
     goto_last = ']C',
-  }
+  },
+  options = {
+    algorithm = 'patience',
+    indent_heuristic = true,
+    linematch = 60, -- 👈 enables better intra-line diffing
+  },
 })
 require("mini.files").setup({ mappings = { go_in_plus = "<cr>" } })
 require("mini.comment").setup()
@@ -73,6 +78,13 @@ hipatterns.setup({
 -- Keymaps
 vim.keymap.set("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", { desc = "Open directory" })
 vim.keymap.set("n", "_", ":lua MiniFiles.open()<cr>", { desc = "Open parent directory" })
-vim.keymap.set("n", "<leader>gd", function() require("mini.diff").toggle_overlay(0) end, { desc = "Git buffer diff" })
-vim.keymap.set("n", "saw", "saiw", { remap = true, desc = "Surround word" })
 
+vim.keymap.set("n", "<leader>gd", function()
+  require("mini.diff").toggle_overlay(0)
+end, { desc = "Toggle inline diff popup" })
+
+vim.keymap.set("n", "<leader>gh", function()
+  require("mini.diff").goto_hunk("current")
+end, { desc = "Focus current diff hunk" })
+
+vim.keymap.set("n", "saw", "saiw", { remap = true, desc = "Surround word" })

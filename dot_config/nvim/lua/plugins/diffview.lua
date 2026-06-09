@@ -21,6 +21,7 @@ vim.pack.add({
         { lhs = "<leader>dh", rhs = ":DiffviewFileHistory %<cr>",  mode = "n", desc = "Git File History" },
         { lhs = "<leader>dH", rhs = ":DiffviewFileHistory<cr>",    mode = "n", desc = "Git Repo History" },
         { lhs = "<leader>dc", rhs = ":DiffviewClose<cr>",          mode = "n", desc = "Git Close Diff" },
+        { lhs = "<leader>dl", rhs = ":DiffviewOpen HEAD~1 -- %<cr>", mode = "n", desc = "Diff current file vs previous commit"}
       },
 
       after = function(_)
@@ -152,3 +153,15 @@ vim.pack.add({
     require("lze").load(spec)
   end,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "diff", "DiffviewFiles" },
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+  end,
+})
+
+vim.opt.showbreak = "↳ "
+vim.opt.breakindent = true
+

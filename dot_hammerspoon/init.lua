@@ -9,10 +9,6 @@ end)
 local Scratchpad = require("scratchpad")
 hs.hotkey.bind({ "ctrl", "shift" }, "n", Scratchpad.toggle)
 
--- Meeting popup (ctrl + shift + m)
-local Calendar = require("calendar")
-hs.hotkey.bind({ "ctrl", "shift" }, "m", Calendar.toggle)
-
 -- Menu bar
 require("menu-bar")
 
@@ -24,3 +20,6 @@ hs.hotkey.bind({}, "f13", Whispr.toggle)
 hs.hotkey.bind({"ctrl", "shift"}, "x", function()
     hs.execute("killall NotificationCenter")
 end)
+
+-- Load machine-local scripts if present (not version controlled)
+pcall(require, "local-scripts")
