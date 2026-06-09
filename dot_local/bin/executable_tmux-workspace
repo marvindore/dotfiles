@@ -8,27 +8,32 @@ CHEZMOI_DIR="$HOME/.local/share/chezmoi"
 RUNBOOK_DIR="$CHEZMOI_DIR/runbook"
 NOTES_DIR="$HOME/notes"
 
-# Map the key to a Session Name, Working Directory, and Command
+# Map the key to a Session Name, Working Directory, Command (new session), and NVIM_CMD
+# (command sent to an already-running nvim via :<cmd><CR>; empty = just send Escape)
 case "$KEY" in
     "c")
         SESSION="config"
         CWD="$CHEZMOI_DIR/dot_config"
         CMD="nvim ."
+        NVIM_CMD=""
         ;;
     "r")
         SESSION="runbook"
         CWD="$RUNBOOK_DIR"
         CMD="nvim ."
+        NVIM_CMD=""
         ;;
     "n")
         SESSION="notes"
         CWD="$NOTES_DIR"
         CMD="nvim -c 'ZkFindOrCreate'"
+        NVIM_CMD="ZkFindOrCreate"
         ;;
     "N")
         SESSION="notes_grep"
         CWD="$NOTES_DIR"
         CMD="nvim -c \"lua Snacks.picker.files({ cwd = vim.fn.expand('$NOTES_DIR') })\""
+        NVIM_CMD=""
         ;;
     *)
         echo "Error: Unknown workspace key '$KEY'"
@@ -49,7 +54,8 @@ if ! tmux has-session -t "$SESSION" 2>/dev/null; then
     # It doesn't exist. Create it in the background (-d) with the correct directory (-c)
     tmux new-session -d -s "$SESSION" -c "$CWD"
 
-    # Send the Neovim command to the new session and press Enter (C-m)
+    # Wait for zsh to finish initializing before sending keystrokes
+    sleep 0.5
     tmux send-keys -t "$SESSION" "$CMD" C-m
 else
     # Session exists - check if nvim is running in any pane
@@ -57,7 +63,12 @@ else
     if [ "$nvim_running" -eq 0 ]; then
         tmux send-keys -t "$SESSION" "$CMD" C-m
     else
-        tmux send-keys -t "$SESSION" Escape
+        # Escape to normal mode; if a command is defined, run it in the existing nvim
+        if [ -n "$NVIM_CMD" ]; then
+            tmux send-keys -t "$SESSION" Escape ":$NVIM_CMD" C-m
+        else
+            tmux send-keys -t "$SESSION" Escape
+        fi
     fi
 fi
 

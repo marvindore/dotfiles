@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.supercmd.bookmarks-watcher</string>
+    <key>WatchPaths</key>
+    <array>
+        <string>{{ .chezmoi.homeDir }}/Library/Application Support/SuperCmd/extensions/bookmarks/src</string>
+    </array>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>rm -f "{{ .chezmoi.homeDir }}/Library/Application Support/SuperCmd/extensions/bookmarks/.sc-build/index.js"</string>
+    </array>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

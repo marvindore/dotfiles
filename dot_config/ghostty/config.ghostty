@@ -1,4 +1,4 @@
-command = "/usr/bin/env zsh -l -c 'tmux attach || tmux'"
+command = "/usr/bin/env zsh -l -c 'export PATH=/opt/homebrew/bin:/usr/local/bin:$HOME/.nix-profile/bin:/run/current-system/sw/bin:$PATH; tmux attach || tmux'"
 theme = Catppuccin Mocha
 macos-non-native-fullscreen = true
 

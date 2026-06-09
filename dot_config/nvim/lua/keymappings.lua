@@ -13,6 +13,9 @@ local function t(str)
 	return vim.api.nvim_replace_termcodes(str, true, true, true)
 end
 
+-- Insert mode: delete previous word
+vim.keymap.set("i", "<M-BS>", "<C-w>", { noremap = true })
+
 -- set pwd with cd %%
 vim.keymap.set("c", "%%", function()
 	if vim.fn.getcmdtype() == ":" then

@@ -44,54 +44,78 @@ vim.pack.add({
 
 -- ============================================================
 -- FindOrCreateNote: unified find-or-create picker (Logseq-style)
--- Uses fzf-lua with --print-query so selected[1] is always the
--- typed query, and selected[2] onwards are note entries.
--- Note: boolean fzf flags must use "" not true in fzf_opts.
+-- Uses Snacks.picker (always loaded, no lazy-load issues).
+-- Enter on a match → open note.
+-- Enter with no match, or Ctrl-N → create note from typed query.
 -- ============================================================
 
 local function FindOrCreateNote()
+	-- When launched via `nvim -c 'ZkFindOrCreate'`, -c fires before VimEnter.
+	-- Auto-session restores the session on VimEnter and would close the picker.
+	-- Register a VimEnter hook (which runs after auto-session's own VimEnter
+	-- callback, since ours is registered later) so the picker opens on top of
+	-- any restored session state.
+	if vim.v.vim_did_enter == 0 then
+		vim.api.nvim_create_autocmd("VimEnter", {
+			once = true,
+			callback = function() vim.schedule(FindOrCreateNote) end,
+		})
+		return
+	end
+
 	local notes_dir = vim.fn.expand("~/notes")
-	require("lze").trigger_load("fzf-lua")
-	require("fzf-lua").fzf_exec(
-		"zk list --format '{{title}}\t{{absPath}}' --sort modified --notebook-dir " .. vim.fn.shellescape(notes_dir),
-		{
-			prompt = "Notes❯ ",
-			fzf_opts = {
-				["--delimiter"] = "\t",
-				["--with-nth"] = "1",   -- show only title in picker
-				["--print-query"] = "", -- emit query as first output line; selected[1] is always the query
-			},
-			actions = {
-				-- Enter: open selected note, or create if nothing highlighted
-				["default"] = function(selected)
-					if not selected or #selected == 0 then return end
-					if #selected >= 2 then
-						-- selected[1] = query, selected[2] = "title\t/abs/path"
-						local parts = vim.split(selected[2], "\t")
-						if parts[2] and parts[2] ~= "" then
-							vim.cmd("edit " .. vim.fn.fnameescape(parts[2]))
-						end
-					else
-						-- query only, nothing highlighted: create note
-						local title = vim.trim(selected[1])
-						if title ~= "" then
-							require("lze").trigger_load("zk-nvim")
-							require("zk").new({ title = title })
-						end
-					end
-				end,
-				-- Ctrl+N: always create with current query as title
-				["ctrl-n"] = function(selected)
-					if not selected or #selected == 0 then return end
-					local title = vim.trim(selected[1])
-					if title ~= "" then
-						require("lze").trigger_load("zk-nvim")
-						require("zk").new({ title = title })
-					end
-				end,
-			},
-		}
+	vim.cmd("cd " .. vim.fn.fnameescape(notes_dir))
+
+	local output = vim.fn.system(
+		"zk list --format '{{title}}\t{{absPath}}' --sort modified --notebook-dir "
+			.. vim.fn.shellescape(notes_dir)
 	)
+
+	local items = {}
+	for line in (output or ""):gmatch("[^\n]+") do
+		local parts = vim.split(line, "\t", { plain = true })
+		local title = parts[1] or ""
+		local path = parts[2] or ""
+		if path ~= "" then
+			table.insert(items, {
+				text = title ~= "" and title or vim.fn.fnamemodify(path, ":t:r"),
+				file = path,
+			})
+		end
+	end
+
+	Snacks.picker.pick("notes", {
+		items = items,
+		format = "text",
+		prompt = "Notes❯ ",
+		actions = {
+			create_note = function(picker)
+				local query = vim.trim(picker.input.filter.pattern or "")
+				picker:close()
+				if query ~= "" then
+					require("lze").trigger_load("zk-nvim")
+					require("zk").new({ title = query })
+				end
+			end,
+		},
+		win = {
+			input = {
+				keys = {
+					["<c-n>"] = { "create_note", mode = { "i", "n" } },
+				},
+			},
+		},
+		confirm = function(picker, item)
+			local query = vim.trim(picker.input.filter.pattern or "")
+			picker:close()
+			if item then
+				vim.cmd("edit " .. vim.fn.fnameescape(item.file))
+			elseif query ~= "" then
+				require("lze").trigger_load("zk-nvim")
+				require("zk").new({ title = query })
+			end
+		end,
+	})
 end
 
 vim.api.nvim_create_user_command("ZkFindOrCreate", FindOrCreateNote, {})
