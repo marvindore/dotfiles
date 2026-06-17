@@ -1,3 +1,20 @@
+## Project-level .env loading (multi-project credential isolation)
+
+When working across projects with different GCP/cloud credentials, add this to the **project's** `mise.toml` to load that project's `.env` into the shell automatically when you `cd` in:
+
+```toml
+[env]
+_.file = ".env"   # loads .env into the shell, overriding globals from ~/.workrc etc.
+```
+
+This solves the common problem where `~/.workrc` exports credentials for one team (e.g. payroll SA) but a project needs different credentials (e.g. a different GCP project's SA). The project `.env` wins because mise injects it at the same shell level as your global exports.
+
+**Do NOT set `_.file = ".env"` in the global `~/.config/mise/config.toml`** — that would load any `.env` in any directory you visit, which causes surprising behaviour. Keep it project-scoped.
+
+Alternative (Python ecosystem): `direnv` — create a `.envrc` in the project root containing `dotenv .env`. See python.md for context on when this comes up.
+
+---
+
 Path to executables `mise which dotnet`
 mise completion – Set up completions for your shell.
 mise cfg|config – A bunch of commands for working with mise.toml files via the CLI.

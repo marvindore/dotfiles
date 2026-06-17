@@ -62,7 +62,8 @@ vim.pack.add({
 							javascriptreact = { command = { "deno" } },
 						},
 						repl_filetype = function(bufnr, ft)
-							return ft
+							-- Return custom filetype so AutoSession can exclude REPLs from session saves
+							return "iron-repl"
 						end,
 					},
 					ignore_blank_lines = true,

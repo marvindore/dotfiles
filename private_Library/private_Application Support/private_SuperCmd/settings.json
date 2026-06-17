@@ -37,6 +37,7 @@
     "ext-bookmarks-index"
   ],
   "recentCommands": [
+    "system-create-note",
     "ext-url-builder-index",
     "system-quit-launcher",
     "ext-bookmarks-index",
@@ -60,7 +61,8 @@
     "system-open-settings": 1,
     "system-supercmd-speak": 1,
     "ext-bookmarks-index": 19,
-    "ext-url-builder-index": 1
+    "ext-url-builder-index": 1,
+    "system-create-note": 1
   },
   "hasSeenOnboarding": true,
   "hasSeenWhisperOnboarding": true,
@@ -151,11 +153,23 @@
     "command:ext-url-builder-index": {
       "useCount": 1,
       "lastUsedAt": 1781023346133,
-      "frecencyScore": 1,
+      "frecencyScore": 0.9984391616637811,
       "inputHistory": {
         "bu": {
           "useCount": 1,
           "lastUsedAt": 1781023346133,
+          "score": 1
+        }
+      }
+    },
+    "command:system-create-note": {
+      "useCount": 1,
+      "lastUsedAt": 1781029187394,
+      "frecencyScore": 1,
+      "inputHistory": {
+        "notes": {
+          "useCount": 1,
+          "lastUsedAt": 1781029187394,
           "score": 1
         }
       }
