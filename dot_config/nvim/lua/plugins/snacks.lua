@@ -7,6 +7,16 @@ vim.pack.add({
 local opts = {
   bigfile  = { enabled = true },
   gh = { enabled = true },
+  gitbrowse = {
+    config = function(opts)
+      local github_aliases = { "work", "home" }
+
+      for i = #github_aliases, 1, -1 do
+        local alias = github_aliases[i]
+        table.insert(opts.remote_patterns, 1, { "^git@" .. alias .. "[:/](.+)$", "https://github.com/%1" })
+      end
+    end,
+  },
   image = { enabled = false },
   lazygit  = { enabled = true }, -- Snacks' LazyGit module
   notifier = { enabled = true },
@@ -88,7 +98,7 @@ set("n", "<leader>fF", function() Snacks.picker.files({ hidden = true }) end, { 
 set("n", "<leader>f.", function() Snacks.picker.files({ cwd = vim.fn.expand("%:p:h") }) end, { desc = "Find File In Current Dir" })
 set("n", "<leader>fg", function() Snacks.picker.grep() end, { desc = "Grep Files" })
 set("n", "<leader>fG", function() Snacks.picker.grep({ hidden = true }) end, { desc = "Grep Hidden Files" })
-set("n", "<leader>f.", function() Snacks.picker.resume() end, { desc = "Resume Find" })
+set("n", "<leader>fr", function() Snacks.picker.resume() end, { desc = "Resume Find" })
 set("n", "<leader>fj", function() Snacks.picker.jumps() end, { desc = "Jumps" })
 set("n", "<leader>fq", function() Snacks.picker.qflist() end, { desc = "Quickfix List" })
 set("n", "<S-h>", function() Snacks.picker.buffers() end, { desc = "Buffers" })

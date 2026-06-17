@@ -118,20 +118,7 @@ function M.enable_servers(opts)
 		vim.api.nvim_create_autocmd("FileType", {
 			pattern = "python",
 			callback = function()
-				-- Neovim 0.11: Accessing vim.lsp.config.pyrefly lazily loads lsp/pyrefly.lua
-				-- We can then overlay the settings discovered from our .venv
-				if vim.g.python3_host_prog then
-					vim.lsp.config.pyrefly.settings = {
-						python = {
-							pythonPath = vim.g.python3_host_prog,
-							-- Also common for pyrefly and others to help find site-packages:
-							analysis = {
-								extraPaths = { vim.fn.fnamemodify(vim.g.python3_host_prog, ":h:h") .. "/lib/python*/site-packages" }
-							}
-						}
-					}
-				end
-
+				-- Pyrefly gets import roots and interpreter details from project config.
 				vim.lsp.enable({ "pyrefly", "ruff" })
 				return true
 			end,

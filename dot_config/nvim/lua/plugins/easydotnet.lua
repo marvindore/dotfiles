@@ -66,7 +66,39 @@ local dotnet_spec = {
 
 	-- KEYMAPS: Pressing these tells 'lze' to fire the 'load' and 'after' functions above
 	keys = {
-		{ "<leader>idd", function() coroutine.wrap(function() require("easy-dotnet").debug_default() end)() end, desc = "Dotnet Debug" },
+		{ "<leader>idd", function()
+			-- Read environmentVariables from the first Project profile in launchSettings.json,
+			-- mirroring what Rider does automatically, so ASPNETCORE_ENVIRONMENT etc. are set.
+			local function get_launch_settings_env()
+				local found = vim.fn.findfile("Properties/launchSettings.json", vim.fn.getcwd() .. "/**3")
+				if found == "" then return {} end
+				local ok, lines = pcall(vim.fn.readfile, found)
+				if not ok then return {} end
+				local ok2, json = pcall(vim.fn.json_decode, table.concat(lines, "\n"))
+				if not ok2 or not json.profiles then return {} end
+				for _, profile in pairs(json.profiles) do
+					if profile.commandName == "Project" and profile.environmentVariables then
+						return profile.environmentVariables
+					end
+				end
+				return {}
+			end
+
+			local dap_ok, dap = pcall(require, "dap")
+			if dap_ok then
+				local env = get_launch_settings_env()
+				if not vim.tbl_isempty(env) then
+					local original_run = dap.run
+					dap.run = function(config, opts)
+						config.env = vim.tbl_extend("keep", env, config.env or {})
+						dap.run = original_run
+						original_run(config, opts)
+					end
+				end
+			end
+
+			coroutine.wrap(function() require("easy-dotnet").debug_default() end)()
+		end, desc = "Dotnet Debug" },
 		{ "<leader>itp", function() require("easy-dotnet").test() end, desc = "Dotnet Test (Picker)" },
 		{ "<leader>irr", function() require("easy-dotnet").run() end, desc = "Dotnet Run" },
 		{ "<leader>ibb", function() require("easy-dotnet").build() end, desc = "Dotnet Build" },

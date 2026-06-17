@@ -101,6 +101,7 @@ vim.pack.add({
 				-- DOTNET LOGIC
 				local function coreclr_build_then_pick()
 					return {
+						name = "CoreCLR: Build & Launch",
 						type = "coreclr",
 						request = "launch",
 						cwd = function()

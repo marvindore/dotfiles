@@ -31,6 +31,7 @@ require("auto-session").setup({
   bypass_save_filetypes = {
     "terminal",
     "dap-repl",
+    "iron-repl",
     "dapui_watches",
     "dapui_breakpoints",
     "dapui_scopes",
@@ -47,6 +48,7 @@ require("auto-session").setup({
   bypass_session_save_file_types = {
     "terminal",
     "dap-repl",
+    "iron-repl",
     "dapui_watches",
     "dapui_breakpoints",
     "dapui_scopes",
@@ -80,6 +82,17 @@ require("auto-session").setup({
       -- If codediff exposes a close command, try it (safe if it doesn't exist)
       pcall(function()
         vim.cmd("CodeDiffClose")
+      end)
+      -- Close all IronRepl buffers to prevent orphaned windows on session restore
+      pcall(function()
+        for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.api.nvim_buf_is_valid(bufnr) then
+            local ft = vim.api.nvim_buf_get_option(bufnr, "filetype")
+            if ft == "iron-repl" then
+              vim.api.nvim_buf_delete(bufnr, { force = true })
+            end
+          end
+        end
       end)
     end,
   },

@@ -106,6 +106,95 @@ vim.wo.signcolumn = 'yes'
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
 
+-----------------------------------------------------------------------
+-- Wrapped prose/text settings for Neovim
+--
+-- Put this in:
+--   init.lua
+-- or a separate Lua file like:
+--   lua/config/wrapping.lua
+-- and require it from your init.lua
+-----------------------------------------------------------------------
+
+-----------------------------------------------------------------------
+-- Create an augroup so these autocmds are easy to manage/reload
+-- without duplicating them if you source your config again.
+-----------------------------------------------------------------------
+local wrap_group = vim.api.nvim_create_augroup("WrapSettings", { clear = true })
+
+-----------------------------------------------------------------------
+-- Git commit messages
+--
+-- Why:
+-- - Enable wrapping for easier writing in commit buffers
+-- - Wrap at word boundaries (linebreak = true)
+-- - Keep wrapped lines visually indented (breakindent = true)
+-- - Show a small marker at wrapped screen lines (showbreak)
+-- - Hard-wrap at 72 characters (textwidth = 72)
+-- - Show a visual guide at column 73 (colorcolumn = "73")
+-----------------------------------------------------------------------
+vim.api.nvim_create_autocmd("FileType", {
+  group = wrap_group,
+  pattern = { "gitcommit" },
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.opt_local.breakindent = true
+    vim.opt_local.showbreak = "↪ "
+    vim.opt_local.textwidth = 72
+    vim.opt_local.colorcolumn = "73"
+  end,
+})
+
+-----------------------------------------------------------------------
+-- Markdown / plain text / reStructuredText / AsciiDoc
+--
+-- Why:
+-- - Enable wrapping for long-form writing
+-- - Wrap on word boundaries instead of splitting words
+-- - Preserve indentation visually on wrapped lines
+-- - Show a continuation marker for wrapped screen lines
+-- - Hard-wrap at 80 characters
+-- - Show a visual ruler just past the target width
+-----------------------------------------------------------------------
+vim.api.nvim_create_autocmd("FileType", {
+  group = wrap_group,
+  pattern = { "markdown", "text", "rst", "asciidoc" },
+  callback = function()
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.opt_local.breakindent = true
+    vim.opt_local.showbreak = "↪ "
+    vim.opt_local.textwidth = 80
+    vim.opt_local.colorcolumn = "81"
+  end,
+})
+
+-----------------------------------------------------------------------
+-- Better movement on wrapped lines
+--
+-- Why:
+-- - In wrapped text, normal j/k move by file lines
+-- - gj/gk move by screen lines
+-- - This mapping makes j/k behave like gj/gk ONLY when no count is used
+-- - If you type 5j or 3k, it still behaves like normal j/k
+--
+-- Result:
+-- - j / k feels natural in wrapped prose
+-- - counts still work exactly as expected
+-----------------------------------------------------------------------
+vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", {
+  expr = true,
+  silent = true,
+  desc = "Move by screen line when no count is given",
+})
+
+vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", {
+  expr = true,
+  silent = true,
+  desc = "Move by screen line when no count is given",
+})
+
 -- Copilot
 vim.api.nvim_set_hl(0, "CmpItemKindCopilot", {fg ="#6CC644"})
 
@@ -231,22 +320,23 @@ local function set_python_host_prog()
     vim.g.python3_host_prog = vim.g.neovim_home .. "/mason/packages/debugpy/venv/bin/python3"
 end
 
+local last_notified_python_host_prog
+
 vim.api.nvim_create_autocmd("FileType", {
     pattern = "python",
     callback = function()
         set_python_host_prog()
-        print("Using python: " .. (vim.g.python3_host_prog or "system"))
-        return true
+        local python_host_prog = vim.g.python3_host_prog or "system"
+        if python_host_prog == last_notified_python_host_prog then
+            return
+        end
+
+        last_notified_python_host_prog = python_host_prog
+        vim.notify("Using python: " .. python_host_prog, vim.log.levels.INFO, {
+            title = "Python",
+            timeout = 3000,
+        })
     end,
-})
-
-
--- Autocommand to trigger the function when a Python file is opened
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = "python",
-  callback = function()
-    print("Using python: " .. vim.g.python3_host_prog)
-  end,
 })
 
 

@@ -19,7 +19,7 @@ vim.pack.add({
 					winbar = {
 						show = true,
 						sections = { "watches", "scopes", "exceptions", "breakpoints", "threads", "repl" },
-						default_section = "watches",
+						default_section = "repl",
 						base_sections = {
 							breakpoints = { keymap = "B", label = "Breakpoints [B]" },
 							scopes      = { keymap = "S", label = "Scopes [S]" },
@@ -62,7 +62,7 @@ vim.pack.add({
 					},
 					help        = { border = nil },
 					switchbuf   = "usetab",
-					auto_toggle = false,
+					auto_toggle = true,
 					follow_tab  = false,
 				})
 
