@@ -96,8 +96,10 @@ require("auto-session").setup({
       end)
     end,
   },
-
-  auto_restore_enabled = true,
-  auto_save_enabled = true,
+  enabled = true,
+  auto_restore = true,
+  auto_save = true,
+  auto_create = true,
+  auto_restore_last_session = false,
 })
 

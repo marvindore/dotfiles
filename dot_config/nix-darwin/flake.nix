@@ -27,7 +27,7 @@
 
       environment.systemPackages = with pkgs; [ 
         act aerospace age atuin bat bruno chezmoi colima delta difftastic
-        docker dua eza fd fzf gcc gh git gnupg
+        docker dua ec eza fd fzf gcc gh git gnupg
         ilspycmd imagemagick iproute2mac jc jq just k9s lazygit
         mas # Required for App Store CLI
         miller mise meld mkalias pngpaste ripgrep rustup sesh starship
@@ -66,7 +66,7 @@
           "ghostty" "google-chrome" "google-drive" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
-          "macshot" "meetingbar" "supercmdlabs/supercmd/supercmd"
+          "macshot" "meetingbar" "supercmdlabs/supercmd/supercmd" "thaw"
         ];
       };
 
