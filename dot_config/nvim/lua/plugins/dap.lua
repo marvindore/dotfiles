@@ -147,7 +147,17 @@ vim.pack.add({
 				-- and instantly wakes up the adapters we put to sleep at the top!
 				if vim.g.enablePython then
 					require("dap-python").setup(vim.g.python3_host_prog)
+					dap.configurations.python = dap.configurations.python or {}
+          table.insert(dap.configurations.python, {
+            type = "python",
+            request = "launch",
+            name = "Launch FastAPI",
+            module = "uvicorn",
+            args = { "src.main:app", "--host", "0.0.0.0", "--port", "8000" },
+            justMyCode = false,
+          })
 				end
+
 				require("dap-go").setup({})
 
 				-- RUST (CodeLLDB)

@@ -43,7 +43,7 @@
     # Use Meld's 3‑way merge and write back to MERGED
     keepBackup = false
     prompt = false
-    cmd = meld --auto-merge \
+    cmd = meld-merge --auto-merge \
                --label="LOCAL:$LOCAL" "$LOCAL" \
                --label="BASE:$BASE"   "$BASE"  \
                --label="REMOTE:$REMOTE" "$REMOTE" \

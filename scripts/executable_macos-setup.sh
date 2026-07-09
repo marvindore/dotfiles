@@ -8,7 +8,7 @@ set -euo pipefail
 
 packages=(
   "act" "atuin" "bat" "bruno" "difftastic" "dua-cli" "tree-sitter" "bitwarden"
-  "eza" "fzf" "gh" "git" "git-delta"
+  "ec" "eza" "fzf" "gh" "git" "git-delta"
   "gnupg" "imagemagick" "iproute2mac" "jc" "jq" "just" "k9s" "miller" "mise" 
   "pngpaste" "sesh" "opencode" "ripgrep" "starship" "tmux"
   "zoxide"

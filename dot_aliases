@@ -175,3 +175,43 @@ mdp() {
   fi
 }
 
+
+### Git
+# Review exactly one commit
+gv() {
+  nvim "+DiffviewOpen ${1:-HEAD}^!"
+}
+
+# Review a range (examples: gvrange main..HEAD, gvrange HEAD~3..HEAD)
+gvr() {
+  if [ -z "$1" ]; then
+    echo "usage: gvrange <rev-range>"
+    return 1
+  fi
+  nvim "+DiffviewOpen $1"
+}
+
+# Review current working tree against index
+gvw() {
+  nvim "+DiffviewOpen"
+}
+
+# File history for a path, defaulting to current directory
+gvh() {
+  nvim "+DiffviewFileHistory ${1:-.}"
+}
+
+# Repo-wide history
+gvH() {
+  nvim "+DiffviewFileHistory"
+}
+
+# Diff two arbitrary files from the shell
+gvf() {
+  if [ $# -ne 2 ]; then
+    echo "usage: gvf <left-file> <right-file>"
+    return 1
+  fi
+  nvim "+DiffviewDiffFiles $1 $2"
+}
+
