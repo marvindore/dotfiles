@@ -9,6 +9,7 @@ alias upgradedistrobox='curl -s https://raw.githubusercontent.com/89luca89/distr
 alias flake='nvim ~/.config/nix-darwin/'
 alias msbuild='$HOME/.local/share/mise/shims/dotnet'
 alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
+alias nix_dryrun="nix build github:nix-community/neovim-nightly-overlay#default --dry-run"
 
 alias nvimc='nvim --cmd "cd $(chezmoi source-path)/dot_config/nvim"'
 

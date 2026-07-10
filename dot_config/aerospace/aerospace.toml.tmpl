@@ -149,10 +149,11 @@ automatically-unhide-macos-hidden-apps = false
     alt-g = 'workspace G'
     alt-i = 'workspace I'
     alt-m = 'exec-and-forget zsh -lc "~/.local/bin/aerospace-messaging"'
-    alt-n = [
-        "exec-and-forget zsh -lc '~/.local/bin/tmux-workspace n'",
-        "workspace T"
-    ]
+    {{- if eq .profile "work" }}
+    alt-n = "exec-and-forget open http://localhost:13010"
+    {{- else }}
+    alt-n = "exec-and-forget open http://affine.internal"
+    {{- end }}
     alt-o = 'workspace O'
     alt-p = 'workspace P'
     alt-q = 'workspace Q'

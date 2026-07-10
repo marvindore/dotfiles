@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  affine:
+    image: ghcr.io/toeverything/affine:stable
+    container_name: affine_server
+    restart: unless-stopped
+    ports:
+      - "13010:3010"
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - DB_URL=postgres://affine:affine@postgres:5432/affine
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    volumes:
+      # Persists your uploaded images and files
+      - affine_data:/root/.affine/storage
+  
+  postgres:
+    image: postgres:16
+    container_name: affine_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=affine
+      - POSTGRES_PASSWORD=affine
+      - POSTGRES_DB=affine
+    volumes:
+      # Persists your actual workspace text and database entries
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: affine_redis
+    restart: unless-stopped
+    volumes:
+      # Persists active sessions
+      - redis_data:/data
+
+# This section tells Docker to manage these volumes on your host hard drive
+volumes:
+  affine_data:
+  postgres_data:
+  redis_data:
