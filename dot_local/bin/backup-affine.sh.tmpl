@@ -1,0 +1,52 @@
+{{- if eq .profile "work" -}}
+#!/bin/bash
+
+# AFFiNE backup script - backs up local data to OneDrive
+# This script runs daily via launchd and creates timestamped backups
+
+set -euo pipefail
+
+AFFINE_DIR="$HOME/.local/share/affine"
+BACKUP_DIR="$HOME/OneDrive/Backups/affine"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+LOG_FILE="$HOME/.local/share/affine/backup.log"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
+
+# Log function
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+}
+
+log "Starting AFFiNE backup..."
+
+# Check if affine directories exist
+if [ ! -d "$AFFINE_DIR/postgres" ] && [ ! -d "$AFFINE_DIR/storage" ]; then
+    log "ERROR: AFFiNE data directories not found. Skipping backup."
+    exit 0
+fi
+
+# Create backup archive
+if tar -czf "$BACKUP_DIR/affine-backup-${TIMESTAMP}.tar.gz" \
+    -C "$AFFINE_DIR" postgres storage config 2>/dev/null; then
+    BACKUP_FILE="$BACKUP_DIR/affine-backup-${TIMESTAMP}.tar.gz"
+    BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+    log "Backup successful: $BACKUP_FILE ($BACKUP_SIZE)"
+else
+    log "ERROR: Backup failed"
+    exit 1
+fi
+
+# Keep only last 7 days of backups (168 hours)
+CUTOFF_TIME=$(($(date +%s) - 7*24*60*60))
+find "$BACKUP_DIR" -name "affine-backup-*.tar.gz" -type f | while read backup_file; do
+    FILE_TIME=$(stat -f%m "$backup_file" 2>/dev/null || echo 0)
+    if [ "$FILE_TIME" -lt "$CUTOFF_TIME" ]; then
+        rm -f "$backup_file"
+        log "Deleted old backup: $(basename "$backup_file")"
+    fi
+done
+
+log "Backup retention cleanup completed"
+{{- end }}
