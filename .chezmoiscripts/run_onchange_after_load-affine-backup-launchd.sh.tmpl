@@ -1,0 +1,27 @@
+{{- if eq .profile "work" -}}
+#!/bin/bash
+
+PLIST="$HOME/.config/launchd/local.marvin-dore.affine-backup.plist"
+LABEL="local.marvin-dore.affine-backup"
+
+if [ ! -f "$PLIST" ]; then
+    echo "Plist file not found at $PLIST"
+    exit 0
+fi
+
+# Unload if already loaded
+launchctl list "$LABEL" &>/dev/null && launchctl unload "$PLIST" 2>/dev/null || true
+
+# Load the service
+launchctl load "$PLIST"
+echo "AFFiNE backup scheduled (runs daily)"
+
+# Optional: run immediately for testing
+# launchctl start "$LABEL"
+{{- else -}}
+#!/bin/bash
+
+# Unload launchd service when not on work profile
+LABEL="local.marvin-dore.affine-backup"
+launchctl list "$LABEL" &>/dev/null && launchctl unload "$HOME/.config/launchd/local.marvin-dore.affine-backup.plist" 2>/dev/null || true
+{{- end }}
