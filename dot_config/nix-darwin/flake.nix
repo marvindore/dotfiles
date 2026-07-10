@@ -26,7 +26,7 @@
       nixpkgs.config.allowUnfree = true;
 
       environment.systemPackages = with pkgs; [ 
-        act aerospace age atuin bat bruno chezmoi colima delta difftastic
+        act aerospace age atuin bat bruno chezmoi cmake delta difftastic
         docker dua ec eza fd fzf gcc gh git gnupg
         ilspycmd imagemagick iproute2mac jc jq just k9s lazygit
         mas # Required for App Store CLI
@@ -47,14 +47,13 @@
         masApps = {
           "Pages" = 361309726;
           "Numbers" = 361304891;
-          "Keynote" = 361285480;
+          "Xcode" = 497799835;
         };
 
         taps = [ "isen-ng/dotnet-sdk-versions" ];
         
         brews = [
           "bitwarden-cli"
-          "gemini-cli"
           "opencode"
            "sox_ng"
           "tree-sitter-cli"
@@ -62,7 +61,7 @@
 
         # removed "wezterm@nightly"
         casks = [
-          "dbeaver-community" "hammerspoon" "hiddenbar"
+          "antigravity-cli" "dbeaver-community" "hammerspoon" "hiddenbar"
           "ghostty" "google-chrome" "google-drive" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
