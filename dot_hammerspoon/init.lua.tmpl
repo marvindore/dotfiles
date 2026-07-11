@@ -1,0 +1,53 @@
+-- ~/.hammerspoon/init.lua
+
+-- Ctrl + Esc → Ctrl + Shift + Tab
+hs.hotkey.bind({ "ctrl" }, "escape", function()
+    hs.eventtap.keyStroke({ "ctrl", "shift" }, "tab")
+end)
+
+-- Navigate or open Chrome with URL (alt+n)
+-- If Chrome is running, sets URL in active tab; otherwise launches Chrome fresh
+{{ if eq .profile "work" -}}
+local CHROME_URL = "http://localhost:13010"
+{{ else -}}
+local CHROME_URL = "http://affine.internal"
+{{ end -}}
+
+hs.hotkey.bind({"alt"}, "n", function()
+    local chrome = hs.application.find("Google Chrome")
+
+    if chrome and chrome:isRunning() then
+        -- Chrome is running: navigate in active tab
+        chrome:activate()
+        hs.timer.usleep(200000) -- 200ms delay for window focus
+        hs.osascript.javascript([[
+            var chrome = Application("Google Chrome");
+            var win = chrome.windows[0];
+            if (win) {
+                win.activeTab.url = "]] .. CHROME_URL .. [[";
+            }
+        ]])
+    else
+        -- Chrome not running: launch with URL
+        hs.execute("open -a 'Google Chrome' '" .. CHROME_URL .. "'")
+    end
+end)
+
+-- Scratchpad overlay (ctrl + alt + n)
+local Scratchpad = require("scratchpad")
+hs.hotkey.bind({ "ctrl", "shift" }, "n", Scratchpad.toggle)
+
+-- Menu bar
+require("menu-bar")
+
+-- Whispr: voice dictation → tmux agent (F2 toggle)
+local Whispr = require("whispr")
+hs.hotkey.bind({}, "f13", Whispr.toggle)
+
+-- Clear all notifications (ctrl+shift+x)
+hs.hotkey.bind({"ctrl", "shift"}, "x", function()
+    hs.execute("killall NotificationCenter")
+end)
+
+-- Load machine-local scripts if present (not version controlled)
+pcall(require, "local-scripts")
