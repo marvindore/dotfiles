@@ -2,74 +2,59 @@ vim.pack.add({
 	{
 		src = "https://github.com/igorlfs/nvim-dap-view",
 		data = {
-			cmd = { "DapViewOpen", "DapViewToggle", "DapViewWatch" },
+			cmd = { "DapViewOpen", "DapViewClose", "DapViewToggle", "DapViewWatch", "DapViewJump" },
 			on_require = { "dap-view" },
 			keys = {
-				{ lhs = "<leader>dw",  rhs = ":DapViewWatch<cr>", mode = "n", desc = "Dap Add To Watch List" },
-				{ lhs = "<leader>dvb", rhs = ":lua require('dap-view.views').switch_to_view('breakpoints')<cr>", mode = "n", desc = "DapView breakpoints" },
-				{ lhs = "<leader>dvs", rhs = ":lua require('dap-view.views').switch_to_view('scopes')<cr>",      mode = "n", desc = "DapView scopes" },
-				{ lhs = "<leader>dve", rhs = ":lua require('dap-view.views').switch_to_view('exceptions')<cr>",  mode = "n", desc = "DapView exceptions" },
-				{ lhs = "<leader>dvw", rhs = ":lua require('dap-view.views').switch_to_view('watches')<cr>",     mode = "n", desc = "DapView watches" },
-				{ lhs = "<leader>dvt", rhs = ":lua require('dap-view.views').switch_to_view('threads')<cr>",     mode = "n", desc = "DapView threads" },
-				{ lhs = "<leader>dvr", rhs = ":lua require('dap-view.views').switch_to_view('repl')<cr>",        mode = "n", desc = "DapView repl" },
-				{ lhs = "<leader>dvS", rhs = ":lua require('dap-view.views').switch_to_view('sessions')<cr>",    mode = "n", desc = "DapView sessions" },
+				{ lhs = "<leader>dw",  rhs = ":DapViewWatch<cr>",            mode = "n", desc = "Dap Add To Watch List" },
+				{ lhs = "<leader>dvb", rhs = ":DapViewJump breakpoints<cr>", mode = "n", desc = "DapView breakpoints" },
+				{ lhs = "<leader>dvs", rhs = ":DapViewJump scopes<cr>",      mode = "n", desc = "DapView scopes" },
+				{ lhs = "<leader>dve", rhs = ":DapViewJump exceptions<cr>",  mode = "n", desc = "DapView exceptions" },
+				{ lhs = "<leader>dvw", rhs = ":DapViewJump watches<cr>",     mode = "n", desc = "DapView watches" },
+				{ lhs = "<leader>dvt", rhs = ":DapViewJump threads<cr>",     mode = "n", desc = "DapView threads" },
+				{ lhs = "<leader>dvr", rhs = ":DapViewJump repl<cr>",        mode = "n", desc = "DapView repl" },
+				{ lhs = "<leader>dvS", rhs = ":DapViewJump sessions<cr>",    mode = "n", desc = "DapView sessions" },
+				{ lhs = "<leader>dvc", rhs = ":DapViewJump console<cr>",     mode = "n", desc = "DapView console" },
 			},
 			after = function(_)
 				require("dap-view").setup({
 					winbar = {
 						show = true,
-						sections = { "watches", "scopes", "exceptions", "breakpoints", "threads", "repl" },
-						default_section = "repl",
-						base_sections = {
-							breakpoints = { keymap = "B", label = "Breakpoints [B]" },
-							scopes      = { keymap = "S", label = "Scopes [S]" },
-							exceptions  = { keymap = "E", label = "Exceptions [E]" },
-							watches     = { keymap = "W", label = "Watches [W]" },
-							threads     = { keymap = "T", label = "Threads [T]" },
-							repl        = { keymap = "R", label = "REPL [R]" },
-							sessions    = { keymap = "K", label = "Sessions [K]" },
-							console     = { keymap = "C", label = "Console [C]" },
-						},
-						custom_sections = {},
+						sections = { "watches", "scopes", "exceptions", "breakpoints", "threads", "repl", "console" },
+						default_section = "scopes",
+						-- Hints are appended to labels automatically (e.g., "Watches [W]")
+						show_keymap_hints = true,
 						controls = {
-							enabled  = false,
-							position = "right",
-							buttons  = {
-								"play", "step_into", "step_over", "step_out",
-								"step_back", "run_last", "terminate", "disconnect",
-							},
+							enabled = false,
 						},
 					},
 					windows = {
-						size     = 0.25,
-						position = "below",
-						terminal = { size = 0.5, position = "left", hide = {} },
+						-- Fraction < 1 is a percentage of the editor width
+						size = 0.45,
+						-- "right" opens the view as a vertical split on the right
+						position = "right",
+						terminal = {
+							size = 0.5,
+							position = "left",
+							-- NOTE: standalone terminal window is suppressed automatically
+							-- when "console" is listed in winbar.sections above.
+							-- dap-view skips opening it when has_console = true.
+							hide = {},
+						},
 					},
-					icons = {
-						disabled   = "",
-						disconnect = "",
-						enabled    = "",
-						filter     = "󰈲",
-						negate     = " ",
-						pause      = "",
-						play       = "",
-						run_last   = "",
-						step_back  = "",
-						step_into  = "",
-						step_out   = "",
-						step_over  = "",
-						terminate  = "",
-					},
-					help        = { border = nil },
-					switchbuf   = "usetab",
+					switchbuf = "usetab",
 					auto_toggle = true,
-					follow_tab  = false,
 				})
 
 				local icons = require("config.icons")
-				vim.fn.sign_define("DapBreakpoint",         { text = icons.emoji.Anger,        texthl = "", linehl = "", numhl = "" })
-				vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop,         texthl = "", linehl = "", numhl = "" })
-				vim.fn.sign_define("DapStopped",            { text = icons.emoji.OrangeDiamond, texthl = "", linehl = "", numhl = "" })
+
+				-- JetBrains-style breakpoint: subtle dark-red line background
+				vim.api.nvim_set_hl(0, "DapBreakpointLine",         { bg = "#43242b", default = true })
+				vim.api.nvim_set_hl(0, "DapBreakpointRejectedLine", { bg = "#2a1f2a", default = true })
+				vim.api.nvim_set_hl(0, "DapStoppedLine",            { bg = "#1e2d1e", default = true })
+
+				vim.fn.sign_define("DapBreakpoint",         { text = icons.emoji.Anger,         texthl = "DiagnosticError", linehl = "DapBreakpointLine",         numhl = "DiagnosticError" })
+				vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop,          texthl = "DiagnosticWarn",  linehl = "DapBreakpointRejectedLine", numhl = "DiagnosticWarn" })
+				vim.fn.sign_define("DapStopped",            { text = icons.emoji.OrangeDiamond, texthl = "DiagnosticOk",   linehl = "DapStoppedLine",            numhl = "DiagnosticOk" })
 			end,
 		},
 	},
