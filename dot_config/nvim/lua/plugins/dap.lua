@@ -55,13 +55,6 @@ vim.pack.add({
 					desc = "Debug stop run last",
 				},
 
-				{
-					lhs = "<leader>dR",
-					rhs = ":lua require'dap'.repl.toggle({}, 'vsplit')<CR><C-w>l",
-					mode = "n",
-					desc = "Debug toggle REPL",
-				},
-				{ lhs = "<Leader>dro", rhs = ":lua require('dap').repl.open()<CR>", mode = "n", desc =  "Debug open REPL" },
 				{ lhs = "<Leader>drl", rhs = ":lua require('dap').repl.run_last()<CR>", mode = "n", desc =  "Debug run last REPL" },
 
 				{
@@ -191,19 +184,8 @@ vim.pack.add({
 					["pwa-node"] = js_langs,
 				}
 
-				-- dap-view: lazy-load by triggering require on session events
-				dap.listeners.before.attach.dapui_config = function()
-					require("dap-view").open()
-				end
-				dap.listeners.before.launch.dapui_config = function()
-					require("dap-view").open()
-				end
-				dap.listeners.before.event_terminated.dapui_config = function()
-					require("dap-view").close()
-				end
-				dap.listeners.before.event_exited.dapui_config = function()
-					require("dap-view").close()
-				end
+					-- Load dap-view so its internal auto_toggle listeners are registered
+				require("dap-view")
 			end,
 		},
 	},

@@ -57,6 +57,7 @@
           "opencode"
            "sox_ng"
           "tree-sitter-cli"
+          "wireguard-tools"
         ];
 
         # removed "wezterm@nightly"
