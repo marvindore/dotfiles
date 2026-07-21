@@ -1,0 +1,39 @@
+# Example chezmoidata.yaml - VERSION CONTROLLED with placeholder values
+#
+# Machine-specific overrides go in ~/.config/chezmoi/chezmoi.toml (not version controlled)
+# Chezmoi merges these: .chezmoidata.yaml + ~/.config/chezmoi/chezmoi.toml
+
+# Which profile to use: "home" or "work"
+profile: "work"
+
+# SilverBullet space path - OVERRIDE in ~/.config/chezmoi/chezmoi.toml
+# Examples:
+#   Work (OneDrive):     $HOME/OneDrive - UKG/silverbullet
+#   Personal (Google):   $HOME/GoogleDrive/silverbullet
+#   Proxmox/NAS:         /mnt/tank/silverbullet
+silverbulletSpacePath: "$HOME/notes"
+
+# Work-specific settings
+work:
+  org_slug: "<place_holder>"
+
+# SSH key paths
+ssh:
+  enable_colima_include: true
+  personalKey: "~/.ssh/marvin"
+  workKey: "~/.ssh/work"
+
+# LiteLLM configuration (customize API keys per machine)
+opencode:
+  profiles:
+    home:
+      baseURL: "http://192.168.1.50:4000/v1"
+      displayName: "LiteLLM (Home)"
+      defaultModel: "gemini/gemini-3.1-pro-preview"
+      apiKeyService: "litellm_api_key"
+
+    work:
+      baseURL: "<place_holder>"
+      displayName: "LiteLLM (Work)"
+      defaultModel: "vertex_ai/gemini-2.5-flash"
+      apiKeyService: "litellm_api_key"
