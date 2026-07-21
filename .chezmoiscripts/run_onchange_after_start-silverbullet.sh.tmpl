@@ -1,0 +1,108 @@
+{{- if eq .profile "work" -}}
+#!/bin/bash
+
+SILVERBULLET_DIR="$HOME/docker/silverbullet"
+SILVERBULLET_SPACE="{{ .silverbulletSpacePath }}"
+
+if ! command -v docker &> /dev/null; then
+    echo "Docker is not installed or not in PATH. Skipping SilverBullet setup."
+    exit 0
+fi
+
+# Ensure SilverBullet Space folder exists
+if [ ! -d "$SILVERBULLET_SPACE" ]; then
+    echo "Creating SilverBullet Space folder..."
+    mkdir -p "$SILVERBULLET_SPACE"
+fi
+
+# Ensure docker/silverbullet directory exists
+if [ ! -d "$SILVERBULLET_DIR" ]; then
+    echo "Creating docker/silverbullet directory..."
+    mkdir -p "$SILVERBULLET_DIR"
+fi
+
+# Export macOS system certificates for corporate proxy environments
+if [ ! -f "$SILVERBULLET_DIR/ca-certificates.pem" ]; then
+    echo "Exporting macOS system certificates..."
+    security find-certificate -a -p /Library/Keychains/System.keychain > "$SILVERBULLET_DIR/ca-certificates.pem" 2>/dev/null || true
+fi
+
+# Create CONFIG.md init script
+if [ ! -f "$SILVERBULLET_DIR/init-config.sh" ]; then
+    echo "Creating init-config.sh..."
+    cat > "$SILVERBULLET_DIR/init-config.sh" << 'INITSCRIPT'
+#!/bin/sh
+mkdir -p /space
+if [ ! -f /space/CONFIG.md ]; then
+    cat > /space/CONFIG.md << 'EOF'
+```space-lua
+config.set {
+  plugs = {
+    "ghr:MrMugame/silversearch"
+  }
+}
+```
+EOF
+    echo "Created CONFIG.md with base plugins"
+fi
+INITSCRIPT
+    chmod +x "$SILVERBULLET_DIR/init-config.sh"
+fi
+
+# Create docker-compose.yml if it doesn't exist
+if [ ! -f "$SILVERBULLET_DIR/docker-compose.yml" ]; then
+    echo "Creating docker-compose.yml..."
+    cat > "$SILVERBULLET_DIR/docker-compose.yml" << COMPOSEFILE
+services:
+  silverbullet-init:
+    image: alpine:latest
+    container_name: silverbullet-init
+    volumes:
+      - "$SILVERBULLET_SPACE:/space"
+      - "./init-config.sh:/init-config.sh:ro"
+    command: sh /init-config.sh
+
+  silverbullet:
+    image: ghcr.io/silverbulletmd/silverbullet:latest
+    container_name: silverbullet
+    restart: unless-stopped
+    depends_on:
+      - silverbullet-init
+
+    ports:
+      - "127.0.0.1:13001:3000"
+
+    environment:
+      SSL_CERT_FILE: "/etc/ssl/certs/ca-certificates.pem"
+      SSL_CERT_DIR: "/etc/ssl/certs"
+
+    volumes:
+      - "$SILVERBULLET_SPACE:/space"
+      - "$HOME/docker/silverbullet/ca-certificates.pem:/etc/ssl/certs/ca-certificates.pem:ro"
+COMPOSEFILE
+fi
+
+echo "Starting SilverBullet local environment..."
+cd "$SILVERBULLET_DIR" || exit
+
+# Pull latest image to ensure we have the correct version
+docker compose pull
+
+# Start all services
+docker compose up -d
+
+# Wait for the server to be ready
+echo "Waiting for SilverBullet server to start..."
+max_attempts=30
+attempts=0
+while ! curl -sf http://localhost:13001/ &>/dev/null; do
+    if [ $attempts -ge $max_attempts ]; then
+        echo "WARNING: SilverBullet took longer than expected to start"
+        break
+    fi
+    attempts=$((attempts + 1))
+    sleep 1
+done
+
+echo "SilverBullet is running on http://localhost:13001"
+{{- end }}

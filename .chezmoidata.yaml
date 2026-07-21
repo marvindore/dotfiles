@@ -6,6 +6,9 @@
 #
 profile: "home"
 
+# SilverBullet space path - override in ~/.config/chezmoi/chezmoi.toml
+silverbulletSpacePath: "$HOME/notes"
+
 work:
   org_slug: "<place_holder>"
 
