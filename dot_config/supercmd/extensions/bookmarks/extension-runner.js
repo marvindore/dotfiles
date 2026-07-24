@@ -1,0 +1,1169 @@
+"use strict";
+/**
+ * Extension Runner
+ *
+ * Discovers installed community extensions and serves pre-built bundles
+ * to the renderer.
+ *
+ * Build strategy:
+ *   - All commands are built at install time (not at runtime)
+ *   - esbuild bundles each command entry to CJS
+ *   - react, react-dom, @raycast/api are kept external
+ *   - The renderer provides these modules at runtime via a custom require()
+ *
+ * At runtime, getExtensionBundle() simply reads the pre-built JS file.
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.discoverInstalledExtensionCommands = discoverInstalledExtensionCommands;
+exports.getInstalledExtensionsSettingsSchema = getInstalledExtensionsSettingsSchema;
+exports.buildAllCommands = buildAllCommands;
+exports.buildSingleCommand = buildSingleCommand;
+exports.getExtensionBundle = getExtensionBundle;
+const electron_1 = require("electron");
+const child_process_1 = require("child_process");
+const fs = __importStar(require("fs"));
+const os = __importStar(require("os"));
+const path = __importStar(require("path"));
+const extension_platform_1 = require("./extension-platform");
+const extension_preferences_store_1 = require("./extension-preferences-store");
+const settings_store_1 = require("./settings-store");
+/**
+ * Require esbuild, handling the asar-packed Electron case.
+ * When the app is packaged, esbuild's native binary lives in app.asar.unpacked/
+ * but requireEsbuild() resolves to the asar path where spawn fails with ENOTDIR.
+ */
+function requireEsbuild() {
+    try {
+        // Try the unpacked path first (works in packaged app)
+        const mainPath = require.resolve('esbuild');
+        if (mainPath.includes('app.asar')) {
+            const unpackedPath = mainPath.replace('app.asar', 'app.asar.unpacked');
+            if (fs.existsSync(unpackedPath)) {
+                return require(unpackedPath);
+            }
+        }
+        return require('esbuild');
+    }
+    catch {
+        // Fallback for environments where require.resolve behaves differently.
+        return require('esbuild');
+    }
+}
+function getManagedExtensionsDir() {
+    const dir = path.join(electron_1.app.getPath('userData'), 'extensions');
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+}
+function getBuildDir(extPath) {
+    const dir = path.join(extPath, '.sc-build');
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+}
+function expandHome(inputPath) {
+    const raw = String(inputPath || '').trim();
+    if (!raw)
+        return '';
+    if (raw.startsWith('~/'))
+        return path.join(os.homedir(), raw.slice(2));
+    return raw;
+}
+function normalizeFsPath(inputPath) {
+    return path.resolve(expandHome(inputPath));
+}
+function normalizeExtensionName(name) {
+    const raw = String(name || '').trim();
+    if (!raw)
+        return '';
+    return raw.replace(/^@/, '').replace(/[\\/]/g, '-');
+}
+function getConfiguredExtensionRoots() {
+    const settingsPaths = Array.isArray((0, settings_store_1.loadSettings)().customExtensionFolders)
+        ? (0, settings_store_1.loadSettings)().customExtensionFolders
+        : [];
+    const envPaths = String(process.env.SUPERCMD_EXTENSION_PATHS || '')
+        .split(path.delimiter)
+        .map((value) => value.trim())
+        .filter(Boolean);
+    const unique = new Set();
+    for (const root of [getManagedExtensionsDir(), ...settingsPaths, ...envPaths]) {
+        const normalized = normalizeFsPath(root);
+        if (!normalized)
+            continue;
+        unique.add(normalized);
+    }
+    return [...unique];
+}
+function collectInstalledExtensions() {
+    const results = [];
+    const seen = new Set();
+    const addIfValid = (extPath, sourceRoot, fallbackName) => {
+        const pkgPath = path.join(extPath, 'package.json');
+        if (!fs.existsSync(pkgPath))
+            return;
+        try {
+            if (!fs.statSync(extPath).isDirectory())
+                return;
+        }
+        catch {
+            return;
+        }
+        const extName = normalizeExtensionName(fallbackName);
+        if (!extName)
+            return;
+        const dedupeKey = extName.toLowerCase();
+        if (seen.has(dedupeKey))
+            return;
+        seen.add(dedupeKey);
+        results.push({ extName, extPath, sourceRoot });
+    };
+    for (const sourceRoot of getConfiguredExtensionRoots()) {
+        if (!fs.existsSync(sourceRoot))
+            continue;
+        const sourceRootPkg = path.join(sourceRoot, 'package.json');
+        if (fs.existsSync(sourceRootPkg)) {
+            addIfValid(sourceRoot, sourceRoot, path.basename(sourceRoot));
+            continue;
+        }
+        let entries = [];
+        try {
+            entries = fs.readdirSync(sourceRoot);
+        }
+        catch {
+            continue;
+        }
+        for (const entry of entries) {
+            addIfValid(path.join(sourceRoot, entry), sourceRoot, entry);
+        }
+    }
+    return results;
+}
+function resolveInstalledExtensionPath(extName) {
+    const normalized = normalizeExtensionName(extName);
+    if (!normalized)
+        return null;
+    const match = collectInstalledExtensions().find((entry) => entry.extName === normalized);
+    return match?.extPath || null;
+}
+// ─── Icon extraction ────────────────────────────────────────────────
+// Session-level cache: absolute icon path → stable data URL string.
+// Prevents re-reading and re-encoding the same icon file on every getCommands() call.
+const _extensionIconCache = new Map();
+function resizeIconWithSips(inputPath) {
+    const tmp = path.join(os.tmpdir(), `sc-icon-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
+    try {
+        (0, child_process_1.execFileSync)('/usr/bin/sips', ['-s', 'format', 'png', '-z', '64', '64', inputPath, '--out', tmp], { stdio: 'ignore' });
+        return fs.readFileSync(tmp);
+    }
+    catch {
+        return null;
+    }
+    finally {
+        try {
+            fs.unlinkSync(tmp);
+        }
+        catch { }
+    }
+}
+function getExtensionIconDataUrl(extPath, iconFile) {
+    const candidates = [
+        path.join(extPath, 'assets', iconFile),
+        path.join(extPath, iconFile),
+    ];
+    for (const p of candidates) {
+        if (!fs.existsSync(p))
+            continue;
+        const cached = _extensionIconCache.get(p);
+        if (cached !== undefined)
+            return cached;
+        try {
+            const ext = path.extname(p).toLowerCase();
+            const data = fs.readFileSync(p);
+            if (data.length < 50)
+                continue;
+            let result;
+            if (ext === '.svg') {
+                result = `data:image/svg+xml;base64,${data.toString('base64')}`;
+            }
+            else {
+                const resized = resizeIconWithSips(p);
+                const finalData = resized ?? data;
+                result = `data:image/png;base64,${finalData.toString('base64')}`;
+            }
+            _extensionIconCache.set(p, result);
+            return result;
+        }
+        catch { }
+    }
+    return undefined;
+}
+function resolvePlatformDefault(value) {
+    const platformKey = process.platform === 'win32' ? 'Windows' : 'macOS';
+    if (value &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        (Object.prototype.hasOwnProperty.call(value, 'macOS') ||
+            Object.prototype.hasOwnProperty.call(value, 'Windows'))) {
+        if (Object.prototype.hasOwnProperty.call(value, platformKey)) {
+            return value[platformKey];
+        }
+        return value.macOS ?? value.Windows;
+    }
+    return value;
+}
+function normalizePreferenceSchema(pref, scope) {
+    if (!pref || typeof pref !== 'object' || !pref.name)
+        return null;
+    return {
+        scope,
+        name: String(pref.name),
+        title: pref.title,
+        label: pref.label,
+        description: pref.description,
+        placeholder: pref.placeholder,
+        required: Boolean(pref.required),
+        type: pref.type,
+        default: resolvePlatformDefault(pref.default),
+        data: Array.isArray(pref.data) ? pref.data : undefined,
+    };
+}
+// ─── Discovery ──────────────────────────────────────────────────────
+/**
+ * Scan installed extensions directory and return a flat list of
+ * commands that should appear in the launcher.
+ */
+function discoverInstalledExtensionCommands() {
+    const results = [];
+    for (const source of collectInstalledExtensions()) {
+        const extPath = source.extPath;
+        const pkgPath = path.join(extPath, 'package.json');
+        const extName = source.extName;
+        try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+            if (!(0, extension_platform_1.isManifestPlatformCompatible)(pkg))
+                continue;
+            const iconDataUrl = getExtensionIconDataUrl(extPath, pkg.icon || 'icon.png');
+            const ownerRaw = pkg.owner || pkg.author || '';
+            const owner = (typeof ownerRaw === 'object' ? ownerRaw?.name || '' : String(ownerRaw || '')).trim();
+            for (const cmd of pkg.commands || []) {
+                if (!cmd.name)
+                    continue;
+                if (!(0, extension_platform_1.isCommandPlatformCompatible)(cmd))
+                    continue;
+                results.push({
+                    id: `ext-${extName}-${cmd.name}`,
+                    title: cmd.title || cmd.name,
+                    extensionTitle: pkg.title || extName,
+                    extName,
+                    cmdName: cmd.name,
+                    owner: owner || undefined,
+                    description: cmd.description || '',
+                    mode: cmd.mode || 'view',
+                    interval: typeof cmd.interval === 'string' ? cmd.interval : undefined,
+                    disabledByDefault: Boolean(cmd.disabledByDefault),
+                    commandArgumentDefinitions: Array.isArray(cmd.arguments)
+                        ? cmd.arguments
+                            .filter((arg) => arg && arg.name)
+                            .map((arg) => ({
+                            name: String(arg.name),
+                            required: Boolean(arg.required),
+                            type: arg.type,
+                            placeholder: arg.placeholder,
+                            title: arg.title,
+                            data: Array.isArray(arg.data) ? arg.data : undefined,
+                        }))
+                        : [],
+                    keywords: [
+                        extName,
+                        pkg.title || '',
+                        cmd.name,
+                        cmd.title || '',
+                        cmd.description || '',
+                    ]
+                        .filter(Boolean)
+                        .map((s) => s.toLowerCase()),
+                    iconDataUrl,
+                });
+            }
+        }
+        catch { }
+    }
+    return results;
+}
+/**
+ * Parse all installed extension manifests and return settings schema
+ * (extension + command preferences) for Settings UI and API parity.
+ */
+function getInstalledExtensionsSettingsSchema() {
+    const results = [];
+    for (const source of collectInstalledExtensions()) {
+        const extPath = source.extPath;
+        const pkgPath = path.join(extPath, 'package.json');
+        const extName = source.extName;
+        try {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+            if (!(0, extension_platform_1.isManifestPlatformCompatible)(pkg))
+                continue;
+            const iconDataUrl = getExtensionIconDataUrl(extPath, pkg.icon || 'icon.png');
+            const ownerRaw = pkg.owner || pkg.author || '';
+            const owner = typeof ownerRaw === 'object' ? ownerRaw.name || '' : String(ownerRaw || '');
+            const extensionPreferences = Array.isArray(pkg.preferences)
+                ? pkg.preferences
+                    .map((pref) => normalizePreferenceSchema(pref, 'extension'))
+                    .filter(Boolean)
+                : [];
+            const commands = Array.isArray(pkg.commands)
+                ? pkg.commands
+                    .filter((cmd) => cmd && cmd.name && (0, extension_platform_1.isCommandPlatformCompatible)(cmd))
+                    .map((cmd) => ({
+                    name: cmd.name,
+                    title: cmd.title || cmd.name,
+                    description: cmd.description || '',
+                    mode: cmd.mode || 'view',
+                    interval: typeof cmd.interval === 'string' ? cmd.interval : undefined,
+                    disabledByDefault: Boolean(cmd.disabledByDefault),
+                    preferences: Array.isArray(cmd.preferences)
+                        ? cmd.preferences
+                            .map((pref) => normalizePreferenceSchema(pref, 'command'))
+                            .filter(Boolean)
+                        : [],
+                }))
+                : [];
+            results.push({
+                extName,
+                title: pkg.title || extName,
+                description: pkg.description || '',
+                owner,
+                iconDataUrl,
+                preferences: extensionPreferences,
+                commands,
+            });
+        }
+        catch { }
+    }
+    return results.sort((a, b) => a.title.localeCompare(b.title));
+}
+// ─── Build (called at install time) ─────────────────────────────────
+// Node.js built-in modules — must be external since we run in the renderer.
+const nodeBuiltins = [
+    'assert', 'buffer', 'child_process', 'cluster', 'crypto',
+    'dgram', 'dns', 'events', 'fs', 'fs/promises', 'http',
+    'http2', 'https', 'module', 'net', 'os', 'path',
+    'perf_hooks', 'process', 'querystring', 'readline',
+    'stream', 'stream/promises', 'string_decoder', 'timers',
+    'timers/promises', 'tls', 'tty', 'url', 'util', 'v8',
+    'vm', 'worker_threads', 'zlib',
+    'async_hooks',
+    'node:assert', 'node:buffer', 'node:child_process',
+    'node:crypto', 'node:events', 'node:fs', 'node:fs/promises',
+    'node:http', 'node:https', 'node:module', 'node:net',
+    'node:os', 'node:path', 'node:process', 'node:querystring',
+    'node:stream', 'node:timers', 'node:timers/promises',
+    'node:url', 'node:util', 'node:vm', 'node:worker_threads',
+    'node:zlib',
+    'node:async_hooks',
+];
+function getInstallableRuntimeDeps(pkg) {
+    const deps = {
+        ...(pkg?.dependencies || {}),
+        ...(pkg?.optionalDependencies || {}),
+    };
+    return Object.entries(deps)
+        .filter(([name]) => typeof name === 'string' && !name.startsWith('@raycast/'))
+        .map(([name, version]) => `${name}@${String(version || '').trim()}`)
+        .filter((value) => {
+        const atIndex = value.lastIndexOf('@');
+        return atIndex > 0 && atIndex < value.length - 1;
+    });
+}
+function extensionRequiresNodeModules(pkg) {
+    return getInstallableRuntimeDeps(pkg).length > 0;
+}
+/**
+ * Parse a tsconfig.json that may contain JSONC features (comments, trailing commas).
+ * TypeScript itself accepts these, and many Raycast extensions ship them
+ * (e.g. library-genesis has a trailing comma after `paths`).
+ */
+function parseJsonc(source) {
+    // Strip block comments, then line comments, then trailing commas before } or ].
+    // String-aware: skip over double-quoted string contents so we don't mangle them.
+    let out = '';
+    let i = 0;
+    const n = source.length;
+    while (i < n) {
+        const ch = source[i];
+        // String literal — copy verbatim, honoring escapes
+        if (ch === '"') {
+            out += ch;
+            i++;
+            while (i < n) {
+                const c = source[i];
+                out += c;
+                i++;
+                if (c === '\\' && i < n) {
+                    out += source[i];
+                    i++;
+                    continue;
+                }
+                if (c === '"')
+                    break;
+            }
+            continue;
+        }
+        // Line comment
+        if (ch === '/' && source[i + 1] === '/') {
+            i += 2;
+            while (i < n && source[i] !== '\n')
+                i++;
+            continue;
+        }
+        // Block comment
+        if (ch === '/' && source[i + 1] === '*') {
+            i += 2;
+            while (i < n && !(source[i] === '*' && source[i + 1] === '/'))
+                i++;
+            i += 2;
+            continue;
+        }
+        out += ch;
+        i++;
+    }
+    // Strip trailing commas: `,` followed by optional whitespace and `}` or `]`.
+    out = out.replace(/,(\s*[}\]])/g, '$1');
+    return JSON.parse(out);
+}
+function getExtensionCompilerOptions(extPath) {
+    const tsconfigPath = path.join(extPath, 'tsconfig.json');
+    if (!fs.existsSync(tsconfigPath))
+        return {};
+    try {
+        const parsed = parseJsonc(fs.readFileSync(tsconfigPath, 'utf-8'));
+        const compilerOptions = parsed && typeof parsed === 'object' && parsed.compilerOptions && typeof parsed.compilerOptions === 'object'
+            ? parsed.compilerOptions
+            : {};
+        const options = {};
+        if (typeof compilerOptions.baseUrl === 'string' && compilerOptions.baseUrl.trim()) {
+            options.baseUrl = compilerOptions.baseUrl;
+        }
+        if (compilerOptions.paths && typeof compilerOptions.paths === 'object' && !Array.isArray(compilerOptions.paths)) {
+            options.paths = compilerOptions.paths;
+            // Some Raycast extensions define paths without baseUrl; default to extension root.
+            if (!options.baseUrl)
+                options.baseUrl = '.';
+        }
+        if (typeof compilerOptions.jsx === 'string' && compilerOptions.jsx.trim()) {
+            options.jsx = compilerOptions.jsx;
+        }
+        if (typeof compilerOptions.jsxImportSource === 'string' && compilerOptions.jsxImportSource.trim()) {
+            options.jsxImportSource = compilerOptions.jsxImportSource;
+        }
+        return options;
+    }
+    catch (error) {
+        console.warn(`Failed to parse tsconfig for ${path.basename(extPath)}:`, error?.message || error);
+        return {};
+    }
+}
+function getEsbuildTsconfigRaw(extPath) {
+    const extensionCompilerOptions = getExtensionCompilerOptions(extPath);
+    return JSON.stringify({
+        compilerOptions: {
+            target: 'ES2020',
+            jsx: 'react-jsx',
+            jsxImportSource: 'react',
+            strict: false,
+            esModuleInterop: true,
+            moduleResolution: 'node',
+            ...extensionCompilerOptions,
+        },
+    });
+}
+/**
+ * Resolve the source entry file for a given command.
+ */
+function resolveEntryFile(extPath, cmd) {
+    const cmdName = String(cmd?.name || '').trim();
+    if (!cmdName)
+        return null;
+    const srcDir = path.join(extPath, 'src');
+    const validExt = /\.(tsx?|jsx?)$/i;
+    const explicitEntry = typeof cmd?.path === 'string'
+        ? cmd.path
+        : typeof cmd?.entrypoint === 'string'
+            ? cmd.entrypoint
+            : typeof cmd?.entry === 'string'
+                ? cmd.entry
+                : typeof cmd?.file === 'string'
+                    ? cmd.file
+                    : typeof cmd?.source === 'string'
+                        ? cmd.source
+                        : '';
+    const candidates = [
+        explicitEntry ? path.join(extPath, explicitEntry) : '',
+        path.join(srcDir, `${cmdName}.tsx`),
+        path.join(srcDir, `${cmdName}.ts`),
+        path.join(srcDir, `${cmdName}.jsx`),
+        path.join(srcDir, `${cmdName}.js`),
+        path.join(srcDir, cmdName, 'index.tsx'),
+        path.join(srcDir, cmdName, 'index.ts'),
+        path.join(srcDir, cmdName, 'index.jsx'),
+        path.join(srcDir, cmdName, 'index.js'),
+        path.join(srcDir, 'commands', `${cmdName}.tsx`),
+        path.join(srcDir, 'commands', `${cmdName}.ts`),
+        path.join(srcDir, 'commands', `${cmdName}.jsx`),
+        path.join(srcDir, 'commands', `${cmdName}.js`),
+    ].filter(Boolean);
+    const found = candidates.find((p) => fs.existsSync(p));
+    if (found)
+        return found;
+    if (!fs.existsSync(srcDir))
+        return null;
+    // Fallback: recursive search for files matching command name.
+    const stack = [srcDir];
+    const normalized = cmdName.toLowerCase();
+    while (stack.length > 0) {
+        const dir = stack.pop();
+        let entries = [];
+        try {
+            entries = fs.readdirSync(dir);
+        }
+        catch {
+            continue;
+        }
+        for (const entry of entries) {
+            const full = path.join(dir, entry);
+            let stat;
+            try {
+                stat = fs.statSync(full);
+            }
+            catch {
+                continue;
+            }
+            if (stat.isDirectory()) {
+                stack.push(full);
+                continue;
+            }
+            if (!validExt.test(entry))
+                continue;
+            const base = path.basename(entry, path.extname(entry)).toLowerCase();
+            if (base === normalized)
+                return full;
+        }
+    }
+    return null;
+}
+/**
+ * Build ALL commands for an installed extension using esbuild.
+ * Called at install time so the extension is ready to run instantly.
+ *
+ * Returns the number of commands successfully built.
+ */
+async function buildAllCommands(extName, extPathOverride) {
+    const extPath = extPathOverride
+        ? normalizeFsPath(extPathOverride)
+        : resolveInstalledExtensionPath(extName);
+    if (!extPath) {
+        console.error(`Extension path not found for ${extName}`);
+        return 0;
+    }
+    const pkgPath = path.join(extPath, 'package.json');
+    if (!fs.existsSync(pkgPath)) {
+        console.error(`No package.json found for extension ${extName}`);
+        return 0;
+    }
+    let commands;
+    let requiresNodeModules = false;
+    let manifestExternal = [];
+    try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        if (!(0, extension_platform_1.isManifestPlatformCompatible)(pkg)) {
+            console.warn(`Skipping build for incompatible extension ${extName}`);
+            return 0;
+        }
+        commands = pkg.commands || [];
+        requiresNodeModules = extensionRequiresNodeModules(pkg);
+        manifestExternal = Array.isArray(pkg.external)
+            ? pkg.external.filter((v) => typeof v === 'string' && v.trim().length > 0)
+            : [];
+    }
+    catch {
+        return 0;
+    }
+    if (commands.length === 0)
+        return 0;
+    const esbuild = requireEsbuild();
+    const extNodeModules = path.join(extPath, 'node_modules');
+    if (requiresNodeModules && !fs.existsSync(extNodeModules)) {
+        try {
+            const { installExtensionDeps } = require('./extension-registry');
+            await installExtensionDeps(extPath);
+        }
+        catch (e) {
+            console.error(`Failed to install dependencies for ${extName}:`, e?.message || e);
+            return 0;
+        }
+        if (!fs.existsSync(extNodeModules)) {
+            console.error(`Dependencies missing for ${extName}: ${extNodeModules} not found`);
+            return 0;
+        }
+    }
+    const buildDir = getBuildDir(extPath);
+    // Avoid stale command bundles when extension source layout changes.
+    try {
+        fs.rmSync(buildDir, { recursive: true, force: true });
+    }
+    catch { }
+    fs.mkdirSync(buildDir, { recursive: true });
+    let built = 0;
+    for (const cmd of commands) {
+        if (!cmd.name)
+            continue;
+        if (!(0, extension_platform_1.isCommandPlatformCompatible)(cmd))
+            continue;
+        const entryFile = resolveEntryFile(extPath, cmd);
+        if (!entryFile) {
+            console.warn(`No entry file for ${extName}/${cmd.name}, skipping`);
+            continue;
+        }
+        const outFile = path.join(buildDir, `${cmd.name}.js`);
+        fs.mkdirSync(path.dirname(outFile), { recursive: true });
+        try {
+            console.log(`  Building ${extName}/${cmd.name}…`);
+            await runEsbuildBuild(esbuild, {
+                entryPoints: [entryFile],
+                absWorkingDir: extPath,
+                bundle: true,
+                format: 'cjs',
+                platform: 'node',
+                outfile: outFile,
+                plugins: [
+                    // Mark swift:/rust: imports as external so fakeRequire can handle them at runtime
+                    {
+                        name: 'native-scheme-external',
+                        setup(build) {
+                            build.onResolve({ filter: /^(swift|rust):/ }, (args) => ({
+                                path: args.path,
+                                external: true,
+                            }));
+                        },
+                    },
+                ],
+                external: [
+                    // React — provided by the renderer at runtime
+                    'react',
+                    'react-dom',
+                    'react-dom/*',
+                    'react/jsx-runtime',
+                    'react/jsx-dev-runtime',
+                    // Raycast — provided by our shim
+                    '@raycast/api',
+                    '@raycast/utils',
+                    // Native C++ addons — cannot be bundled, we stub them at runtime
+                    're2',
+                    'better-sqlite3',
+                    'fsevents',
+                    // Cross-extension calls — not supported, stubbed
+                    'raycast-cross-extension',
+                    // Fetch libs — use runtime shims in renderer instead of bundling Node internals
+                    'node-fetch',
+                    'undici',
+                    'undici/*',
+                    // HTTP / file-download / archive packages — must be kept external so our renderer
+                    // shim can intercept them and route file I/O through the main process (which has
+                    // real filesystem access). Bundling them inline breaks binary downloads because the
+                    // browser renderer cannot do streaming file writes or archive extraction natively.
+                    'axios',
+                    'tar',
+                    'extract-zip',
+                    'sha256-file',
+                    // Respect extension-defined externals from manifest
+                    ...manifestExternal,
+                    // Node.js built-ins — stubbed at runtime in the renderer
+                    ...nodeBuiltins,
+                ],
+                nodePaths: fs.existsSync(extNodeModules) ? [extNodeModules] : [],
+                target: 'es2020',
+                jsx: 'automatic',
+                jsxImportSource: 'react',
+                tsconfigRaw: getEsbuildTsconfigRaw(extPath),
+                define: {
+                    'process.env.NODE_ENV': '"production"',
+                    'global': 'globalThis',
+                },
+                logLevel: 'warning',
+            }, extPath, `${extName}/${cmd.name}`);
+            if (fs.existsSync(outFile)) {
+                built++;
+            }
+        }
+        catch (e) {
+            console.error(`  esbuild failed for ${extName}/${cmd.name}:`, e);
+        }
+    }
+    console.log(`Built ${built}/${commands.length} commands for ${extName}`);
+    return built;
+}
+/**
+ * Parse preferences from package.json and return default values.
+ * Extension preferences are defined in the manifest and can have default values.
+ */
+function parsePreferences(pkg, cmdName) {
+    const extensionPrefs = {};
+    const commandPrefs = {};
+    const definitions = [];
+    // Extension-level preferences
+    for (const pref of pkg.preferences || []) {
+        if (!pref.name)
+            continue;
+        const resolvedDefault = resolvePlatformDefault(pref.default);
+        definitions.push({
+            scope: 'extension',
+            name: pref.name,
+            title: pref.title,
+            description: pref.description,
+            placeholder: pref.placeholder,
+            required: Boolean(pref.required),
+            type: pref.type,
+            default: resolvedDefault,
+            data: Array.isArray(pref.data) ? pref.data : undefined,
+        });
+        // Set default value based on type
+        if (resolvedDefault !== undefined) {
+            extensionPrefs[pref.name] = resolvedDefault;
+        }
+        else if (pref.type === 'checkbox') {
+            extensionPrefs[pref.name] = false;
+        }
+        else if (pref.type === 'textfield' || pref.type === 'password') {
+            extensionPrefs[pref.name] = '';
+        }
+        else if (pref.type === 'dropdown') {
+            // Use first option as default
+            extensionPrefs[pref.name] = pref.data?.[0]?.value ?? '';
+        }
+    }
+    // Command-level preferences
+    const cmd = (pkg.commands || []).find((c) => c.name === cmdName);
+    if (cmd?.preferences) {
+        for (const pref of cmd.preferences) {
+            if (!pref.name)
+                continue;
+            const resolvedDefault = resolvePlatformDefault(pref.default);
+            definitions.push({
+                scope: 'command',
+                name: pref.name,
+                title: pref.title,
+                description: pref.description,
+                placeholder: pref.placeholder,
+                required: Boolean(pref.required),
+                type: pref.type,
+                default: resolvedDefault,
+                data: Array.isArray(pref.data) ? pref.data : undefined,
+            });
+            if (resolvedDefault !== undefined) {
+                commandPrefs[pref.name] = resolvedDefault;
+            }
+            else if (pref.type === 'checkbox') {
+                commandPrefs[pref.name] = false;
+            }
+            else if (pref.type === 'textfield' || pref.type === 'password') {
+                commandPrefs[pref.name] = '';
+            }
+            else if (pref.type === 'dropdown') {
+                commandPrefs[pref.name] = pref.data?.[0]?.value ?? '';
+            }
+        }
+    }
+    return { extensionPrefs, commandPrefs, definitions };
+}
+/**
+ * Build a single command for an extension on-demand.
+ * Used as a fallback when the pre-built bundle is missing.
+ */
+async function buildSingleCommand(extName, cmdName) {
+    const extPath = resolveInstalledExtensionPath(extName);
+    if (!extPath) {
+        console.error(`buildSingleCommand: extension path not found for ${extName}`);
+        return false;
+    }
+    const pkgPath = path.join(extPath, 'package.json');
+    if (!fs.existsSync(pkgPath)) {
+        console.error(`buildSingleCommand: package.json not found at ${pkgPath}`);
+        return false;
+    }
+    let cmd;
+    let requiresNodeModules = false;
+    let manifestExternal = [];
+    try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        if (!(0, extension_platform_1.isManifestPlatformCompatible)(pkg)) {
+            console.error(`buildSingleCommand: platform not compatible for ${extName}`);
+            return false;
+        }
+        const commands = pkg.commands || [];
+        cmd = commands.find((c) => c.name === cmdName);
+        requiresNodeModules = extensionRequiresNodeModules(pkg);
+        manifestExternal = Array.isArray(pkg.external)
+            ? pkg.external.filter((v) => typeof v === 'string' && v.trim().length > 0)
+            : [];
+    }
+    catch (e) {
+        console.error(`buildSingleCommand: failed to parse package.json for ${extName}:`, e?.message);
+        return false;
+    }
+    if (!cmd) {
+        console.error(`buildSingleCommand: command "${cmdName}" not found in ${extName} package.json`);
+        return false;
+    }
+    if (!(0, extension_platform_1.isCommandPlatformCompatible)(cmd)) {
+        console.error(`buildSingleCommand: command "${cmdName}" not compatible with current platform`);
+        return false;
+    }
+    const entryFile = resolveEntryFile(extPath, cmd);
+    if (!entryFile) {
+        console.error(`buildSingleCommand: entry file not found for ${extName}/${cmdName}`);
+        return false;
+    }
+    const buildDir = getBuildDir(extPath);
+    fs.mkdirSync(buildDir, { recursive: true });
+    const outFile = path.join(buildDir, `${cmdName}.js`);
+    fs.mkdirSync(path.dirname(outFile), { recursive: true });
+    const extNodeModules = path.join(extPath, 'node_modules');
+    // If node_modules is missing, install dependencies first
+    if (requiresNodeModules && !fs.existsSync(extNodeModules)) {
+        console.log(`  node_modules missing for ${extName}, installing dependencies…`);
+        try {
+            const { installExtensionDeps } = require('./extension-registry');
+            await installExtensionDeps(extPath);
+        }
+        catch (e) {
+            console.error(`  Failed to install dependencies for ${extName}:`, e?.message);
+            return false;
+        }
+        if (!fs.existsSync(extNodeModules))
+            return false;
+    }
+    try {
+        const esbuild = requireEsbuild();
+        console.log(`  On-demand building ${extName}/${cmdName}…`);
+        await runEsbuildBuild(esbuild, {
+            entryPoints: [entryFile],
+            absWorkingDir: extPath,
+            bundle: true,
+            format: 'cjs',
+            platform: 'node',
+            outfile: outFile,
+            plugins: [
+                {
+                    name: 'native-scheme-external',
+                    setup(build) {
+                        build.onResolve({ filter: /^(swift|rust):/ }, (args) => ({
+                            path: args.path,
+                            external: true,
+                        }));
+                    },
+                },
+            ],
+            external: [
+                'react', 'react-dom', 'react-dom/*', 'react/jsx-runtime', 'react/jsx-dev-runtime',
+                '@raycast/api', '@raycast/utils',
+                're2', 'better-sqlite3', 'fsevents',
+                'raycast-cross-extension',
+                'node-fetch', 'undici', 'undici/*',
+                'axios', 'tar', 'extract-zip', 'sha256-file',
+                ...manifestExternal,
+                ...nodeBuiltins,
+            ],
+            nodePaths: fs.existsSync(extNodeModules) ? [extNodeModules] : [],
+            target: 'es2020',
+            jsx: 'automatic',
+            jsxImportSource: 'react',
+            tsconfigRaw: getEsbuildTsconfigRaw(extPath),
+            define: {
+                'process.env.NODE_ENV': '"production"',
+                'global': 'globalThis',
+            },
+            logLevel: 'warning',
+        }, extPath, `${extName}/${cmdName}`);
+        return fs.existsSync(outFile);
+    }
+    catch (e) {
+        console.error(`  On-demand esbuild failed for ${extName}/${cmdName}:`, e);
+        lastBuildError.set(`${extName}/${cmdName}`, e?.message || String(e));
+        return false;
+    }
+}
+// Records the most recent build error per extension/command so that
+// getExtensionBundle can surface the real cause to the user instead of
+// the generic "On-demand build failed" message.
+const lastBuildError = new Map();
+/**
+ * Parse an esbuild BuildFailure and return the list of bare-import package
+ * names it could not resolve. Some Raycast extensions import packages (e.g.
+ * `fast-glob`) without declaring them in their manifest — Raycast's `ray build`
+ * provides them implicitly, but esbuild bails out. When this returns a
+ * non-empty list the caller can install them and retry.
+ */
+function extractMissingBareImports(error) {
+    const errors = Array.isArray(error?.errors) ? error.errors : [];
+    const found = new Set();
+    for (const err of errors) {
+        const text = String(err?.text || '');
+        const match = text.match(/Could not resolve\s+"([^"]+)"/);
+        if (!match)
+            continue;
+        const specifier = match[1];
+        // Only bare imports — ignore relative/absolute paths and scheme URLs
+        if (!specifier ||
+            specifier.startsWith('.') ||
+            specifier.startsWith('/') ||
+            specifier.includes(':')) {
+            continue;
+        }
+        // Bare-package name: optional @scope/ then name. Drop any subpath.
+        const parts = specifier.split('/');
+        const pkgName = specifier.startsWith('@')
+            ? parts.slice(0, 2).join('/')
+            : parts[0];
+        if (!pkgName)
+            continue;
+        // Skip things that are already external (shouldn't appear, but defensive)
+        if (nodeBuiltins.includes(pkgName))
+            continue;
+        if (pkgName.startsWith('@raycast/'))
+            continue;
+        found.add(pkgName);
+    }
+    return [...found];
+}
+async function runEsbuildBuild(esbuild, options, extPath, label) {
+    try {
+        await esbuild.build(options);
+    }
+    catch (error) {
+        const missing = extractMissingBareImports(error);
+        if (missing.length === 0)
+            throw error;
+        console.log(`  Missing packages for ${label} (${missing.join(', ')}); installing and retrying…`);
+        const { installSpecificPackages } = require('./extension-registry');
+        try {
+            await installSpecificPackages(extPath, missing);
+        }
+        catch (installError) {
+            console.error(`  Failed to install missing packages for ${label}: ${installError?.message || installError}`);
+            throw error;
+        }
+        await esbuild.build(options);
+    }
+}
+/**
+ * Get a pre-built extension command bundle.
+ * Falls back to on-demand building if the bundle is missing.
+ */
+async function getExtensionBundle(extName, cmdName) {
+    const normalizedExtName = normalizeExtensionName(extName);
+    const extPath = resolveInstalledExtensionPath(normalizedExtName);
+    if (!extPath) {
+        const searchRoots = getConfiguredExtensionRoots();
+        const msg = `Extension directory not found: ${normalizedExtName}. Searched roots: ${searchRoots.join(', ')}`;
+        console.error(msg);
+        throw new Error(msg);
+    }
+    let outFile = path.join(extPath, '.sc-build', `${cmdName}.js`);
+    if (!fs.existsSync(outFile)) {
+        console.log(`Pre-built bundle not found for ${normalizedExtName}/${cmdName}, building on-demand…`);
+        const built = await buildSingleCommand(normalizedExtName, cmdName);
+        if (!built || !fs.existsSync(outFile)) {
+            // Fallback: some extensions require full-workspace bundling to hydrate deps.
+            try {
+                console.log(`Single-command build failed for ${normalizedExtName}/${cmdName}; trying full extension rebuild…`);
+                await buildAllCommands(normalizedExtName);
+            }
+            catch (rebuildError) {
+                console.warn(`Full rebuild fallback failed for ${normalizedExtName}:`, rebuildError);
+            }
+        }
+        // Detect "incomplete bundle" scenario: an S3 pre-built bundle dropped
+        // .sc-build/ on disk for some commands but didn't ship the matching
+        // source files for others. resolveEntryFile() returns null, the build
+        // can never produce outFile, and the user is stuck. Re-run the install
+        // from the source-download path (skipBundle: true) and retry the build.
+        if (!fs.existsSync(outFile)) {
+            let entryMissing = false;
+            try {
+                const pkgPath = path.join(extPath, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+                const cmd = (Array.isArray(pkg?.commands) ? pkg.commands : []).find((c) => c?.name === cmdName);
+                if (cmd && !resolveEntryFile(extPath, cmd))
+                    entryMissing = true;
+            }
+            catch { }
+            if (entryMissing) {
+                console.log(`Source missing for ${normalizedExtName}/${cmdName}; re-installing from source to recover…`);
+                try {
+                    const { installExtension } = require('./extension-registry');
+                    const reinstalled = await installExtension(normalizedExtName, { skipBundle: true });
+                    if (reinstalled) {
+                        // Retry building now that source should be present.
+                        const rebuilt = await buildSingleCommand(normalizedExtName, cmdName);
+                        if (!rebuilt || !fs.existsSync(outFile)) {
+                            try {
+                                await buildAllCommands(normalizedExtName);
+                            }
+                            catch (e) {
+                                console.warn(`Post-recovery full rebuild failed for ${normalizedExtName}:`, e);
+                            }
+                        }
+                    }
+                }
+                catch (recoveryError) {
+                    console.warn(`Source-reinstall recovery failed for ${normalizedExtName}:`, recoveryError);
+                }
+            }
+        }
+        if (!fs.existsSync(outFile)) {
+            let diagnostic = '';
+            try {
+                const pkgPath = path.join(extPath, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+                const commands = Array.isArray(pkg?.commands) ? pkg.commands : [];
+                const cmd = commands.find((c) => c?.name === cmdName);
+                const nodeModulesExists = fs.existsSync(path.join(extPath, 'node_modules'));
+                const requiresNodeModules = extensionRequiresNodeModules(pkg);
+                if (!cmd) {
+                    diagnostic = ` Command "${cmdName}" not found in package.json.`;
+                }
+                else {
+                    const entry = resolveEntryFile(extPath, cmd);
+                    if (!entry) {
+                        diagnostic = ` Entry file not found for "${cmdName}".`;
+                    }
+                    else if (requiresNodeModules && !nodeModulesExists) {
+                        diagnostic = ' node_modules is missing (dependency installation likely failed).';
+                    }
+                }
+            }
+            catch { }
+            const underlying = lastBuildError.get(`${normalizedExtName}/${cmdName}`);
+            const underlyingSuffix = underlying ? ` Underlying error: ${underlying}` : '';
+            const msg = `On-demand build failed for ${normalizedExtName}/${cmdName}. Extension path: ${extPath}. Expected output: ${outFile}.${diagnostic}${underlyingSuffix}`;
+            console.error(msg);
+            throw new Error(msg);
+        }
+    }
+    const code = fs.readFileSync(outFile, 'utf-8');
+    if (!code) {
+        const msg = `Pre-built bundle is empty: ${outFile}`;
+        console.error(msg);
+        throw new Error(msg);
+    }
+    // Read command info, preferences, and metadata from package.json
+    let title = cmdName;
+    let mode = 'view';
+    let owner = '';
+    let extensionDisplayName = extName;
+    let extensionIconDataUrl;
+    let preferences = {};
+    let commandPreferences = {};
+    let preferenceDefinitions = [];
+    let commandArgumentDefinitions = [];
+    try {
+        const pkgPath = path.join(extPath, 'package.json');
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        if (!(0, extension_platform_1.isManifestPlatformCompatible)(pkg)) {
+            return null;
+        }
+        const cmd = (pkg.commands || []).find((c) => c.name === cmdName);
+        if (cmd && !(0, extension_platform_1.isCommandPlatformCompatible)(cmd)) {
+            return null;
+        }
+        if (cmd?.title)
+            title = cmd.title;
+        if (cmd?.mode)
+            mode = cmd.mode;
+        if (pkg?.title)
+            extensionDisplayName = pkg.title;
+        extensionIconDataUrl = getExtensionIconDataUrl(extPath, pkg.icon || 'icon.png');
+        const rawOwner = pkg.owner || pkg.author || '';
+        owner = typeof rawOwner === 'object' ? rawOwner.name || '' : rawOwner;
+        const { extensionPrefs, commandPrefs, definitions } = parsePreferences(pkg, cmdName);
+        const storedExtensionPrefs = (0, extension_preferences_store_1.getExtensionPreferences)(normalizedExtName);
+        const storedCommandPrefs = (0, extension_preferences_store_1.getExtensionPreferences)(normalizedExtName, cmdName);
+        preferences = { ...extensionPrefs, ...storedExtensionPrefs };
+        commandPreferences = { ...commandPrefs, ...storedCommandPrefs };
+        preferenceDefinitions = definitions;
+        commandArgumentDefinitions = Array.isArray(cmd?.arguments)
+            ? cmd.arguments
+                .filter((arg) => arg && arg.name)
+                .map((arg) => ({
+                name: arg.name,
+                required: Boolean(arg.required),
+                type: arg.type,
+                placeholder: arg.placeholder,
+                title: arg.title,
+                data: Array.isArray(arg.data) ? arg.data : undefined,
+            }))
+            : [];
+    }
+    catch { }
+    // Compute paths
+    const assetsPath = path.join(extPath, 'assets');
+    const supportPath = path.join(electron_1.app.getPath('userData'), 'extension-support', normalizedExtName);
+    // Ensure support directory exists
+    if (!fs.existsSync(supportPath)) {
+        fs.mkdirSync(supportPath, { recursive: true });
+    }
+    return {
+        code,
+        title,
+        mode,
+        extensionName: normalizedExtName,
+        extensionDisplayName,
+        extensionIconDataUrl,
+        commandName: cmdName,
+        assetsPath,
+        supportPath,
+        extensionPath: extPath,
+        owner,
+        preferences: { ...preferences, ...commandPreferences },
+        commandPreferences,
+        preferenceDefinitions,
+        commandArgumentDefinitions,
+    };
+}

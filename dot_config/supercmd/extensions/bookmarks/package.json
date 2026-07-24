@@ -1,0 +1,29 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "bookmarks",
+  "title": "Bookmarks",
+  "description": "Search and open your bookmarks",
+  "icon": "bookmark.png",
+  "author": "marvin.dore",
+  "categories": ["Productivity"],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "index",
+      "title": "Open Bookmark",
+      "subtitle": "Bookmarks",
+      "description": "Search and open a bookmark",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "ray build -e dist -o dist && rm -f .sc-build/index.js",
+    "typecheck": "tsc --noEmit"
+  }
+}
