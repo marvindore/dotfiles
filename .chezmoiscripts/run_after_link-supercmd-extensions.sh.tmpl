@@ -1,0 +1,26 @@
+#!/bin/bash
+# Link SuperCmd extensions from chezmoi to ~/Library/Application Support
+
+set -euo pipefail
+
+SUPERCMD_EXTENSIONS_HOME="${HOME}/Library/Application Support/SuperCmd/extensions"
+CHEZMOI_EXTENSIONS_SOURCE="{{ .chezmoi.sourceDir }}/dot_config/supercmd/extensions"
+
+# Create backup if the extensions directory exists as a real directory
+if [[ -d "$SUPERCMD_EXTENSIONS_HOME" && ! -L "$SUPERCMD_EXTENSIONS_HOME" ]]; then
+  BACKUP_PATH="${SUPERCMD_EXTENSIONS_HOME}.backup.$(date +%s)"
+  echo "Backing up existing extensions to $BACKUP_PATH"
+  mv "$SUPERCMD_EXTENSIONS_HOME" "$BACKUP_PATH"
+fi
+
+# Create the parent directory if it doesn't exist
+mkdir -p "$(dirname "$SUPERCMD_EXTENSIONS_HOME")"
+
+# Create or update the symlink
+if [[ -L "$SUPERCMD_EXTENSIONS_HOME" ]]; then
+  # Remove old symlink
+  rm "$SUPERCMD_EXTENSIONS_HOME"
+fi
+
+ln -s "$CHEZMOI_EXTENSIONS_SOURCE" "$SUPERCMD_EXTENSIONS_HOME"
+echo "✓ SuperCmd extensions symlinked: $SUPERCMD_EXTENSIONS_HOME → $CHEZMOI_EXTENSIONS_SOURCE"

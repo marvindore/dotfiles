@@ -4,3 +4,12 @@ result
 .chezmoidata/local_overrides.toml
 __pycache__/
 .pytest_cache/
+# SuperCmd extensions have build artifacts
+dot_config/supercmd/extensions/*/.sc-build/
+dot_config/supercmd/extensions/*/dist/
+dot_config/supercmd/extensions/*/node_modules/
+dot_config/supercmd/extensions/*/package-lock.json
+dot_config/supercmd/extensions/*/.DS_Store
+# SuperCmd extension data files (contain company-sensitive URLs/data)
+dot_config/supercmd/extensions/*/bookmarks.json
+dot_config/supercmd/extensions/*/url-templates.json
