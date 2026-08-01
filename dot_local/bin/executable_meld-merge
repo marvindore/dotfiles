@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Wrapper around meld that activates the window after launch.
-# macOS suppresses focus for apps spawned by CLI tools, so we
-# explicitly activate Meld via AppleScript after a short delay.
-meld "$@" &
-PID=$!
-sleep 0.5
-osascript -e 'tell application "Meld" to activate' 2>/dev/null
-wait "$PID"

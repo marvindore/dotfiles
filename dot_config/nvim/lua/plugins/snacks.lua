@@ -339,3 +339,128 @@ set("n", "<leader>gL", function() Snacks.lazygit.log() end, { desc = "LazyGit Lo
 
 -- Open LazyGit focused on the current file's log
 set("n", "<leader>gF", function() Snacks.lazygit.log_file() end, { desc = "LazyGit Log (File)" })
+
+-- ============================================================================
+-- Git Blame & Commit History with Browser Integration
+-- ============================================================================
+
+local function get_resolved_repo_url()
+  local result = vim.system({
+    "git",
+    "remote",
+    "get-url",
+    "origin",
+  }, { text = true }):wait()
+
+  if result.code ~= 0 then
+    return nil
+  end
+
+  local remote = vim.trim(result.stdout)
+  remote = remote:gsub("%.git$", "")
+
+  -- Apply custom SSH alias mappings (matches gitbrowse config above)
+  local alias_map = { home = "github.com", work = "github.com" }
+
+  for alias, host in pairs(alias_map) do
+    local pattern = "^git@" .. alias .. "[:/](.+)$"
+    local path = remote:match(pattern)
+    if path then
+      return "https://" .. host .. "/" .. path
+    end
+  end
+
+  -- Parse git@host:path/to/repo format
+  if remote:match("^git@") then
+    local host, path = remote:match("^git@([^:]+):(.+)$")
+    if host and path then
+      return string.format("https://%s/%s", host, path)
+    end
+  end
+
+  -- Parse ssh://git@host/path/to/repo format
+  if remote:match("^ssh://") then
+    local host, path = remote:match("^ssh://git@([^/]+)/(.+)$")
+    if host and path then
+      return string.format("https://%s/%s", host, path)
+    end
+  end
+
+  -- Already HTTPS
+  if remote:match("^https://") then
+    return remote
+  end
+
+  return nil
+end
+
+local function git_blame_file()
+  local file = vim.api.nvim_buf_get_name(0)
+
+  local repo_url = get_resolved_repo_url()
+  if not repo_url then
+    vim.notify("Could not determine repository URL", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Get relative file path from repo root
+  local rel_path_result = vim.system({
+    "git",
+    "rev-parse",
+    "--show-toplevel",
+  }, { text = true }):wait()
+
+  if rel_path_result.code ~= 0 then
+    vim.notify("Could not determine repo root", vim.log.levels.ERROR)
+    return
+  end
+
+  local repo_root = vim.trim(rel_path_result.stdout)
+  local rel_path = file:sub(#repo_root + 2)
+
+  -- Get current HEAD commit
+  local head_result = vim.system({
+    "git",
+    "rev-parse",
+    "HEAD",
+  }, { text = true }):wait()
+
+  if head_result.code ~= 0 then
+    vim.notify("Could not get HEAD commit", vim.log.levels.ERROR)
+    return
+  end
+
+  local commit = vim.trim(head_result.stdout)
+  local blame_url = repo_url .. "/blame/" .. commit .. "/" .. rel_path
+  vim.fn.setreg("+", blame_url)
+  vim.system({ "open", blame_url }, {})
+  vim.notify("Opened file blame in browser: " .. rel_path, vim.log.levels.INFO)
+end
+
+local function git_blame_commits()
+  local repo_url = get_resolved_repo_url()
+  if not repo_url then
+    vim.notify("Could not determine repository URL", vim.log.levels.ERROR)
+    return
+  end
+
+  Snacks.picker.git_log_file({
+    confirm = function(picker, item)
+      if item then
+        picker:close()
+        local commit_url = repo_url .. "/commit/" .. item.hash
+        vim.fn.setreg("+", commit_url)
+        vim.system({ "open", commit_url }, {})
+        vim.notify("Opened commit in browser: " .. item.hash, vim.log.levels.INFO)
+      end
+    end,
+  })
+end
+
+set("n", "<leader>gb", git_blame_file, {
+  desc = "Git blame file (open in browser)",
+})
+
+set("n", "<leader>gB", git_blame_commits, {
+  desc = "Git file history",
+})
