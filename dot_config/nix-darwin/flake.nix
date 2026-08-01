@@ -66,7 +66,7 @@
           "ghostty" "google-chrome" "google-drive" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "isen-ng/dotnet-sdk-versions/dotnet-sdk10-0-100"
-          "macshot" "meetingbar" "supercmdlabs/supercmd/supercmd" "thaw"
+          "macshot" "supercmdlabs/supercmd/supercmd" "thaw"
         ];
       };
 

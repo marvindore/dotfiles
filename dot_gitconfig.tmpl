@@ -33,31 +33,30 @@
 
 [merge]
     tool = meld
-    conflictstyle = zdiff3   # shows the BASE section in conflict markers
+    conflictStyle = zdiff3
 
 [mergetool]
-    keepBackup = false      # don't leave *.orig files
-    prompt = false          # don't prompt for each file
-
-[mergetool "meld"]
-    # Use Meld's 3‑way merge and write back to MERGED
     keepBackup = false
     prompt = false
-    cmd = meld-merge --auto-merge \
-               --label="LOCAL:$LOCAL" "$LOCAL" \
-               --label="BASE:$BASE"   "$BASE"  \
-               --label="REMOTE:$REMOTE" "$REMOTE" \
-               --output="$MERGED"
-    trustExitCode = true     # accept Meld's exit code to decide success
-    hideResolved = true
+
+[mergetool "meld"]
+    cmd = meld --auto-merge \
+        --label="LOCAL: $LOCAL" \
+        --label="BASE: $BASE" \
+        --label="REMOTE: $REMOTE" \
+        "$LOCAL" "$BASE" "$REMOTE" \
+        --output="$MERGED"
+    trustExitCode = false
 
 [alias]
-    # Difftastic aliases, so `git dlog` is `git log` with difftastic and so on.
+    # Difftastic aliases
     dl = -c diff.external=difft log --ext-diff
     ds = -c diff.external=difft show --ext-diff
     dd = -c diff.external=difft diff
     dlp = -c diff.external=difft log -p --ext-diff
-    mergetool = "!nvim -c DiffviewOpen"
+
+    # Neovim merge workflow, explicitly named
+    nvim-merge = "!nvim -c DiffviewOpen"
     dm = "!nvim -c DiffviewOpen && git add . && echo \"Conflicts resolved. Ready to commit.\""
 
 [difftool]

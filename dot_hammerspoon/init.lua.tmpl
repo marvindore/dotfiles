@@ -1,5 +1,8 @@
 -- ~/.hammerspoon/init.lua
 
+-- Load machine-local scripts if present (not version controlled)
+pcall(require, "local-scripts")
+
 -- Ctrl + Esc → Ctrl + Shift + Tab
 hs.hotkey.bind({ "ctrl" }, "escape", function()
     hs.eventtap.keyStroke({ "ctrl", "shift" }, "tab")
@@ -17,78 +20,64 @@ hs.hotkey.bind({"alt"}, "n", function()
     local chrome = hs.application.find("Google Chrome")
 
     if chrome and chrome:isRunning() then
-        local windows = chrome:allWindows()
-        local notesFound = false
-        local foundWindow = nil
-        local foundTabIndex = nil
+        -- Activate Chrome and search all windows for notes URL
+        chrome:activate()
+        hs.timer.usleep(200000)
 
-        -- Search all Chrome windows for the notes URL
-        for i, win in ipairs(windows) do
-            win:focus()
-            hs.timer.usleep(200000) -- 200ms delay for window focus to settle
+        local ok, result = hs.osascript.javascript([[
+            var chrome = Application("Google Chrome");
+            var notesFound = false;
+            var windowIndex = -1;
+            var tabIndex = -1;
 
-            local result = hs.osascript.javascript([[
-                var chrome = Application("Google Chrome");
-                var notesFound = false;
-                var tabIndex = -1;
-
-                for (var w = 0; w < chrome.windows.length; w++) {
-                    var win = chrome.windows[w];
-                    for (var t = 0; t < win.tabs.length; t++) {
-                        var tab = win.tabs[t];
-                        if (tab.url().includes("13001") || tab.url().includes("affine.internal")) {
-                            notesFound = true;
-                            tabIndex = t;
-                            break;
-                        }
+            for (var w = 0; w < chrome.windows.length; w++) {
+                var win = chrome.windows[w];
+                for (var t = 0; t < win.tabs.length; t++) {
+                    var tab = win.tabs[t];
+                    if (tab.url().includes("13001") || tab.url().includes("affine.internal")) {
+                        notesFound = true;
+                        windowIndex = w;
+                        tabIndex = t;
+                        break;
                     }
-                    if (notesFound) break;
                 }
+                if (notesFound) break;
+            }
 
-                JSON.stringify({ found: notesFound, tabIndex: tabIndex });
-            ]])
+            JSON.stringify({ found: notesFound, windowIndex: windowIndex, tabIndex: tabIndex });
+        ]])
 
-            if result then
-                local decoded = hs.json.decode(result)
-                if decoded.found then
-                    notesFound = true
-                    foundWindow = win
-                    foundTabIndex = decoded.tabIndex
-                    break
+        if ok and result then
+            local decoded = hs.json.decode(result)
+            if decoded.found and decoded.windowIndex >= 0 then
+                -- Found notes app: focus its window and activate the tab
+                local chromeWindows = chrome:allWindows()
+                if chromeWindows[decoded.windowIndex + 1] then
+                    local targetWindow = chromeWindows[decoded.windowIndex + 1]
+                    targetWindow:focus()
+
+                    -- Move window to the active monitor (screen with cursor)
+                    local activeScreen = hs.mouse.getCurrentScreen()
+                    targetWindow:moveToScreen(activeScreen)
+                    hs.timer.usleep(200000)
+
+                    -- Activate the specific tab
+                    hs.osascript.javascript([[
+                        var chrome = Application("Google Chrome");
+                        chrome.windows[]] .. decoded.windowIndex .. [[].activeTabIndex = ]] .. decoded.tabIndex .. [[ + 1;
+                    ]])
                 end
-            end
-        end
-
-        if notesFound and foundWindow then
-            -- Activate the window with the notes app
-            foundWindow:focus()
-
-            -- Move window to the active monitor (the screen the cursor is currently on)
-            local activeScreen = hs.mouse.getCurrentScreen()
-            foundWindow:moveToScreen(activeScreen)
-            hs.timer.usleep(200000)
-
-            -- Activate the specific tab
-            if foundTabIndex and foundTabIndex >= 0 then
+            else
+                -- Notes app not found: open in new tab
                 hs.osascript.javascript([[
                     var chrome = Application("Google Chrome");
                     var win = chrome.windows[0];
-                    if (win && win.tabs.length > ]] .. foundTabIndex .. [[) {
-                        win.activeTabIndex = ]] .. foundTabIndex .. [[ + 1;
+                    if (win) {
+                        var newTab = chrome.Tab({ url: "]] .. CHROME_URL .. [[" });
+                        win.tabs.push(newTab);
                     }
                 ]])
             end
-        else
-            -- Notes app not found in any window: open in active tab of focused window
-            chrome:activate()
-            hs.timer.usleep(200000)
-            hs.osascript.javascript([[
-                var chrome = Application("Google Chrome");
-                var win = chrome.windows[0];
-                if (win) {
-                    win.activeTab.url = "]] .. CHROME_URL .. [[";
-                }
-            ]])
         end
     else
         -- Chrome not running: launch with URL
@@ -112,5 +101,115 @@ hs.hotkey.bind({"ctrl", "shift"}, "x", function()
     hs.execute("killall NotificationCenter")
 end)
 
--- Load machine-local scripts if present (not version controlled)
-pcall(require, "local-scripts")
+-- Toggle Notification Center
+-- Maps Ctrl + Option + C to macOS's built-in Fn + N shortcut
+hs.hotkey.bind({ "alt" }, "c", function()
+  hs.eventtap.keyStroke({ "fn" }, "n")
+end)
+
+
+-- ---------------------------------------------------------------------
+-- LeaderKeys 
+-- ---------------------------------------------------------------------
+local LeaderKey = require("modules.LeaderKey")
+local Actions = require("modules.Actions")
+
+local leader = LeaderKey.new({
+    -- Press Option+L to start the leader sequence.
+    modifiers = { "alt" },
+    key = "space",
+
+    showHelper = true,
+    helperEntryEachLine = 4,
+    helperEntryLengthInChar = 24,
+
+    description = "Main Leader",
+    loggerName = "LeaderKey",
+    logLevel = "warning",
+})
+
+-- ---------------------------------------------------------------------
+-- SuperCmd extensions
+-- ---------------------------------------------------------------------
+
+
+-- ---------------------------------------------------------------------
+-- Speech group
+-- ---------------------------------------------------------------------
+
+-- leader:group("a", "Audio and Speech")
+
+-- Leader, S, W
+leader:bind(
+    { "s", "w" },
+    Actions.superCmdHotkey(
+        "Command+Shift+W"
+    ),
+    "Whisper"
+)
+
+-- Leader, A, S
+leader:bind(
+    { "a", "s" },
+    Actions.superCmdHotkey(
+        "Command+Shift+S"
+    ),
+    "Speak"
+)
+
+-- ---------------------------------------------------------------------
+-- Hammerspoon maintenance
+-- ---------------------------------------------------------------------
+
+leader:group("x", "Hammerspoon")
+
+leader:bind(
+    { "x", "r" },
+    Actions.callback(function()
+        hs.reload()
+    end),
+    "Reload Configuration"
+)
+
+{{ if eq .profile "work" -}}
+
+-- ---------------------------------------------------------------------
+-- Work
+-- ---------------------------------------------------------------------
+
+-- Leader, S, B
+leader:bind(
+    {"s", "b" },
+    Actions.superCmdHotkey(
+        "Command+Shift+B"
+    ),
+    "Bookmarks"
+)
+
+-- Leader, S, U
+leader:bind(
+    { "s", "u" },
+    Actions.superCmdHotkey(
+        "Command+Shift+U"
+    ),
+    "URL Builder"
+)
+
+leader:bind(
+   {"u", "u"},
+    Actions.superCmdHotkey(
+        "Command+Shift+u"
+    ),
+    "UrlBuilder"
+)
+
+leader:bind(
+  { "u", "c" },
+    Actions.superCmdHotkey(
+        "Control+Shift+u"
+    ),
+    "UltiProContext"
+)
+ {{ end -}}
+-- Register the leader hotkey after all bindings have been added.
+leader:start()

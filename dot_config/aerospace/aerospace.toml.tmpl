@@ -99,10 +99,10 @@ automatically-unhide-macos-hidden-apps = false
     # '''
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
-    alt-space = "workspace-back-and-forth" #toggle workspace
+    #alt-j = "workspace-back-and-forth" #toggle workspace
     alt-shift-space = "focus-back-and-forth "
 
-    alt-z = 'focus-monitor prev'   
+    alt-z = 'focus-monitor prev'
     alt-x = 'focus-monitor next'
     alt-shift-h = ['move-node-to-monitor prev', 'focus-monitor prev']
     alt-shift-l = ['move-node-to-monitor next', 'focus-monitor next']
@@ -142,7 +142,7 @@ automatically-unhide-macos-hidden-apps = false
         "workspace A"
     ]
     alt-b = ['exec-and-forget open /Applications/Google\ Chrome.app', 'workspace B']
-    alt-c = 'workspace C'
+    #alt-c = 'workspace C'
     alt-d = ['exec-and-forget open /Applications/DBeaver.app', 'workspace D']
     alt-e = 'workspace E'
     alt-f = 'workspace F'
@@ -269,9 +269,9 @@ run = "move-node-to-workspace T"
 if.app-id = 'com.apple.Safari'
 run = "move-node-to-workspace B"
 
-[[on-window-detected]]
-if.app-id = 'com.google.Chrome'
-run = "move-node-to-workspace B"
+#[[on-window-detected]]
+#if.app-id = 'com.google.Chrome'
+#run = "move-node-to-workspace B"
 
 [[on-window-detected]]
 if.app-id = 'com.omnissa.horizon.client.mac'

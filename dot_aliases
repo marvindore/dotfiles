@@ -29,7 +29,7 @@ alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
 alias py="uv run python"
 alias python='uv run python'
 
-# Vim
+# apps
 alias vd="nvim -d"
 alias nv="nvim"
 alias sv="sudo nvim"
