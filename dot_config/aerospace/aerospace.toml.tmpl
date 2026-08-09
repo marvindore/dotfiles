@@ -149,6 +149,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-g = 'workspace G'
     alt-i = 'workspace I'
     alt-m = 'exec-and-forget zsh -lc "~/.local/bin/aerospace-messaging"'
+    # alt-n reserved for SilverBullet PWA (handled via Hammerspoon)
     alt-o = 'workspace O'
     alt-p = 'workspace P'
     alt-q = 'workspace Q'
@@ -310,5 +311,5 @@ if.app-id = 'com.jetbrains.intellij'
 run = 'move-node-to-workspace I'
 
 [[on-window-detected]]
-if.app-name-regex-substring = 'Meld'
-run = 'layout floating'
+if.app-name-regex-substring = "Meld"
+run = "move-node-to-workspace G"

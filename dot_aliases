@@ -15,6 +15,7 @@ alias nvimc='nvim --cmd "cd $(chezmoi source-path)/dot_config/nvim"'
 
 alias ca="CHEZMOI_SECRETS=1 chezmoi apply"
 alias oc="opencode"
+alias agyd="agy --dangerously-skip-permissions"
 
 #bitwarden
 alias bw_unlock='export BW_SESSION=$(bw unlock --raw)'

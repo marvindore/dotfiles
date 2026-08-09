@@ -13,10 +13,6 @@ docker/
 docker/**
 {{- end -}}
 
-{{- if ne .profile "work" }}
-.local/share/affine/
-.chezmoiscripts/run_onchange_after_start-affine.sh.tmpl
-{{- end }}
 
 Library/Application Support/SuperCmd/
 Library/Application Support/SuperCmd/**

@@ -8,19 +8,47 @@ hs.hotkey.bind({ "ctrl" }, "escape", function()
     hs.eventtap.keyStroke({ "ctrl", "shift" }, "tab")
 end)
 
--- Navigate or open Chrome with URL (alt+n)
--- Searches all Chrome windows for notes URL, focuses window on active monitor, or opens new tab
-{{ if eq .profile "work" -}}
-local CHROME_URL = "http://localhost:13001"
-{{ else -}}
-local CHROME_URL = "http://affine.internal"
-{{ end -}}
+-- Navigate or open SilverBullet PWA / Web App (alt+n)
+-- Focuses SilverBullet PWA application on active monitor, or searches Chrome tabs, or opens local server
+local SILVERBULLET_URL = "http://localhost:13001"
 
 hs.hotkey.bind({"alt"}, "n", function()
+    -- 1. Check if SilverBullet PWA app is running
+    local sbApp = hs.application.find("SilverBullet")
+    if sbApp and sbApp:isRunning() then
+        sbApp:activate()
+        hs.timer.usleep(100000)
+        local win = sbApp:mainWindow() or (sbApp:allWindows() and sbApp:allWindows()[1])
+        if win then
+            win:focus()
+            local activeScreen = hs.mouse.getCurrentScreen()
+            win:moveToScreen(activeScreen)
+        end
+        return
+    end
+
+    -- 2. Attempt to launch SilverBullet PWA app if installed
+    local launched = hs.application.launchOrFocus("SilverBullet")
+    if launched then
+        hs.timer.doAfter(0.3, function()
+            local app = hs.application.find("SilverBullet")
+            if app then
+                app:activate()
+                local win = app:mainWindow() or (app:allWindows() and app:allWindows()[1])
+                if win then
+                    win:focus()
+                    local activeScreen = hs.mouse.getCurrentScreen()
+                    win:moveToScreen(activeScreen)
+                end
+            end
+        end)
+        return
+    end
+
+    -- 3. Fallback: Search Chrome windows/tabs for SilverBullet or open URL
     local chrome = hs.application.find("Google Chrome")
 
     if chrome and chrome:isRunning() then
-        -- Activate Chrome and search all windows for notes URL
         chrome:activate()
         hs.timer.usleep(200000)
 
@@ -34,7 +62,7 @@ hs.hotkey.bind({"alt"}, "n", function()
                 var win = chrome.windows[w];
                 for (var t = 0; t < win.tabs.length; t++) {
                     var tab = win.tabs[t];
-                    if (tab.url().includes("13001") || tab.url().includes("affine.internal")) {
+                    if (tab.url().includes("13001") || tab.url().includes("silverbullet")) {
                         notesFound = true;
                         windowIndex = w;
                         tabIndex = t;
@@ -50,38 +78,33 @@ hs.hotkey.bind({"alt"}, "n", function()
         if ok and result then
             local decoded = hs.json.decode(result)
             if decoded.found and decoded.windowIndex >= 0 then
-                -- Found notes app: focus its window and activate the tab
                 local chromeWindows = chrome:allWindows()
                 if chromeWindows[decoded.windowIndex + 1] then
                     local targetWindow = chromeWindows[decoded.windowIndex + 1]
                     targetWindow:focus()
 
-                    -- Move window to the active monitor (screen with cursor)
                     local activeScreen = hs.mouse.getCurrentScreen()
                     targetWindow:moveToScreen(activeScreen)
                     hs.timer.usleep(200000)
 
-                    -- Activate the specific tab
                     hs.osascript.javascript([[
                         var chrome = Application("Google Chrome");
                         chrome.windows[]] .. decoded.windowIndex .. [[].activeTabIndex = ]] .. decoded.tabIndex .. [[ + 1;
                     ]])
                 end
             else
-                -- Notes app not found: open in new tab
                 hs.osascript.javascript([[
                     var chrome = Application("Google Chrome");
                     var win = chrome.windows[0];
                     if (win) {
-                        var newTab = chrome.Tab({ url: "]] .. CHROME_URL .. [[" });
+                        var newTab = chrome.Tab({ url: "]] .. SILVERBULLET_URL .. [[" });
                         win.tabs.push(newTab);
                     }
                 ]])
             end
         end
     else
-        -- Chrome not running: launch with URL
-        hs.execute("open -a 'Google Chrome' '" .. CHROME_URL .. "'")
+        hs.execute("open -a 'Google Chrome' '" .. SILVERBULLET_URL .. "'")
     end
 end)
 
