@@ -1,189 +1,88 @@
-;; https://shom.dev/start/using-kanata-to-remap-any-keyboard/
-;; ARTSEY MINI 0.2 https://github.com/artseyio/artsey/issues/7
+;; Kanata configuration mapped from ZMK MoErgo GO60 keymaps
+;; Ported for macOS laptop layout with visual key alignment
 
-;; Exactly one defcfg entry is required. This is used for configuration key-pairs.
 (defcfg
-  ;; Your keyboard device will likely differ from this.
-  linux-dev /dev/input/event2
-
-  ;; Windows doesn't need any input/output configuration entries; however, there
-  ;; must still be a defcfg entry. You can keep the linux-dev entry or delete
-  ;; it and leave it empty.
+  process-unmapped-keys yes
 )
 
 (defvar
-  ;; Note: consider using different time values for your different fingers.
-  ;; For example, your pinkies might be slower to release keys and index
-  ;; fingers faster.
   tap-time 200
-  hold-time 200 
-  hold-time-slow 300 
+  hold-time 200
+  hrm-hold-time 280
 )
 
-;; Alias 
 (defalias
-  l_one (layer-toggle one)
-  l_two (layer-toggle two)
-  l_three (layer-toggle three)
-  cmd (layer-toggle cmd)                    ;; Command cmd
-  alt (layer-toggle alt)                    ;; Option alt
-  spc (tap-hold $tap-time $hold-time spc @l_one)
-  esc  (tap-hold $tap-time $hold-time esc @l_two)
-  ret  (tap-hold $tap-time $hold-time ret @l_three)
-  cz  (tap-hold $tap-time $hold-time c lctl)
-  ax  (tap-hold $tap-time $hold-time a lalt)
-  c/  (tap-hold $tap-time $hold-time / rctl)
-  a.  (tap-hold $tap-time $hold-time . ralt)
+  ;; Home Row Mods (Left Hand)
+  a_ctl (tap-hold-release $tap-time $hrm-hold-time a lctl)
+  s_alt (tap-hold-release $tap-time $hrm-hold-time s lalt)
+  d_cmd (tap-hold-release $tap-time $hrm-hold-time d lmet)
+  f_rs  (tap-hold-release $tap-time $tap-time f (layer-toggle raise))
 
+  ;; Home Row Mods (Right Hand)
+  j_rs  (tap-hold-release $tap-time $tap-time j (layer-toggle raise))
+  k_cmd (tap-hold-release $tap-time $hrm-hold-time k rmet)
+  l_alt (tap-hold-release $tap-time $hrm-hold-time l ralt)
+  semi_ctl (tap-hold-release $tap-time $hrm-hold-time ; rctl)
 
-  ;;;; Mouse movements
-  mwu (mwheel-up 50 120)
-  mwd (mwheel-down 50 120)
-  mwl (mwheel-left 50 120)
-  mwr (mwheel-right 50 120)
+  ;; Bottom Row Shift Taps
+  shft_bspc (tap-hold $tap-time $tap-time A-bspc lsft)
+  shft_eq   (tap-hold $tap-time $tap-time = rsft)
 
-  ms↑ (movemouse-up 1 1)
-  ms← (movemouse-left 1 1)
-  ms↓ (movemouse-down 1 1)
-  ms→ (movemouse-right 1 1)
+  ;; Thumb / Space Layer Toggles
+  spc_tgl (tap-hold $tap-time $tap-time spc (layer-toggle toggles))
 
-  ma↑ (movemouse-accel-up 1 1000 1 5)
-  ma← (movemouse-accel-left 1 1000 1 5)
-  ma↓ (movemouse-accel-down 1 1000 1 5)
-  ma→ (movemouse-accel-right 1 1000 1 5)
+  ;; Change Navigation Macros (Toggles layer)
+  nxt (macro ] c)
+  prv (macro [ c)
 
-  sm (setmouse 32228 32228)
-
-  fst (movemouse-speed 200)
+  ;; Layer Toggle Shortcuts
+  mac (layer-toggle macros)
 )
 
-;; Source keys to remap
+;; Physical macOS laptop keyboard layout source grid
 (defsrc
-  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12
-  grv  1    2    3    4    5    6    7    8    9    0    -    =    del
-  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
-  caps a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  lctl   lalt  lmet           spc            rmet ralt    left 
+  esc        f1         f2         f3         f4         f5         f6         f7         f8         f9         f10        f11        f12
+  grv        1          2          3          4          5          6          7          8          9          0          -          =          bspc
+  tab        q          w          e          r          t          y          u          i          o          p          [          ]          \
+  caps       a          s          d          f          g          h          j          k          l          ;          '          ret
+  lsft       z          x          c          v          b          n          m          ,          .          /          rsft
+  lctl       lalt       lmet                                        spc                                         rmet       ralt
 )
 
-;; Destination keys are mapped to
 (deflayer base
-  esc   🔅   🔆    ✗    ✗    ✗    ✗    ◀◀   ▶⏸   ▶▶   🔇   🔉   🔊
-  grv   1    2    3    4    5    6    7    8    9    0    -    =    bspc
-  tab   q    w    e    r    t    y    u    i    o    p    [    ]    \
-  @esc  a    s    d    f    g    h    j    k    l    ;    '    @ret
-  lsft  z    x    c    v    b    n    m    ,    @a.    @c/    rsft
-  lctl  lalt  lmet           @spc            rmet ralt rctl
+  esc        f1         f2         f3         f4         f5         f6         f7         f8         f9         f10        f11        f12
+  grv        1          2          3          4          5          6          7          8          9          0          -          =          bspc
+  tab        q          w          e          r          t          y          u          i          o          p          [          ]          \
+  esc        @a_ctl     @s_alt     @d_cmd     @f_rs      g          h          @j_rs      @k_cmd     @l_alt     @semi_ctl  '          ret
+  @shft_bspc z          x          c          v          b          n          m          ,          .          /          @shft_eq
+  lctl       lalt       lmet                                        @spc_tgl                                    rmet       ralt
 )
 
-(deflayer one
-  _    _      _       _       _      _          _     _      _     _    _    _    _
-  _    _      _       _       _      _          _     _      _     _    _    _    _    _
-  @cT  _      _       @ms↑    _      _          @ms←  @ms↓   @ms↑  @ms→  mltp    _    _    _
-  @cST @a←    @ms←    @ms↓    @ms→   @a→        left  down   up    right   _    _    mltp
-  _    _      _       _       _      mltp       pgup  pgdn   @c←   @c→     _    _
-  _ _ _                                     _            _ _ _
+(deflayer toggles
+  _          _          _          _          _          _          _          _          _          _          _          _          _
+  mute       f1         f2         f3         f4         f5         f6         f7         f8         f9         f10        f11        f12        bspc
+  tab        S-tab      end        home       _          C-\        f12        f13        _          _          S-\        S-=        _          _
+  _          @nxt       @prv       pgdn       pgup       A-z        left       down       up         right      S--        =          _
+  caps       _          _          _          A-S-h      A-S-l      S-left     S-down     S-up       S-right    \          _
+  _          _          _                                           _                                           _          _
 )
 
-(deflayer two
-  _    _    _    _    _    _    _     _     _     _    _    _    _
-  _    _    _    _    _    _    _     _     _     _    _    _    _    _
-  @cT  _    _    _    _    _    _     @mwu  @mwd  _    _    _    _    _
-  @cST _    _    _    _    _    @ms←  @ms↓  @ms↑  @ms→ _    _    mltp
-  _    _    _    _    _    _    _     @mwu  @mwd  @c←  @c→    _
-  _ _ _                _            _ _ _
+(deflayer raise
+  _          _          _          _          _          _          _          _          _          _          _          _          _
+  grv        ,          =          .          ;          S-4        S-7        M-z        M-S-z      S-,        S-.        _          _          bspc
+  S-1        S-,        S-9        S-0        S-.        S-/        M-c        7          8          9          S-]        S-\        _          _
+  S-3        [          S-[        S-]        ]          S-8        M-v        4          5          6          .          S-'        _
+  S-grv      S-6        S-\        -          S--        /          M-x        1          2          3          .          _
+  _          _          _                                           0                                           _          _
 )
 
-(deflayer three
-  _    _    _    _    _    _    _     _     _     _    _    _    _
-  _    _    _    _    _    _    _     _     _     _    _    _    _    _
-  @cT  _    _    _    _    _    _     @mwu  @mwd  _    _    _    _    _
-  @cST _    _    _    _    _    @ms←  @ms↓  @ms↑  @ms→ _    _    mltp
-  _    _    _    _    _    _    _     @mwu  @mwd  @c←  @c→    _
-  _ _ _                _            _ _ _
+(deflayer macros
+  _          _          _          _          _          _          _          _          _          _          _          _          _
+  _          _          _          _          _          _          _          _          _          _          _          _          _          _
+  _          _          C-M-q      _          M-S-spc    _          _          M-S-u      C-S-i      _          _          _          _          _
+  _          _          _          _          _          _          _          _          _          _          _          _          _
+  _          _          _          C-S-c      _          M-S-b      _          C-S-m      _          _          _          _
+  _          _          _                                           _                                           _          _
 )
 
-;; Command (⌘)
-(deflayer cmd
-  _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    @cq  @cw  @ce  @cr  @ct  @cy  @cu  @ci  @co  @cp  _    _    _
-  _    @ca  @cs  @cd  @cf  @cg  @ch  @cj  @ck  @cl  _    _    _
-  _    @cz  @cx  @cc  @cv  @cb  @cn  @cm  _    _    _    _
-  _    _    _              _              _    _    _
-)
 
-;; Option (⌥)
-(deflayer alt
-  _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    _    _    _    _    _    _    _    _    _    _    _    _    _
-  _    @aq  @aw  @ae  @ar  @at  @ay  @au  @ai  @ao  @ap  _    _    _
-  _    @aa  @as  @ad  @af  @ag  @ah  @aj  @ak  @al  _    _    _
-  _    @az  @ax  @ac  @av  @ab  @an  @am  _    _    _    _
-  _    _    _              _              _    _    _
-)
-
-;; Commands
-(defalias
-  c← C-left
-  c→ C-right
-  cT C-tab
-  cST C-S-tab
-  cq C-q
-  cw C-w
-  ce C-e
-  cr C-r
-  ct C-t
-  cy C-y
-  cu C-u
-  ci C-i
-  co C-o
-  cp C-p
-  ca C-S-a
-  cs C-s
-  cd C-d
-  cf C-f
-  cg C-g
-  ch C-h
-  cj C-j
-  ck C-k
-  cl C-l
-  cx C-x
-  cc C-c
-  cv C-S-v
-  cb C-b
-  cn C-n
-  cm C-m
-)
-
-;; Option
-(defalias
-  a← A-left
-  a→ A-right
-  aq A-q
-  aw A-w
-  ae A-e
-  ar A-r
-  at A-t
-  ay A-y
-  au A-u
-  ai A-i
-  ao A-o
-  ap A-p
-  aa A-a
-  as A-s
-  ad A-d
-  af A-f
-  ag A-g
-  ah A-h
-  aj A-j
-  ak A-k
-  al A-l
-  az A-z
-  ac A-c
-  av A-v
-  ab A-b
-  an A-n
-  am A-m
-)

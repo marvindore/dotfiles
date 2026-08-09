@@ -8,7 +8,6 @@ macOS
 ## Docs
 - docs/macos.md — full macOS bootstrap and usage
 - docs/system.md — secrets, git, and chezmoi behavior
-- docs/affine.md — AFFiNE self-hosted setup with OneDrive backups
 - docs/linux.md — partial support notes
 - docs/windows.md — limited support
 

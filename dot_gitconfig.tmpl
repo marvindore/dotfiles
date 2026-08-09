@@ -21,23 +21,9 @@
     minus-emph-style = "bold red 52"
     plus-emph-style = "bold green 22"
 
-#[merge]
-#    tool = nvim
-#    conflictstyle = diff3
-#
-#[mergetool "nvim"]
-#    cmd = nvim -f -c \"DiffviewOpen\"
-#    conflictstyle = diff3
-#    keepBackup = false
-#    prompt = false
-
 [merge]
     tool = meld
     conflictStyle = zdiff3
-
-[mergetool]
-    keepBackup = false
-    prompt = false
 
 [mergetool "meld"]
     cmd = meld --auto-merge \
@@ -47,6 +33,7 @@
         "$LOCAL" "$BASE" "$REMOTE" \
         --output="$MERGED"
     trustExitCode = false
+    hideResolved = true
 
 [alias]
     # Difftastic aliases
