@@ -10,7 +10,7 @@ end)
 
 -- Navigate or open SilverBullet PWA / Web App (alt+n)
 -- Focuses SilverBullet PWA application on active monitor, or searches Chrome tabs, or opens local server
-local SILVERBULLET_URL = "http://localhost:13001"
+local SILVERBULLET_URL = "http://localhost:3010"
 
 hs.hotkey.bind({"alt"}, "n", function()
     -- 1. Check if SilverBullet PWA app is running
@@ -62,7 +62,7 @@ hs.hotkey.bind({"alt"}, "n", function()
                 var win = chrome.windows[w];
                 for (var t = 0; t < win.tabs.length; t++) {
                     var tab = win.tabs[t];
-                    if (tab.url().includes("13001") || tab.url().includes("silverbullet")) {
+                    if (tab.url().includes("3010") || tab.url().includes("silverbullet")) {
                         notesFound = true;
                         windowIndex = w;
                         tabIndex = t;
@@ -107,10 +107,6 @@ hs.hotkey.bind({"alt"}, "n", function()
         hs.execute("open -a 'Google Chrome' '" .. SILVERBULLET_URL .. "'")
     end
 end)
-
--- Scratchpad overlay (ctrl + alt + n)
-local Scratchpad = require("scratchpad")
-hs.hotkey.bind({ "ctrl", "shift" }, "n", Scratchpad.toggle)
 
 -- Menu bar
 require("menu-bar")

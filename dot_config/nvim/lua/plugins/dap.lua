@@ -29,7 +29,7 @@ vim.pack.add({
 			cmd = { "DapContinue", "DapToggleBreakpoint" },
 			keys = {
 				{ lhs = "<leader>dn", rhs = ":lua require('osv').launch({port = 5677})<CR>", mode = "n", desc =  "Debug Neovim-kind" }, -- one step for vim kind debugger
-				{ lhs = "<F5>", rhs = ":lua require('dap').continue()<CR>", mode = "n", desc =  "Debug continue" },
+				{ lhs = "<F5>", rhs = ":lua local dap = require('dap'); if dap.session() then dap.continue() else require('dap_grouped_picker').pick_configuration() end<CR>", mode = "n", desc =  "Debug continue/select config" },
 				{ lhs = "<S-F5>", rhs = ":lua require'dap'.close()<cr>", mode = "n", desc =  "Debug stop" },
 
 				{ lhs = "<F10>", rhs = ":lua require('dap').step_over()<CR>", mode = "n", desc =  "Debug step over" },
@@ -41,6 +41,7 @@ vim.pack.add({
 					mode = "n",
 					desc = "Debug toggle breakpoint",
 				},
+				{ lhs = "<leader>dc", rhs = ":lua require('dap').continue()<CR>",    mode = "n", desc = "Debug continue" },
 				{ lhs = "<leader>dr", rhs = ":lua require'dap'.restart()<cr>",   mode = "n", desc = "Debug restart" },
 				{ lhs = "<leader>dS", rhs = ":lua require'dap'.stop()<cr>",       mode = "n", desc = "Debug stop" },
 				{ lhs = "<leader>dT", rhs = ":lua require'dap'.terminate()<cr>",  mode = "n", desc = "Debug terminate" },
@@ -79,7 +80,22 @@ vim.pack.add({
 			after = function(_)
 				local dap = require("dap")
 				local h = require("utils.dap_helpers")
+				local icons = require("config.icons")
 				local last_picked_dll = nil
+
+				-- Highlight groups for line backgrounds
+				vim.api.nvim_set_hl(0, "DapBreakpointLine", { bg = "#43242b", default = true })
+				vim.api.nvim_set_hl(0, "DapBreakpointRejectedLine", { bg = "#2a1f2a", default = true })
+				vim.api.nvim_set_hl(0, "DapStoppedLine", { bg = "#1e2d1e", default = true })
+
+				-- Sign definitions for breakpoints
+				vim.fn.sign_define("DapBreakpoint", { text = icons.emoji.Anger, texthl = "DiagnosticError", linehl = "DapBreakpointLine", numhl = "DiagnosticError" })
+				vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop, texthl = "DiagnosticWarn", linehl = "DapBreakpointRejectedLine", numhl = "DiagnosticWarn" })
+				vim.fn.sign_define("DapStopped", { text = icons.emoji.OrangeDiamond, texthl = "DiagnosticOk", linehl = "DapStoppedLine", numhl = "DiagnosticOk" })
+				vim.fn.sign_define("DapBreakpointCondition", { text = "◆", texthl = "DiagnosticInfo" })
+				vim.fn.sign_define("DapLogPoint", { text = "◇", texthl = "DiagnosticInfo" })
+
+				dap.sign_priority = 11
 
 				-- ADAPTERS (CoreCLR)
 				dap.adapters.coreclr = {
@@ -183,6 +199,37 @@ vim.pack.add({
 					coreclr = { "cs", "csharp" },
 					["pwa-node"] = js_langs,
 				}
+
+				-- Load .vscode/launch.json configs from the project and mark them as project-sourced
+				-- Note: load_launchjs() is deprecated (dap now auto-loads on-demand), but we call it
+				-- explicitly here to mark configs with _vscode_source so the grouped picker can
+				-- distinguish project-specific configs from hardcoded editor configs.
+				local function load_and_mark_vscode_configs()
+					local dap = require("dap")
+					-- Before loading, capture current config names per filetype
+					local before_configs = {}
+					for ft, configs in pairs(dap.configurations) do
+						before_configs[ft] = {}
+						for _, cfg in ipairs(configs) do
+							before_configs[ft][cfg.name] = true
+						end
+					end
+
+					-- Load .vscode/launch.json (calls deprecated function, but needed for _vscode_source marking)
+					require("dap.ext.vscode").load_launchjs()
+
+					-- After loading, mark newly added configs
+					for ft, configs in pairs(dap.configurations) do
+						for _, cfg in ipairs(configs) do
+							if not (before_configs[ft] and before_configs[ft][cfg.name]) then
+								-- This config was just added from .vscode/launch.json
+								cfg._vscode_source = true
+							end
+						end
+					end
+				end
+
+				load_and_mark_vscode_configs()
 
 					-- Load dap-view so its internal auto_toggle listeners are registered
 				require("dap-view")

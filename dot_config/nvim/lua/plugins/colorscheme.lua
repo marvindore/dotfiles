@@ -14,6 +14,33 @@ vim.opt.termguicolors = true  -- full 24-bit color; recommended by most themes
 vim.g.lualine_theme = "kanso"
 
 -----------------------------------------------------------------------
+-- 2.5) kdiff3-style diff highlights
+--    Kanso's default diff colors are subtle; bump saturation so each
+--    diff class (add/change/delete, and the exact changed text within
+--    a changed line) is instantly distinguishable, like kdiff3's A/B/C
+--    coloring. Re-applied on every `:colorscheme kanso` (toggles included).
+-----------------------------------------------------------------------
+local function apply_diff_highlights()
+  local dark = vim.o.background == "dark"
+  if dark then
+    vim.api.nvim_set_hl(0, "DiffAdd",    { bg = "#2c3b32" })
+    vim.api.nvim_set_hl(0, "DiffDelete", { bg = "#332323", fg = "#5c4646" })
+    vim.api.nvim_set_hl(0, "DiffChange", { bg = "#28323b" })
+    vim.api.nvim_set_hl(0, "DiffText",   { bg = "#3d342a", fg = "#e0af68", bold = true })
+  else
+    vim.api.nvim_set_hl(0, "DiffAdd",    { bg = "#dcefdc" })
+    vim.api.nvim_set_hl(0, "DiffDelete", { bg = "#f3dede", fg = "#b08c8c" })
+    vim.api.nvim_set_hl(0, "DiffChange", { bg = "#dde7f3" })
+    vim.api.nvim_set_hl(0, "DiffText",   { bg = "#f5f0e8", fg = "#77713F", bold = true })
+  end
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "kanso",
+  callback = apply_diff_highlights,
+})
+
+-----------------------------------------------------------------------
 -- 3) Kansō baseline configuration
 --    Per README: setup must be called BEFORE `colorscheme kanso`.
 -----------------------------------------------------------------------

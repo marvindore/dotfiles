@@ -70,7 +70,7 @@ services:
       - silverbullet-init
 
     ports:
-      - "127.0.0.1:13001:3000"
+      - "127.0.0.1:3010:3000"
 
     environment:
       SSL_CERT_FILE: "/etc/ssl/certs/ca-certificates.pem"
@@ -95,7 +95,7 @@ docker compose up -d
 echo "Waiting for SilverBullet server to start..."
 max_attempts=30
 attempts=0
-while ! curl -sf http://localhost:13001/ &>/dev/null; do
+while ! curl -sf http://localhost:3010/ &>/dev/null; do
     if [ $attempts -ge $max_attempts ]; then
         echo "WARNING: SilverBullet took longer than expected to start"
         break
@@ -104,5 +104,5 @@ while ! curl -sf http://localhost:13001/ &>/dev/null; do
     sleep 1
 done
 
-echo "SilverBullet is running on http://localhost:13001"
+echo "SilverBullet is running on http://localhost:3010"
 {{- end }}

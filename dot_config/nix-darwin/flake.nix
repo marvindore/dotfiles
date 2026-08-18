@@ -65,7 +65,7 @@
         # removed "wezterm@nightly"
         casks = [
           "aerospace" "antigravity-cli" "bruno" "dbeaver-community" "hammerspoon" "hiddenbar"
-          "ghostty" "google-chrome" "google-drive" "linearmouse" "meld" "scoot" "slack"
+          "ghostty" "google-chrome" "google-drive" "kdiff3" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "macshot" "supercmdlabs/supercmd/supercmd" "thaw" "utm"
         ];

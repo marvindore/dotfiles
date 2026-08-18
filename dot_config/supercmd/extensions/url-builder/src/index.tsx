@@ -61,7 +61,6 @@ function TemplateForm({ template, onBack }: { template: Template; onBack: () => 
         <ActionPanel>
           <Action.SubmitForm
             title="Open URL"
-            shortcut={{ modifiers: [], key: "return" }}
             onSubmit={(values) => {
               const newErrors: Record<string, string> = {};
               template.params.forEach((_, i) => {

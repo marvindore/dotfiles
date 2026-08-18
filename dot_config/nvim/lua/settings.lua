@@ -64,6 +64,13 @@ vim.opt.expandtab=true
 vim.opt.smarttab=true
 vim.opt.copyindent=true
 
+-- Diff mode: align similar lines within a hunk instead of one big block change,
+-- and prefer the histogram algorithm + indent heuristic for more natural hunks
+-- (closer to kdiff3's alignment quality).
+vim.opt.diffopt:append("linematch:60")
+vim.opt.diffopt:append("algorithm:histogram")
+vim.opt.diffopt:append("indent-heuristic")
+
 -- highlight color
 --vim.cmd[[ set nowrap ]]
 vim.cmd[[ set colorcolumn=80,120 ]]
@@ -89,8 +96,29 @@ vim.wo.numberwidth=2
 vim.o.scrolloff=7
 vim.g.noswapfile=true
 
--- Enable break indent
+-- Enable break indent so wrapped rows keep the line's indent plus a small extra
+-- shift, reading as a clean hanging indent.
+--   shift:2 -> continuation rows get 2 extra columns
+--   min:20  -> stop adding indent once the line is deeply indented, so a wrap
+--              never collapses to a useless sliver of width
 vim.o.breakindent = true
+vim.o.breakindentopt = "shift:2,min:20"
+vim.o.linebreak = true
+
+-- Wrap-continuation marker. A glyph disambiguates a wrapped row from a real new
+-- line -- critical in 2-space YAML and in the merge panes, where line numbers
+-- are off. It's dimmed to comment-gray via NonText (the highlight group that
+-- colors showbreak) so it recedes instead of chopping up code. Re-applied on
+-- ColorScheme so it survives theme switches.
+vim.o.showbreak = "↳ "
+local function dim_wrap_marker()
+  vim.api.nvim_set_hl(0, "NonText", { link = "Comment" })
+end
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = vim.api.nvim_create_augroup("WrapMarkerDim", { clear = true }),
+  callback = dim_wrap_marker,
+})
+dim_wrap_marker()
 
 -- Save undo history
 vim.o.undofile = true
@@ -129,7 +157,7 @@ local wrap_group = vim.api.nvim_create_augroup("WrapSettings", { clear = true })
 -- - Enable wrapping for easier writing in commit buffers
 -- - Wrap at word boundaries (linebreak = true)
 -- - Keep wrapped lines visually indented (breakindent = true)
--- - Show a small marker at wrapped screen lines (showbreak)
+-- - Dim wrap marker inherited from the global showbreak (see above)
 -- - Hard-wrap at 72 characters (textwidth = 72)
 -- - Show a visual guide at column 73 (colorcolumn = "73")
 -----------------------------------------------------------------------
@@ -140,7 +168,6 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.wrap = true
     vim.opt_local.linebreak = true
     vim.opt_local.breakindent = true
-    vim.opt_local.showbreak = "↪ "
     vim.opt_local.textwidth = 72
     vim.opt_local.colorcolumn = "73"
   end,
@@ -153,7 +180,7 @@ vim.api.nvim_create_autocmd("FileType", {
 -- - Enable wrapping for long-form writing
 -- - Wrap on word boundaries instead of splitting words
 -- - Preserve indentation visually on wrapped lines
--- - Show a continuation marker for wrapped screen lines
+-- - Dim wrap marker inherited from the global showbreak (see above)
 -- - Hard-wrap at 80 characters
 -- - Show a visual ruler just past the target width
 -----------------------------------------------------------------------
@@ -164,7 +191,6 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.wrap = true
     vim.opt_local.linebreak = true
     vim.opt_local.breakindent = true
-    vim.opt_local.showbreak = "↪ "
     vim.opt_local.textwidth = 80
     vim.opt_local.colorcolumn = "81"
   end,
@@ -339,6 +365,10 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
+
+-- Auto-load the nearest project .env into vim.env so neotest runs and DAP
+-- sessions inherit project env vars (e.g. test opt-in flags) with no per-project config.
+require("utils.dotenv").setup()
 
 -- Prevent lsp and other pluggins from attaching to repl buffers
 vim.api.nvim_create_autocmd("FileType", {

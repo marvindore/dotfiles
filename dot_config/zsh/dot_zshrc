@@ -41,7 +41,7 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 # Environment variables set everywhere
 export EDITOR="nvim"
 export VISUAL="$EDITOR"
-export BROWSER="chrome"
+export BROWSER="open"
 export flake="nvim $HOME/dotfiles/.config/nix-darwin/flake.nix"
 
 # Enable colors and change prompt:
@@ -58,7 +58,7 @@ HISTFILE=~/.cache/zsh/history
 export E="/Volumes/Nvme SSD"
 export EHOME=$E/$HOME
 
-# Basic auto/tab complete:
+# Basic auto/tab complete (lazy-loaded to speed up startup)
 autoload -U compinit
 zstyle ':completion:*' menu select
 
@@ -69,8 +69,6 @@ zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=*r:|=*''l
 _comp_options+=(globdots)
 
 zmodload zsh/complist
-compinit
-_comp_options+=(globdots) # Include hidden files
 
 # Colors
 autoload -Uz colors && colors
@@ -82,9 +80,11 @@ source "$ZDOTDIR/zsh-functions"
 zsh_add_file "zsh-exports"
 zsh_add_file "zsh-vim-mode"
 zsh_add_file "zsh-aliases"
-# zsh_add_file "zsh-prompt"
+zsh_add_file "zsh-prompt"
 
 # Plugins
+# fzf-tab must load before plugins that wrap widgets (autosuggestions, syntax-highlighting)
+zsh_add_plugin "Aloxaf/fzf-tab"
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
 zsh_add_plugin "hlissner/zsh-autopair"
@@ -93,6 +93,11 @@ zsh_add_plugin "zsh-users/zsh-history-substring-search"
 # zsh_add_completion "esc/conda-zsh-completion" false
 # For more plugins: https://github.com/unixorn/awesome-zsh-plugins
 # More completions https://github.com/zsh-users/zsh-completions
+
+# fzf-tab: fuzzy, previewed tab-completion
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:*:*' fzf-preview 'if [ -d $realpath ]; then eza -1 --color=always $realpath; else bat --color=always --style=numbers --line-range=:200 $realpath 2>/dev/null || cat $realpath; fi'
+zstyle ':fzf-tab:*' switch-group ',' '.'
 
 # Key-bindings
 bindkey -s '^o' 'ranger^M'
@@ -108,6 +113,7 @@ bindkey "^k" up-line-or-beginning-search # Up
 bindkey "^j" down-line-or-beginning-search # Down
 bindkey -r "^u"
 bindkey -r "^d"
+bindkey '^g' rg-live-grep-widget # Ctrl+G: live ripgrep search, opens match in nvim
 
 # FZF
 # TODO update for mac
@@ -118,7 +124,6 @@ bindkey -r "^d"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f $ZDOTDIR/completion/_fnm ] && fpath+="$ZDOTDIR/completion/"
 # export FZF_DEFAULT_COMMAND='rg --hidden -l ""'
-compinit
 
 # Edit line in vim with ctrl-e:
 autoload edit-command-line; zle -N edit-command-line
@@ -154,7 +159,7 @@ eval "$(starship init zsh)"
 eval "$(atuin init zsh)" # shell history
 eval "$(mise activate zsh)"
 
-# set no beep for mux leader ctrl+g
+# silence the terminal bell (e.g. on failed completion, Ctrl+G abort)
 setopt NO_BEEP
 
 # worktrunk
@@ -197,6 +202,11 @@ function y() {
 
 # allow work to overwrite env vars
 source ~/.workrc
+
+# Initialize completions (only if interactive)
+if [[ -o interactive ]]; then
+  compinit -u
+fi
 
 # Launch tmux on boot
 if [[ -n "$PS1" && -z "$TMUX" && "${TERM_PROGRAM}" != "vscode" ]]; then

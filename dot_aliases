@@ -22,6 +22,12 @@ alias bw_unlock='export BW_SESSION=$(bw unlock --raw)'
 
 #git
 alias lz="lazygit"
+alias gvd="nvim '+DiffviewOpen HEAD~1'"
+alias gvD="git diff --name-only | xargs nvim"
+alias gvm="nvim '+DiffviewOpen'"
+
+### Git helper functions moved from zsh-aliases
+
 
 #Php
 alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
@@ -198,6 +204,43 @@ gvw() {
   nvim "+DiffviewOpen"
 }
 
+# Check for git conflict markers in working tree
+gcheck() {
+  local files
+  files=$(git ls-files -m | xargs grep -l '^<<<<<<<\|^=======\|^>>>>>>>' 2>/dev/null || true)
+  if [ -z "$files" ]; then
+    echo "No files with conflict markers found."
+    return 0
+  fi
+  echo "Files with conflict markers:"
+  echo "$files"
+}
+
+# Primary merge workflow: open diffview.nvim, which auto-detects conflicted
+# files from the working tree. Resolve by conflict marker: <leader>co/ct/cb
+# per conflict, <leader>cO/cT/cB for the whole file, ]x/[x to navigate.
+gmerge() {
+  if ! git ls-files -u | grep -q .; then
+    echo "No conflicted files to resolve."
+    return 0
+  fi
+  nvim -c DiffviewOpen
+}
+
+# Open conflicted files in kdiff3
+gmergex() {
+  local files
+  files=$(git ls-files -m | xargs grep -l '^<<<<<<<\|^=======\|^>>>>>>>' 2>/dev/null)
+  if [ -z "$files" ]; then
+    echo "No conflicted files to resolve."
+    return 0
+  fi
+  while IFS= read -r file; do
+    git update-index --unresolve "$file"
+    git mergetool --tool=kdiff3 "$file"
+  done <<< "$files"
+}
+
 # File history for a path, defaulting to current directory
 gvh() {
   nvim "+DiffviewFileHistory ${1:-.}"
@@ -217,3 +260,78 @@ gvf() {
   nvim "+DiffviewDiffFiles $1 $2"
 }
 
+ghd() {
+    local repo
+
+    repo="$(gh repo view --json nameWithOwner --jq '.nameWithOwner')" || {
+        printf 'ghd: unable to determine the current GitHub repository\n' >&2
+        return 1
+    }
+
+    GH_REPO="$repo" gh dash
+}
+
+ghD() {
+    gh dash
+}
+
+# Project type detection with environment info
+# Detects installed language versions (node, python, rust, go, etc.)
+envcheck() {
+  local parts=()
+
+  # Node.js
+  if command -v node &>/dev/null; then
+    local node_ver=$(node --version 2>/dev/null | sed 's/v//')
+    parts+=("🟢 node:$node_ver")
+  fi
+
+  # Python
+  if command -v python3 &>/dev/null; then
+    local py_ver=$(python3 --version 2>/dev/null | awk '{print $2}' | cut -d. -f1-2)
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+      parts+=("🐍 python:$py_ver ✓")
+    elif [[ -d .venv ]]; then
+      parts+=("🐍 python:$py_ver (deactivated)")
+    else
+      parts+=("🐍 python:$py_ver")
+    fi
+  fi
+
+  # Rust
+  if command -v rustc &>/dev/null; then
+    local rustc_ver=$(rustc --version 2>/dev/null | awk '{print $2}' | cut -d. -f1-2)
+    parts+=("🦀 rust:$rustc_ver")
+  fi
+
+  # Go
+  if command -v go &>/dev/null; then
+    local go_ver=$(go version 2>/dev/null | awk '{print $3}' | sed 's/go//')
+    parts+=("🐹 go:$go_ver")
+  fi
+
+  # C# / .NET
+  if command -v dotnet &>/dev/null; then
+    local dotnet_ver=$(dotnet --version 2>/dev/null)
+    parts+=("🧬 dotnet:$dotnet_ver")
+  fi
+
+  # Java
+  if command -v java &>/dev/null; then
+    local java_ver=$(java -version 2>&1 | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
+    parts+=("☕ java:$java_ver")
+  fi
+
+  # Ruby
+  if command -v ruby &>/dev/null; then
+    local ruby_ver=$(ruby --version 2>/dev/null | awk '{print $2}' | cut -d. -f1-2)
+    parts+=("💎 ruby:$ruby_ver")
+  fi
+
+  if [[ ${#parts[@]} -eq 0 ]]; then
+    echo "No recognized languages detected"
+    return 0
+  fi
+
+  printf '%s\n' "${parts[@]}"
+}
