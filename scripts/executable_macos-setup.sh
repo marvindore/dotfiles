@@ -16,8 +16,8 @@ packages=(
 
 casks=(
   "datagrip" "docker" "hammerspoon"
-  "hiddenbar" "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font" 
-  "ghostty" "google-chrome" "linearmouse" "macshot" "meetingbar" "meld" "rider" "scoot" "slack"
+  "hiddenbar" "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font"
+  "ghostty" "google-chrome" "kdiff3" "linearmouse" "macshot" "meetingbar" "rider" "scoot" "slack"
   "supercmdlabs/supercmd/supercmd"
 )
 

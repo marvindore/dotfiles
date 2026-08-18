@@ -1,7 +1,7 @@
 vim.pack.add({
   "https://github.com/nvim-tree/nvim-web-devicons",
   {
-    src = "https://github.com/dlyongemallo/diffview.nvim",
+    src = "https://github.com/dlyongemallo/diffview-plus.nvim",
     data = {
       cmd = {
         "DiffviewOpen",
@@ -105,7 +105,7 @@ vim.pack.add({
             enhanced_diff_hl = true,
             view = {
               default    = { layout = "diff2_horizontal" },
-              merge_tool = { layout = "diff3_horizontal", disable_diagnostics = true },
+              merge_tool = { layout = "diff4_mixed", disable_diagnostics = true },
             },
             hooks = {
               diff_buf_read = function(bufnr)
@@ -120,6 +120,11 @@ vim.pack.add({
               win_config    = { position = "left", width = 35 },
             },
             keymaps = {
+              view = {
+                { "n", "e", actions.goto_file_split, { desc = "Edit file in split" } },
+                { "n", "<leader>e", actions.goto_file, { desc = "Edit file (replace)" } },
+              },
+
               -- File panel (left column)
               file_panel = {
                 -- NEW: Navigate diff hunks in the diff window while staying here
@@ -151,6 +156,24 @@ vim.pack.add({
           silent = true,
           noremap = true,
         })
+
+        -- Toggle wordwrap in diffview buffers
+        vim.keymap.set("n", "<leader>cw", function()
+          local ok, lib = pcall(require, "diffview.lib")
+          if not ok then return end
+          local view = lib.get_current_view()
+          if not view then return end
+
+          local new = not vim.wo.wrap
+          for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            if vim.api.nvim_win_is_valid(win) then
+              vim.wo[win].wrap = new
+              vim.wo[win].linebreak = new
+              vim.wo[win].breakindent = new
+            end
+          end
+          vim.notify("Diffview: wrap " .. (new and "ON" or "OFF"), vim.log.levels.INFO, { title = "diffview" })
+        end, { desc = "Diffview: toggle wrap (all panes)" })
       end,
     },
   },
@@ -170,6 +193,8 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
-vim.opt.showbreak = "↳ "
+-- showbreak (the dim "↳ " wrap marker) and breakindentopt are owned centrally
+-- in settings.lua so there's a single source of truth; just ensure breakindent
+-- is on here for diffview's own wrapped panes.
 vim.opt.breakindent = true
 

@@ -56,9 +56,32 @@ dwn() {
   # Use fd for speed, pipe to fzf
   local dir
   dir=$(fd --type d --hidden --exclude .git . | fzf --height 40% --reverse)
-  
+
   # If a directory was selected, cd into it
   if [[ -n "$dir" ]]; then
     cd "$dir" || return
   fi
 }
+
+# Live content search (ripgrep re-runs on every keystroke) -> open match in nvim at that line
+rg-live-grep-widget() {
+  local selected file line
+  selected=$(
+    FZF_DEFAULT_COMMAND="rg --line-number --no-heading --color=always --smart-case ''" \
+    fzf --ansi --disabled --query "" \
+        --bind "start:reload:rg --line-number --no-heading --color=always --smart-case '' 2>/dev/null" \
+        --bind "change:reload:rg --line-number --no-heading --color=always --smart-case {q} 2>/dev/null || true" \
+        --delimiter ':' \
+        --preview 'bat --style=numbers --color=always --highlight-line {2} {1} 2>/dev/null' \
+        --preview-window 'right:60%:+{2}-/2'
+  )
+  if [[ -n "$selected" ]]; then
+    file=${selected%%:*}
+    line=$(echo "$selected" | cut -d: -f2)
+    BUFFER="nvim +${line} ${(q)file}"
+    zle accept-line
+  else
+    zle reset-prompt
+  fi
+}
+zle -N rg-live-grep-widget

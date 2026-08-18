@@ -6,3 +6,8 @@ macos-non-native-fullscreen = true
 #macos-titlebar-style = hidden
 # Keeps the title bar, but hides the close/minimize/maximize buttons
 macos-window-buttons = hidden
+
+# Font size toggle for cramped multi-pane views (e.g. `git mergetool`'s 4-pane
+# nvimdiff layout): shrink to fit more text, then reset back to normal.
+keybind = super+shift+m=set_font_size:9
+keybind = super+0=reset_font_size

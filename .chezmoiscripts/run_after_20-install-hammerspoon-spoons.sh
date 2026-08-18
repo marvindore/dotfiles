@@ -75,4 +75,4 @@ install_spoon() {
 
 install_spoon \
     "RecursiveBinder" \
-    "https://github.com/Hammerspoon/Spoons/raw/master/Spoons/RecursiveBinder.spoon.zip"
+    "https://raw.githubusercontent.com/Hammerspoon/Spoons/master/Spoons/RecursiveBinder.spoon.zip"

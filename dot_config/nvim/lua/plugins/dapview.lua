@@ -44,17 +44,6 @@ vim.pack.add({
 					switchbuf = "usetab",
 					auto_toggle = true,
 				})
-
-				local icons = require("config.icons")
-
-				-- JetBrains-style breakpoint: subtle dark-red line background
-				vim.api.nvim_set_hl(0, "DapBreakpointLine",         { bg = "#43242b", default = true })
-				vim.api.nvim_set_hl(0, "DapBreakpointRejectedLine", { bg = "#2a1f2a", default = true })
-				vim.api.nvim_set_hl(0, "DapStoppedLine",            { bg = "#1e2d1e", default = true })
-
-				vim.fn.sign_define("DapBreakpoint",         { text = icons.emoji.Anger,         texthl = "DiagnosticError", linehl = "DapBreakpointLine",         numhl = "DiagnosticError" })
-				vim.fn.sign_define("DapBreakpointRejected", { text = icons.emoji.Poop,          texthl = "DiagnosticWarn",  linehl = "DapBreakpointRejectedLine", numhl = "DiagnosticWarn" })
-				vim.fn.sign_define("DapStopped",            { text = icons.emoji.OrangeDiamond, texthl = "DiagnosticOk",   linehl = "DapStoppedLine",            numhl = "DiagnosticOk" })
 			end,
 		},
 	},

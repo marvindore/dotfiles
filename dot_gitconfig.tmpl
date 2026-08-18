@@ -22,18 +22,23 @@
     plus-emph-style = "bold green 22"
 
 [merge]
-    tool = meld
+    # Primary conflict resolution is diffview.nvim (`git dm` / shell `gmerge`).
+    # It parses conflict markers directly, so one choose resolves a full
+    # conflict — reliable per-conflict and whole-file choose.
+    # kdiff3 is the GUI fallback for complex 3-way cases (`git mergetoolx`),
+    # and is the git-native default below so a bare `git mergetool` is sane.
+    # The raw nvimdiff path is retired: its :diffget worked on diff hunks, not
+    # conflict regions, so a single choose left half the conflict behind.
+    tool = kdiff3
     conflictStyle = zdiff3
 
-[mergetool "meld"]
-    cmd = meld --auto-merge \
-        --label="LOCAL: $LOCAL" \
-        --label="BASE: $BASE" \
-        --label="REMOTE: $REMOTE" \
-        "$LOCAL" "$BASE" "$REMOTE" \
-        --output="$MERGED"
-    trustExitCode = false
-    hideResolved = true
+[mergetool]
+    prompt = false
+    keepBackup = false
+
+[mergetool "kdiff3"]
+    cmd = kdiff3 "$LOCAL" "$BASE" "$REMOTE" -o "$MERGED"
+    trustExitCode = true
 
 [alias]
     # Difftastic aliases
@@ -42,7 +47,9 @@
     dd = -c diff.external=difft diff
     dlp = -c diff.external=difft log -p --ext-diff
 
-    # Neovim merge workflow, explicitly named
+    # Primary merge workflow: diffview.nvim resolves conflicts from the working
+    # tree. `dm` opens diffview, then stages everything on exit.
+    # kdiff3 is the GUI fallback via the built-in `git mergetool` (merge.tool).
     nvim-merge = "!nvim -c DiffviewOpen"
     dm = "!nvim -c DiffviewOpen && git add . && echo \"Conflicts resolved. Ready to commit.\""
 

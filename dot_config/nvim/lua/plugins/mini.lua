@@ -19,10 +19,16 @@ require("mini.diff").setup({
     priority = 199,
   },
   mappings = {
-    goto_first = '[C',
-    goto_prev = '[c',
-    goto_next = ']c',
-    goto_last = ']C',
+    -- Disabled here and re-implemented below as global keymaps that fall
+    -- back to Vim's built-in diff-mode ]c/[c when inside a 'diff' window
+    -- (e.g. diffview.nvim). mini.diff maps these globally, not buffer-local,
+    -- so without the fallback they permanently shadow diffview's own hunk
+    -- navigation and report "No hunks to go to" (mini's git-diff source has
+    -- no relation to whatever revisions diffview is comparing).
+    goto_first = '',
+    goto_prev = '',
+    goto_next = '',
+    goto_last = '',
   },
   options = {
     algorithm = 'patience',
@@ -86,5 +92,22 @@ end, { desc = "Toggle inline diff popup" })
 vim.keymap.set("n", "<leader>gh", function()
   require("mini.diff").goto_hunk("current")
 end, { desc = "Focus current diff hunk" })
+
+-- Hunk navigation: defer to Vim's built-in diff-mode ]c/[c inside 'diff'
+-- windows (diffview.nvim, :diffthis, etc.); use mini.diff everywhere else.
+local function goto_hunk_or_diff(mini_direction, builtin_key)
+  return function()
+    if vim.wo.diff then
+      vim.cmd("normal! " .. builtin_key)
+    else
+      require("mini.diff").goto_hunk(mini_direction)
+    end
+  end
+end
+
+vim.keymap.set({ "n", "x" }, "[c", goto_hunk_or_diff("prev", "[c"), { desc = "Previous hunk / diff change" })
+vim.keymap.set({ "n", "x" }, "]c", goto_hunk_or_diff("next", "]c"), { desc = "Next hunk / diff change" })
+vim.keymap.set({ "n", "x" }, "[C", goto_hunk_or_diff("first", "[c"), { desc = "First hunk / diff change" })
+vim.keymap.set({ "n", "x" }, "]C", goto_hunk_or_diff("last", "]c"), { desc = "Last hunk / diff change" })
 
 vim.keymap.set("n", "saw", "saiw", { remap = true, desc = "Surround word" })

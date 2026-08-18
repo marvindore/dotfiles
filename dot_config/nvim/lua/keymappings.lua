@@ -130,6 +130,34 @@ map("v", ",q", [[c'<c-r>"'<esc>]], "Wrap in single quotes") -- surround single q
 map("v", ",Q", [[c"<c-r>""<esc>]], "Wrap in double quotes") -- surround double quotes
 map("v", ",p", [[c(<c-r>")<esc>]], "Wrap in single parentheses") -- surround single parentheses
 
+-- Search and Replace using gn motion (preserves clipboard)
+vim.keymap.set("n", "<leader>*", function()
+	local clipboard = vim.fn.getreg("+")
+	local word = vim.fn.expand("<cword>")
+	vim.fn.setreg("/", word)
+	local keys = vim.api.nvim_replace_termcodes("*Ncgn", true, false, true)
+	vim.api.nvim_feedkeys(keys, "m", false)
+	vim.schedule(function()
+		vim.fn.setreg("+", clipboard)
+	end)
+end, { noremap = true, desc = "K: Replace current word (gn motion)" })
+
+vim.keymap.set("v", "<leader>*", function()
+	local clipboard = vim.fn.getreg("+")
+	vim.cmd("noautocmd normal! y")
+	local selected = vim.fn.getreg('"')
+	local escaped = vim.fn.escape(selected, "\\/")
+	vim.fn.setreg("/", "\\V" .. escaped)
+	local keys = vim.api.nvim_replace_termcodes("Ncgn", true, false, true)
+	vim.api.nvim_feedkeys(keys, "m", false)
+	vim.schedule(function()
+		vim.fn.setreg("+", clipboard)
+	end)
+end, { noremap = true, desc = "K: Replace selected text" })
+
+-- Macro application to visual selection
+map("v", "<leader>@", ":<C-u>'<,'>normal @a<CR>", "Apply macro 'a' to selected lines")
+
 
 -- Move while insert mode
 map("i", "<C-l>", "<Right>", "Move right")
