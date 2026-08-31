@@ -99,6 +99,7 @@ vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map("n", "<leader><space>", "<C-^>", "Go to previous buffer")
+map({ "n", "x" }, "<leader>%", require("utils.block_motion").toggle, "Go to matching block boundary")
 map("n", "<leader>bd", ":bdelete<cr>", "Buffer Delete")
 map("n", "<leader>bD", ":bdelete!<cr>", "Buffer Force Delete")
 map("n", "<leader>bq", ":%bd|e #<cr>", "Buffer Delete All Other Buffers")
@@ -260,14 +261,6 @@ vim.keymap.set("n", "<leader>1", ":diffget LOCAL<CR>", { desc = "Diffget LOCAL" 
 vim.keymap.set("n", "<leader>2", ":diffget BASE<CR>", { desc = "Diffget BASE" })
 vim.keymap.set("n", "<leader>3", ":diffget REMOTE<CR>", { desc = "Diffget REMOTE" })
 
--- trouble
-wk.add({
-	{ "<leader>x", group = "Trouble" },
-})
-map("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<CR>", "Toggle trouble")
-map("n", "<leader>xq", "<cmd>Trouble qflist toggle<CR>", "Trouble toggle quickfix")
-map("n", "<leader>xl", "<cmd>Trouble loclist toggle<CR>", "Trouble toggle loclist")
-map("n", "<leader>xr", "<cmd>Trouble lsp_references toggle<CR>", "Trouble toggle references")
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -294,4 +287,3 @@ vim.api.nvim_create_user_command("NotesPlus", function()
 end, {})
 
 vim.keymap.set("n", "<leader>N", ":NotesPlus<CR>", { desc = "Open NotesPlus" })
-

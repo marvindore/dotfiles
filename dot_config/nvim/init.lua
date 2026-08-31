@@ -11,7 +11,7 @@ require("keymappings")
 vim.api.nvim_set_hl(0, 'BugIcon', { fg = '#FF0000' })
 
 vim.api.nvim_create_autocmd("SessionLoadPost", {
-    callback = function() require("utils.dap_breakpoints").load_breakpoints() end,
+    callback = function() require("dap.breakpoints").load_breakpoints() end,
 })
 
 

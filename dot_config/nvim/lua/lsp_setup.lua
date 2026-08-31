@@ -1,6 +1,8 @@
 -- lua/lsp_setup.lua
 -- Optimized LSP configuration for Neovim v0.11+
 local M = {}
+local warned_missing_ty = {}
+local warned_missing_go = {}
 
 -- DEFERRED HELPER: Only runs when a JS/TS file is opened
 local function detect_angular()
@@ -118,19 +120,29 @@ function M.enable_servers(opts)
 		vim.api.nvim_create_autocmd("FileType", {
 			pattern = "python",
 			callback = function()
-				-- Pyrefly gets import roots and interpreter details from project config.
-				vim.lsp.enable({ "pyrefly", "ruff" })
-				return true
-			end,
-		})
-	end
+				local root = vim.fs.root(0, {
+					"ty.toml",
+					"pyproject.toml",
+					"setup.py",
+					"setup.cfg",
+					"requirements.txt",
+					"Pipfile",
+					".git",
+				}) or vim.fn.getcwd()
+				local project_ty = root .. "/.venv/bin/ty"
+				local has_project_ty = vim.fn.executable(project_ty) == 1
+				local has_global_ty = vim.fn.executable("ty") == 1
 
-	-- Rust
-	if opts.enable_rust or g.enableRust then
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = "rust",
-			callback = function()
-				vim.lsp.enable("rust_analyzer")
+				if not has_project_ty and not has_global_ty and not warned_missing_ty[root] then
+					vim.notify(
+						"ty is not installed. Run: uv add --dev ty",
+						vim.log.levels.WARN,
+						{ title = "Python LSP" }
+					)
+					warned_missing_ty[root] = true
+				end
+
+				vim.lsp.enable({ "ty", "ruff" })
 				return true
 			end,
 		})
@@ -138,7 +150,38 @@ function M.enable_servers(opts)
 
 	-- Simple Toggles (Fast enough to keep here if desired)
 	if g.enableGo then
-		vim.lsp.enable("gopls")
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = { "go", "gomod", "gowork", "gotmpl" },
+			callback = function()
+				local root = vim.fs.root(0, { "go.work", "go.mod", ".git" }) or vim.fn.getcwd()
+				local missing = {}
+
+				if vim.fn.executable("gopls") ~= 1 then
+					table.insert(missing, "gopls")
+				end
+				if vim.fn.executable("dlv") ~= 1 then
+					table.insert(missing, "dlv")
+				end
+				local has_go_parser = pcall(vim.treesitter.language.add, "go")
+				if not has_go_parser then
+					table.insert(missing, "Go Tree-sitter parser")
+				end
+
+				if #missing > 0 and not warned_missing_go[root] then
+					vim.notify(
+						"Missing Go tools: "
+							.. table.concat(missing, ", ")
+							.. "\nRun :MasonToolsInstall and :TSInstall go",
+						vim.log.levels.WARN,
+						{ title = "Go development" }
+					)
+					warned_missing_go[root] = true
+				end
+
+				vim.lsp.enable("gopls")
+				return true
+			end,
+		})
 	end
 	if g.enableSql then
 		vim.lsp.enable("sqls")

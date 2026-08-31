@@ -3,12 +3,17 @@
 # If Slack or Teams are not running when switching to M, launches them so
 # they auto-move via aerospace on-window-detected rules.
 #
-# Uses AeroSpace's Unix socket rather than the `aerospace` CLI binary —
-# the .app bundle only ships the GUI launcher, no CLI binary is symlinked.
-# Socket protocol: {"stdin": "", "args": [...]} → {"exitCode": ..., "stdout": ..., "stderr": ...}
-import json, os, socket, subprocess, time, threading
+# Uses AeroSpace's Unix socket rather than the `aerospace` CLI binary.
+# Socket protocol: version handshake followed by length-prefixed JSON frames.
+import json
+import os
+import socket
+import struct
+import subprocess
+import threading
 
 SOCK = f"/tmp/bobko.aerospace-{os.environ['USER']}.sock"
+SOCKET_PROTOCOL_VERSION = 1
 
 # Bundle IDs matching aerospace on-window-detected rules for workspace M
 MESSAGING_APPS = [
@@ -17,14 +22,48 @@ MESSAGING_APPS = [
     "com.microsoft.teams",         # Microsoft Teams (classic)
 ]
 
+def recv_exact(sock, size):
+    data = b""
+    while len(data) < size:
+        chunk = sock.recv(size - len(data))
+        if not chunk:
+            raise ConnectionError("AeroSpace closed the socket")
+        data += chunk
+    return data
+
+
+def send_frame(sock, payload):
+    sock.sendall(struct.pack("<I", len(payload)) + payload)
+
+
+def recv_frame(sock):
+    (size,) = struct.unpack("<I", recv_exact(sock, 4))
+    return recv_exact(sock, size)
+
+
 def aero(*args):
-    s = socket.socket(socket.AF_UNIX)
-    s.settimeout(2)
-    s.connect(SOCK)
-    s.send(json.dumps({"stdin": "", "args": list(args)}).encode())
-    time.sleep(0.1)
-    r = json.loads(s.recv(4096))
-    return r.get("exitCode", 1), r.get("stdout", "").strip()
+    request = {
+        "stdin": "",
+        "args": list(args),
+        "windowId": None,
+        "workspace": None,
+    }
+
+    with socket.socket(socket.AF_UNIX) as sock:
+        sock.settimeout(2)
+        sock.connect(SOCK)
+        sock.sendall(struct.pack("<I", SOCKET_PROTOCOL_VERSION))
+        (server_version,) = struct.unpack("<I", recv_exact(sock, 4))
+        if server_version != SOCKET_PROTOCOL_VERSION:
+            raise RuntimeError(f"Unsupported AeroSpace socket version: {server_version}")
+        send_frame(sock, json.dumps(request).encode("utf-8"))
+        response = json.loads(recv_frame(sock))
+
+    return (
+        response.get("exitCode", 1),
+        response.get("stdout", "").strip(),
+        response.get("stderr", "").strip(),
+    )
 
 def launch_missing_apps():
     # Single lsappinfo call to get all running apps at once, rather than
@@ -34,7 +73,7 @@ def launch_missing_apps():
         if bundle_id not in running:
             subprocess.Popen(["open", "-b", bundle_id], stderr=subprocess.DEVNULL)
 
-_, ws = aero("list-workspaces", "--focused")
+_, ws, _ = aero("list-workspaces", "--focused")
 if ws == "M":
     aero("focus", "dfs-next", "--boundaries-action", "wrap-around-the-workspace")
 else:

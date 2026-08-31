@@ -28,11 +28,11 @@
 
       environment.systemPackages = with pkgs; [ 
         act age atuin bat chezmoi cmake delta difftastic
-        docker dua ec eza fd fzf gcc gh git gnupg
+        docker dua ec espanso eza fd fx fzf gcc gh git gnupg
         ilspycmd imagemagick iproute2mac jc jq just k9s lazygit
         mas # Required for App Store CLI
         miller mise mkalias pngpaste ripgrep rustup sesh starship
-        tmux tree-sitter zk zoxide zsh
+        tmux tree-sitter yazi zk zoxide zsh
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default
       ];
 
@@ -65,7 +65,7 @@
         # removed "wezterm@nightly"
         casks = [
           "aerospace" "antigravity-cli" "bruno" "dbeaver-community" "hammerspoon" "hiddenbar"
-          "ghostty" "google-chrome" "google-drive" "kdiff3" "linearmouse" "scoot" "slack"
+          "ghostty" "gitcomet" "google-chrome" "google-drive" "linearmouse" "scoot" "slack"
           "font-jetbrains-mono-nerd-font"
           "macshot" "supercmdlabs/supercmd/supercmd" "thaw" "utm"
         ];

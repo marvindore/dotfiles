@@ -1,0 +1,7 @@
+[mgr]
+show_hidden = true
+sort_by = "natural"
+sort_dir_first = true
+linemode = "mtime"
+scrolloff = 8
+show_symlink = true

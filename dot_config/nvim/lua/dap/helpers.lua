@@ -1,7 +1,7 @@
 local M = {}
 
 function M.file_exists(path)
-	local st = vim.loop.fs_stat(path)
+	local st = vim.uv.fs_stat(path)
 	return st and st.type == "file"
 end
 
@@ -75,7 +75,7 @@ function M.list_candidate_dlls(project_root)
 		end
 	end
 	table.sort(out, function(a, b)
-		local sa, sb = vim.loop.fs_stat(a), vim.loop.fs_stat(b)
+		local sa, sb = vim.uv.fs_stat(a), vim.uv.fs_stat(b)
 		return (sa and sa.mtime.sec or 0) > (sb and sb.mtime.sec or 0)
 	end)
 	return out

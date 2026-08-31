@@ -24,74 +24,13 @@ after = function(_)
 					return -- Prevent the crash by aborting setup until installed
 				end
 
-				-- 2. Setup the server
+				-- 2. Configure the Roslyn plugin
 				require("roslyn").setup({
-					-- THE FIX: Explicitly tell roslyn.nvim to use the Mason DLL via dotnet
-					exe = {
-						"dotnet",
-						vim.fs.joinpath(
-							vim.g.mason_root,
-							"packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll"
-						),
-					},
-					
-					on_attach = function(client, bufnr)
-						-- Let client know we got this
-						client.server_capabilities = vim.tbl_deep_extend("force", client.server_capabilities, {
-							semanticTokensProvider = { full = true },
-						})
+					filewatching = "auto",
+				})
 
-						-- Save the original request method
-						local original_request = client.request
-
-						-- Override the client's request method
-						client.request = function(method, params, handler, ctx, config)
-							if method == "textDocument/semanticTokens/full" then
-								-- Modify the request to a range request covering the entire document
-								local target_bufnr = vim.uri_to_bufnr(params.textDocument.uri)
-
-								if not vim.api.nvim_buf_is_loaded(target_bufnr) then
-									vim.notify(
-										"[LSP] Buffer not loaded for URI: " .. params.textDocument.uri,
-										vim.log.levels.WARN
-									)
-									return original_request(method, params, handler, ctx, config)
-								end
-
-								local line_count = vim.api.nvim_buf_line_count(target_bufnr)
-								local last_line = vim.api.nvim_buf_get_lines(
-									target_bufnr,
-									line_count - 1,
-									line_count,
-									true
-								)[1] or ""
-								local end_character = #last_line
-
-								local range = {
-									start = { line = 0, character = 0 },
-									["end"] = { line = line_count - 1, character = end_character },
-								}
-
-								local new_params = {
-									textDocument = params.textDocument,
-									range = range,
-								}
-
-								-- Send the modified range request
-								return original_request(
-									"textDocument/semanticTokens/range",
-									new_params,
-									handler,
-									ctx,
-									config
-								)
-							end
-
-							-- Call the original request method for all other methods
-							return original_request(method, params, handler, ctx, config)
-						end
-					end,
-					
+				-- Configure language-server settings through Neovim's native LSP API.
+				vim.lsp.config("roslyn", {
 					settings = {
 						["csharp|inlay_hints"] = {
 							csharp_enable_inlay_hints_for_implicit_object_creation = true,

@@ -26,10 +26,26 @@ local opts = {
     opts = { formatters = { truncate = false } },
     --layout = { preset = "ivy" },
     win = {
-      input   = { keys = { ["<c-]>"] = { "focus_preview", mode = { "n", "i" } } } },
-      list    = { keys = { ["<c-]>"] = { "focus_preview", mode = { "n" } } } },
+      input   = { keys = { ["<c-]>"] = { "focus_preview", mode = { "n", "i" } }, ["<c-w>"] = { "delete_word", mode = { "i" } } } },
+      list    = {
+        keys = {
+          ["<c-]>"] = { "focus_preview", mode = { "n" } },
+        },
+        wo = { wrap = false }
+      },
       preview = { keys = {
         ["?"] = "toggle_help_list",
+        ["<c-i>"] = {
+          function()
+            local pickers = Snacks.picker.get()
+            if not (pickers and pickers[1]) then return end
+            local iw = pickers[1].input.win.win
+            if iw and vim.api.nvim_win_is_valid(iw) then
+              vim.api.nvim_set_current_win(iw)
+            end
+          end,
+          mode = { "n" }
+        },
       } },
     },
   },

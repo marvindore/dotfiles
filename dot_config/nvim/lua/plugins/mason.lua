@@ -90,7 +90,7 @@ vim.pack.add({
 					})
 				end
 				if vim.g.enablePython then
-					vim.list_extend(ensure_installed, { "debugpy", "pyrefly", "ruff" })
+					vim.list_extend(ensure_installed, { "debugpy", "ruff" })
 				end
 				if vim.g.enableRust then
 					vim.list_extend(ensure_installed, { "rust-analyzer", "codelldb" })

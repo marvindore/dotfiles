@@ -36,7 +36,6 @@ require("mini.diff").setup({
     linematch = 60, -- 👈 enables better intra-line diffing
   },
 })
-require("mini.files").setup({ mappings = { go_in_plus = "<cr>" } })
 require("mini.comment").setup()
 
 require("mini.surround").setup({
@@ -82,9 +81,6 @@ hipatterns.setup({
 
 
 -- Keymaps
-vim.keymap.set("n", "-", ":lua MiniFiles.open(vim.api.nvim_buf_get_name(0))<cr>", { desc = "Open directory" })
-vim.keymap.set("n", "_", ":lua MiniFiles.open()<cr>", { desc = "Open parent directory" })
-
 vim.keymap.set("n", "<leader>gd", function()
   require("mini.diff").toggle_overlay(0)
 end, { desc = "Toggle inline diff popup" })
