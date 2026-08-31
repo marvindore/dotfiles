@@ -123,3 +123,13 @@ Run command across all files in argument list
 :argdo runs the substitution in each file.
 update saves the file only if it was changed.
 
+Change line endings
+For \n or LF): :set fileformat=unix (or :set ff=unix)
+For Windows (\r\n or CRLF): :set fileformat=dos (or :set ff=dos)
+For Older Mac systems (\r or CR): :set fileformat=mac (or :set ff=mac) 
+
+-- For default Linux/macOS line endings (LF)
+vim.opt.fileformat = "unix"
+
+-- For default Windows line endings (CRLF)
+vim.opt.fileformat = "dos"

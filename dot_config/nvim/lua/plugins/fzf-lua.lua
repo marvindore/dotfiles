@@ -21,13 +21,13 @@ vim.pack.add({
 				{ lhs = "<LocalLeader>fg", rhs = ":lua require('fzf-lua').grep_project()<CR>", mode = "n", desc =  "Fzf Grep" },
 				{ lhs = "<LocalLeader>fG", rhs = ":lua require('fzf-lua').live_grep_glob()<CR>", mode = "n", desc =  "Fzf rg --glob" },
 				{
-					lhs = "<leader>fd",
+					lhs = "<leader>xd",
 					rhs = ":lua require('fzf-lua').diagnostics_document()<CR>",
 					mode = "n",
 					desc = "Fzf Document Diagnostics",
 				},
 				{
-					lhs = "<leader>fD",
+					lhs = "<leader>xD",
 					rhs = ":lua require('fzf-lua').diagnostics_workspace()<CR>",
 					mode = "n",
 					desc = "Fzf Workspace Diagnostics",
@@ -55,6 +55,12 @@ vim.pack.add({
 					rhs = '<cmd>lua require("fzf-lua").marks({marks = "[A-Za-z]"})<CR>',
 					mode = "n",
 					desc = "Filtered Marks (a-z, A-Z)",
+				},
+				{
+					lhs = "<leader>xq",
+					rhs = ":lua vim.diagnostic.setqflist()<CR>",
+					mode = "n",
+					desc = "Diagnostics to quickfix",
 				},
 			},
 

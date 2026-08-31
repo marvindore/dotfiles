@@ -37,7 +37,7 @@ vim.pack.add({
 				{ lhs = "<S-F11>", rhs = ":lua require('dap').step_out()<CR>", mode = "n", desc =  "Debug step out" },
 				{
 					lhs = "<leader>db",
-					rhs = ":lua require('utils.dap_breakpoints').toggle_breakpoint()<CR>",
+					rhs = ":lua require('dap.breakpoints').toggle_breakpoint()<CR>",
 					mode = "n",
 					desc = "Debug toggle breakpoint",
 				},
@@ -79,7 +79,7 @@ vim.pack.add({
 			},
 			after = function(_)
 				local dap = require("dap")
-				local h = require("utils.dap_helpers")
+				local h = require("dap.helpers")
 				local icons = require("config.icons")
 				local last_picked_dll = nil
 
@@ -167,27 +167,9 @@ vim.pack.add({
           })
 				end
 
-				require("dap-go").setup({})
-
-				-- RUST (CodeLLDB)
-				dap.adapters.codelldb = { type = "server", host = "127.0.0.1", port = 13000 }
-				dap.configurations.rust = {
-					{
-						name = "rustacean",
-						type = "codelldb",
-						request = "launch",
-						program = function()
-							local co = coroutine.running()
-							vim.ui.input(
-								{ prompt = "Executable: ", default = vim.fn.getcwd() .. "/target/debug/" },
-								function(s)
-									coroutine.resume(co, s)
-								end
-							)
-							return coroutine.yield()
-						end,
-					},
-				}
+				if vim.g.enableGo then
+					require("dap-go").setup({})
+				end
 
 				-- LUA
 				dap.adapters.nlua = function(callback, config)

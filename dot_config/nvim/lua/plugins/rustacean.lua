@@ -1,4 +1,8 @@
--- Eagerly add rustaceanvim to the path (it handles its own lazy-loading internally)
+if not vim.g.enableRust then
+	return
+end
+
+-- rustaceanvim handles Rust LSP and DAP setup for Rust buffers.
 vim.pack.add({
 	{
 		src = "https://github.com/mrcjkb/rustaceanvim",

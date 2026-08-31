@@ -6,7 +6,7 @@
 -- Walking up from the current file to the nearest `.env` makes it work in
 -- monorepos without any per-project Lua config.
 
-local helpers = require("utils.dap_helpers")
+local helpers = require("dap.helpers")
 
 local M = {}
 

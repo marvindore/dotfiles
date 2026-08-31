@@ -8,16 +8,16 @@ set -euo pipefail
 
 packages=(
   "act" "atuin" "bat" "bruno" "difftastic" "dua-cli" "tree-sitter" "bitwarden"
-  "ec" "eza" "fzf" "gh" "git" "git-delta"
+  "ec" "eza" "fx" "fzf" "gh" "git" "git-delta"
   "gnupg" "imagemagick" "iproute2mac" "jc" "jq" "just" "k9s" "miller" "mise" 
   "pngpaste" "sesh" "opencode" "ripgrep" "starship" "tmux"
-  "zoxide"
+  "yazi" "zoxide"
 )
 
 casks=(
-  "datagrip" "docker" "hammerspoon"
+  "datagrip" "docker" "espanso" "hammerspoon"
   "hiddenbar" "ilspy" "intellij-idea" "font-jetbrains-mono-nerd-font"
-  "ghostty" "google-chrome" "kdiff3" "linearmouse" "macshot" "meetingbar" "rider" "scoot" "slack"
+  "ghostty" "gitcomet" "google-chrome" "linearmouse" "macshot" "meetingbar" "rider" "scoot" "slack"
   "supercmdlabs/supercmd/supercmd"
 )
 
