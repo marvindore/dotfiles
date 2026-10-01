@@ -13,3 +13,4 @@ dot_config/supercmd/extensions/*/.DS_Store
 # SuperCmd extension data files (contain company-sensitive URLs/data)
 dot_config/supercmd/extensions/*/bookmarks.json
 dot_config/supercmd/extensions/*/url-templates.json
+**/.DS_STORE

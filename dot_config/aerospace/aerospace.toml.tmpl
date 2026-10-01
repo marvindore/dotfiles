@@ -111,7 +111,7 @@ automatically-unhide-macos-hidden-apps = false
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
     #alt-j = "workspace-back-and-forth" #toggle workspace
-    alt-shift-space = "focus-back-and-forth "
+    alt-shift-space = 'focus-back-and-forth'
 
     alt-z = 'focus-monitor prev'
     alt-x = 'focus-monitor next'
@@ -159,11 +159,11 @@ automatically-unhide-macos-hidden-apps = false
     alt-f = 'workspace F'
     alt-g = 'workspace G'
     alt-i = 'workspace I'
-    alt-m = 'exec-and-forget zsh -lc "~/.local/bin/aerospace-messaging"'
+    alt-m = ['exec-and-forget open -a Slack', 'workspace M']
     # alt-n reserved for SilverBullet PWA (handled via Hammerspoon)
     alt-o = 'workspace O'
     alt-p = 'workspace P'
-    alt-q = 'workspace Q'
+    alt-q = ['exec-and-forget open -a Notes', 'workspace Q']
     alt-r = [
         "exec-and-forget bash -lc '~/.local/bin/tmux-workspace r'",
         "workspace T"
@@ -219,9 +219,6 @@ automatically-unhide-macos-hidden-apps = false
     alt-shift-z = 'move-node-to-workspace Z'
 
     alt-tab = 'focus dfs-next --boundaries-action wrap-around-the-workspace'
-    # 'focus dfs-prev --boundaries-action wrap-around-the-workspace'
-    # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
-    alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#mode
     alt-shift-semicolon = 'mode service'
@@ -283,9 +280,13 @@ run = "move-node-to-workspace T"
 if.app-id = 'com.apple.Safari'
 run = "move-node-to-workspace B"
 
-#[[on-window-detected]]
-#if.app-id = 'com.google.Chrome'
-#run = "move-node-to-workspace B"
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = "move-node-to-workspace B"
+
+[[on-window-detected]]
+if.app-name-regex-substring = "SilverBullet"
+run = "move-node-to-workspace N"
 
 [[on-window-detected]]
 if.app-id = 'com.omnissa.horizon.client.mac'
@@ -300,16 +301,20 @@ if.app-name-regex-substring = "Parallels"
 run = "move-node-to-workspace V"
 
 [[on-window-detected]]
-if.app-id = 'com.microsoft.teams2'
-run = "move-node-to-workspace M"
-
-[[on-window-detected]]
-if.app-id = 'com.microsoft.teams'
-run = 'move-node-to-workspace M'
-
-[[on-window-detected]]
 if.app-id = 'com.tinyspeck.slackmacgap'
 run = 'move-node-to-workspace M'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.teams2'
+run = 'move-node-to-workspace M'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Notes'
+run = 'move-node-to-workspace Q'
+
+[[on-window-detected]]
+if.app-id = 'com.usebruno.app'
+run = 'move-node-to-workspace A'
 
 [[on-window-detected]]
 if.app-id = 'com.jetbrains.pycharm'

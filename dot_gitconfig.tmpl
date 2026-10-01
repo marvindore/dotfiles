@@ -25,19 +25,25 @@
     # Primary conflict resolution is diffview.nvim (`git dm` / shell `gmerge`).
     # It parses conflict markers directly, so one choose resolves a full
     # conflict — reliable per-conflict and whole-file choose.
-    # gitcomet is the 4-way merge tool for complex cases (`git mergetool`),
-    # and is the git-native default below so a bare `git mergetool` is sane.
+    # gitcomet is the 4-way merge tool for complex cases (`git mergetool`).
+    # guiDefault=auto uses guitool (--gui) when display available, else tool.
     # The raw nvimdiff path is retired: its :diffget worked on diff hunks, not
     # conflict regions, so a single choose left half the conflict behind.
     tool = gitcomet
+    guitool = gitcomet-gui
     conflictStyle = zdiff3
 
 [mergetool]
     prompt = false
     keepBackup = false
+    guiDefault = auto
 
 [mergetool "gitcomet"]
-    cmd = gitcomet mergetool --gui --local "$LOCAL" --base "$BASE" --remote "$REMOTE" --merged "$MERGED"
+    cmd = gitcomet mergetool --base "$BASE" --local "$LOCAL" --remote "$REMOTE" --merged "$MERGED"
+    trustExitCode = true
+
+[mergetool "gitcomet-gui"]
+    cmd = gitcomet mergetool --gui --base "$BASE" --local "$LOCAL" --remote "$REMOTE" --merged "$MERGED"
     trustExitCode = true
 
 [alias]
