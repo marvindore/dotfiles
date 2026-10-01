@@ -30,7 +30,7 @@
         act age atuin bat chezmoi cmake delta difftastic
         docker dua ec espanso eza fd fx fzf gcc gh git gnupg
         ilspycmd imagemagick iproute2mac jc jq just k9s lazygit
-        mas # Required for App Store CLI
+        lnav mas # Required for App Store CLI
         miller mise mkalias pngpaste ripgrep rustup sesh starship
         tmux tree-sitter yazi zk zoxide zsh
         inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default

@@ -17,14 +17,18 @@ alias ca="CHEZMOI_SECRETS=1 chezmoi apply"
 alias oc="opencode"
 alias agyd="agy --dangerously-skip-permissions"
 
+alias yz="yazi"
+
 #bitwarden
 alias bw_unlock='export BW_SESSION=$(bw unlock --raw)'
 
 #git
-alias lz="lazygit"
+alias lzg="lazygit"
 alias gvd="nvim '+DiffviewOpen HEAD~1'"
 alias gvD="git diff --name-only | xargs nvim"
 alias gvm="nvim '+DiffviewOpen'"
+
+alias lzd="lazydocker"
 
 ### Git helper functions moved from zsh-aliases
 
@@ -335,3 +339,84 @@ envcheck() {
 
   printf '%s\n' "${parts[@]}"
 }
+
+###############################################################################
+# RIPGREP ALIASES
+###############################################################################
+
+# open neovim to spot
+# nvim -q <(rg --vimgrep show-admin-ai-anomalies-rating-footers)
+#
+
+# Standard readable search
+# - Case-insensitive
+# - Groups matches by file
+# - Shows line numbers
+# Usage: rgh "search-term"
+alias rgh='rg --heading --line-number --color=always -i'
+
+# Search with 2 lines of context before and after each match
+# Great for understanding surrounding code
+# Usage: rgc "search-term"
+alias rgc='rg --heading --line-number --color=always -C 2 -i'
+
+# Search with 5 lines of context
+# Usage: rgc5 "search-term"
+alias rgc5='rg --heading --line-number --color=always -C 5 -i'
+
+# Show line + column numbers
+# Useful when jumping to exact positions
+# Usage: rgcol "search-term"
+alias rgcol='rg --heading --line-number --column --color=always -i'
+
+# Find files that contain the term (filenames only)
+# Useful before opening files in editor
+# Usage: rgf "search-term"
+alias rgf='rg -l -i'
+
+# Vim/IDE-friendly output
+# Format: file:line:column:text
+# Usage: rgv "search-term"
+alias rgv='rg --vimgrep -i'
+
+# Search only TypeScript files
+# Usage: rgts "search-term"
+alias rgts='rg -i -g "*.ts"'
+
+# Search only TSX files
+# Usage: rgtsx "search-term"
+alias rgtsx='rg -i -g "*.tsx"'
+
+# Search TS + TSX files
+# Usage: rgreact "search-term"
+alias rgreact='rg -i -g "*.ts" -g "*.tsx"'
+
+# Search source code while ignoring common noise
+# Usage: rgsrc "search-term"
+alias rgsrc='rg -i \
+  --glob "!node_modules/**" \
+  --glob "!dist/**" \
+  --glob "!build/**" \
+  --glob "!.next/**"'
+
+###############################################################################
+# FZF INTEGRATION
+###############################################################################
+
+# Interactive fuzzy picker on ripgrep results
+# Requires: fzf
+# Usage: rgfz "search-term"
+alias rgfz='rg --line-number --no-heading --color=always -i | fzf --ansi'
+
+###############################################################################
+# MY FAVORITE DAILY DRIVER
+###############################################################################
+
+# Best balance of readability and context
+# Shows:
+#   File heading
+#   Line numbers
+#   2 lines before/after
+#   Colored matches
+# Usage: rgcode "search-term"
+alias rgcode='rg --heading --line-number --color=always -C 2 -i'

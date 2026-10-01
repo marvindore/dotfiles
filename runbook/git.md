@@ -57,6 +57,9 @@ git show <hash>:<file> | grep -A 14 "phrase"
 
     # Show commits from BASE and before
     git log --graph --decorate <hash>
+
+    # Who deleted the file in a mod/del conflict
+    git log --diff-filter=D --summary -- <file_name>
 ```
 
 diff

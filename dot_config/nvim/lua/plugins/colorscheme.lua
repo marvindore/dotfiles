@@ -1,24 +1,30 @@
--- colors.lua (or paste into your init.lua)
+-- colors.lua for kanagawa-paper
 
 -----------------------------------------------------------------------
--- 1) Install Kansō via vim.pack
+-- 1) Install Kanagawa Paper via vim.pack
 -----------------------------------------------------------------------
 vim.pack.add({
-  { src = "https://github.com/webhooked/kanso.nvim.git" },
+  { src = "https://github.com/thesimonho/kanagawa-paper.nvim.git" },
 })
+
+-- Manually add kanagawa-paper to runtimepath if not already present
+local kanagawa_paper_path = vim.fn.stdpath("data") .. "/site/pack/core/opt/kanagawa-paper.nvim"
+if vim.fn.isdirectory(kanagawa_paper_path) == 1 then
+  local rtp = vim.o.runtimepath
+  if not string.find(rtp, kanagawa_paper_path, 1, true) then
+    vim.o.runtimepath = kanagawa_paper_path .. "," .. rtp
+  end
+end
 
 -----------------------------------------------------------------------
 -- 2) Baseline UI options
 -----------------------------------------------------------------------
-vim.opt.termguicolors = true  -- full 24-bit color; recommended by most themes
-vim.g.lualine_theme = "kanso"
+vim.opt.termguicolors = true
 
 -----------------------------------------------------------------------
 -- 2.5) kdiff3-style diff highlights
---    Kanso's default diff colors are subtle; bump saturation so each
---    diff class (add/change/delete, and the exact changed text within
---    a changed line) is instantly distinguishable, like kdiff3's A/B/C
---    coloring. Re-applied on every `:colorscheme kanso` (toggles included).
+--    Kanagawa Paper's default diff colors are subtle; bump saturation.
+--    Re-applied on every `:colorscheme kanagawa-paper*` (toggles included).
 -----------------------------------------------------------------------
 local function apply_diff_highlights()
   local dark = vim.o.background == "dark"
@@ -36,82 +42,135 @@ local function apply_diff_highlights()
 end
 
 vim.api.nvim_create_autocmd("ColorScheme", {
-  pattern = "kanso",
+  pattern = "kanagawa-paper*",
   callback = apply_diff_highlights,
 })
 
 -----------------------------------------------------------------------
--- 3) Kansō baseline configuration
---    Per README: setup must be called BEFORE `colorscheme kanso`.
+-- 3) Kanagawa Paper baseline configuration
+--    Per docs: setup must be called BEFORE `colorscheme kanagawa-paper`.
+--    Variants: ink (dark), canvas (light), auto (follows vim.o.background).
 -----------------------------------------------------------------------
-local VARIANTS = { "zen", "ink", "mist", "pearl" }
-local function is_light_variant(v) return v == "pearl" end
+local VARIANTS = { "ink", "canvas" }
+local function is_light_variant(v) return v == "canvas" end
 
 -- Choose your preferred startup pairing here
 local DEFAULTS = {
   dark_variant  = "ink",
-  light_variant = "pearl",
-  minimal       = false,
-  saturated     = false, -- false => "default", true => "saturated"
-  compile       = false, -- keep false so runtime toggles are instant
+  light_variant = "canvas",
+  dim_inactive  = false,
+  transparency  = false,
+  gutter        = false,
 }
 
 -- Runtime state that we WILL update as you switch
 local STATE = {
-  minimal   = DEFAULTS.minimal,
-  saturated = DEFAULTS.saturated,
-  map       = { dark = DEFAULTS.dark_variant, light = DEFAULTS.light_variant },
+  dim_inactive = DEFAULTS.dim_inactive,
+  transparency = DEFAULTS.transparency,
+  gutter       = DEFAULTS.gutter,
+  map          = { dark = DEFAULTS.dark_variant, light = DEFAULTS.light_variant },
 }
 
--- Apply Kansō with current STATE
-local function kanso_apply(extra_opts)
+-- Apply Kanagawa Paper with current STATE
+local function kanagawa_paper_apply(extra_opts)
   local opts = vim.tbl_deep_extend("force", {
-    background = { dark = STATE.map.dark, light = STATE.map.light },
-    foreground = STATE.saturated and "saturated" or "default",
-    minimal    = STATE.minimal,
-    compile    = DEFAULTS.compile,
+    undercurl = true,
+    transparent = STATE.transparency,
+    gutter = STATE.gutter,
+    diag_background = true,
+    dim_inactive = STATE.dim_inactive,
+    terminal_colors = true,
+    cache = false,
+
+    styles = {
+      comment = { italic = true },
+      functions = { italic = false },
+      keyword = { italic = false, bold = false },
+      statement = { italic = false, bold = false },
+      type = { italic = false },
+    },
+
+    color_balance = {
+      ink = { brightness = 0, saturation = 0 },
+      canvas = { brightness = 0, saturation = 0 },
+    },
+
+    overrides = function(colors)
+      local theme = colors.theme
+      return {
+        -- Transparent floats
+        NormalFloat = { bg = "none" },
+        FloatBorder = { bg = "none" },
+        FloatTitle = { bg = "none" },
+      }
+    end,
+
+    auto_plugins = true,
+    all_plugins = package.loaded.lazy == nil,
   }, extra_opts or {})
 
-  require("kanso").setup(opts) -- setup first (README requirement)
-  vim.cmd.colorscheme("kanso") -- then apply the colorscheme
+  require("kanagawa-paper").setup(opts)
+  vim.cmd.colorscheme("kanagawa-paper")
 end
 
 -- Initial apply (dark by default)
 vim.o.background = "dark"
-kanso_apply()
+kanagawa_paper_apply()
+
+-- Configure lualine dynamically based on background
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "kanagawa-paper*",
+  callback = function()
+    local ok, lualine = pcall(require, "lualine")
+    if ok then
+      local theme_name = vim.o.background == "light" and "kanagawa-paper-canvas" or "kanagawa-paper-ink"
+      local ok2, theme = pcall(require, "lualine.themes." .. theme_name)
+      if ok2 then
+        lualine.setup({ options = { theme = theme } })
+      end
+    end
+  end,
+})
 
 -----------------------------------------------------------------------
 -- 4) Toggles & variant switching
 -----------------------------------------------------------------------
 
--- Toggle Minimal mode (reduced palette)
-function _G.KansoToggleMinimal()
-  STATE.minimal = not STATE.minimal
-  kanso_apply()
-  vim.notify("Kansō minimal: " .. (STATE.minimal and "ON" or "OFF"))
+-- Toggle dimming of inactive windows
+function _G.KanagawaPaperToggleDim()
+  STATE.dim_inactive = not STATE.dim_inactive
+  kanagawa_paper_apply()
+  vim.notify("Kanagawa Paper dim inactive: " .. (STATE.dim_inactive and "ON" or "OFF"))
 end
 
--- Toggle Saturated foreground (more vivid syntax colors)
-function _G.KansoToggleSaturation()
-  STATE.saturated = not STATE.saturated
-  kanso_apply()
-  vim.notify("Kansō foreground: " .. (STATE.saturated and "SATURATED" or "DEFAULT"))
+-- Toggle background transparency
+function _G.KanagawaPaperToggleTransparency()
+  STATE.transparency = not STATE.transparency
+  kanagawa_paper_apply()
+  vim.notify("Kanagawa Paper transparency: " .. (STATE.transparency and "ON" or "OFF"))
+end
+
+-- Toggle gutter background
+function _G.KanagawaPaperToggleGutter()
+  STATE.gutter = not STATE.gutter
+  kanagawa_paper_apply()
+  vim.notify("Kanagawa Paper gutter: " .. (STATE.gutter and "ON" or "OFF"))
 end
 
 -- Toggle background light/dark; mapping decides which variant is used
-function _G.KansoToggleBackground()
+function _G.KanagawaPaperToggleBackground()
   vim.o.background = (vim.o.background == "dark") and "light" or "dark"
-  kanso_apply()
-  vim.notify("Kansō background: " .. vim.o.background ..
+  kanagawa_paper_apply()
+  vim.notify("Kanagawa Paper background: " .. vim.o.background ..
              " (variant: " .. STATE.map[vim.o.background] .. ")")
 end
 
--- Set a specific Kansō variant (zen | ink | mist | pearl)
-function _G.KansoSetVariant(variant)
+-- Set a specific Kanagawa Paper variant (ink | canvas)
+function _G.KanagawaPaperSetVariant(variant)
   local valid = {}
   for _, v in ipairs(VARIANTS) do valid[v] = true end
   if not valid[variant] then
-    vim.notify("Kansō: invalid variant '" .. tostring(variant) .. "' (use zen|ink|mist|pearl)", vim.log.levels.ERROR)
+    vim.notify("Kanagawa Paper: invalid variant '" .. tostring(variant) .. "' (use ink|canvas)", vim.log.levels.ERROR)
     return
   end
 
@@ -125,19 +184,21 @@ function _G.KansoSetVariant(variant)
     vim.o.background = "dark"
   end
 
-  kanso_apply()
-  vim.notify("Kansō variant: " .. variant .. " (background: " .. vim.o.background .. ")")
+  kanagawa_paper_apply()
+  vim.notify("Kanagawa Paper variant: " .. variant .. " (background: " .. vim.o.background .. ")")
 end
 
--- Cycle through variants, updating STATE.map and background appropriately
-function _G.KansoCycleVariant()
-  local current_variant = STATE.map[vim.o.background]           -- ← use live state (the bug fix)
+-- Cycle through variants (dir = 1 forward, -1 backward), updating STATE.map
+-- and background appropriately
+function _G.KanagawaPaperCycleVariant(dir)
+  dir = dir or 1
+  local current_variant = STATE.map[vim.o.background]           -- use live state
   local idx = 1
   for i, v in ipairs(VARIANTS) do
     if v == current_variant then idx = i break end
   end
 
-  local next_idx = (idx % #VARIANTS) + 1
+  local next_idx = ((idx - 1 + dir) % #VARIANTS) + 1
   local next_variant = VARIANTS[next_idx]
 
   if is_light_variant(next_variant) then
@@ -148,27 +209,33 @@ function _G.KansoCycleVariant()
     vim.o.background = "dark"
   end
 
-  kanso_apply()
+  kanagawa_paper_apply()
   vim.notify(
-    ("Kansō cycled: %s (background: %s)"):format(next_variant, vim.o.background)
+    ("Kanagawa Paper cycled: %s (background: %s)"):format(next_variant, vim.o.background)
   )
 end
 
 -----------------------------------------------------------------------
 -- 5) Keymaps (adjust <leader> bindings if you like)
 -----------------------------------------------------------------------
-vim.keymap.set("n", "<leader>um", _G.KansoToggleMinimal,    { desc = "Kansō: Toggle Minimal mode" })
-vim.keymap.set("n", "<leader>us", _G.KansoToggleSaturation, { desc = "Kansō: Toggle Saturated foreground" })
-vim.keymap.set("n", "<leader>ub", _G.KansoToggleBackground, { desc = "Kansō: Toggle Light/Dark background" })
-vim.keymap.set("n", "<leader>uV", _G.KansoCycleVariant,     { desc = "Kansō: Cycle variant (zen/ink/mist/pearl)" })
+vim.keymap.set("n", "<leader>um", _G.KanagawaPaperToggleDim,          { desc = "Kanagawa Paper: Toggle dim inactive windows" })
+vim.keymap.set("n", "<leader>us", _G.KanagawaPaperToggleTransparency, { desc = "Kanagawa Paper: Toggle transparency" })
+vim.keymap.set("n", "<leader>ug", _G.KanagawaPaperToggleGutter,       { desc = "Kanagawa Paper: Toggle gutter" })
+vim.keymap.set("n", "<leader>ub", _G.KanagawaPaperToggleBackground,   { desc = "Kanagawa Paper: Toggle Light/Dark background" })
+vim.keymap.set("n", "<leader>uv", function() _G.KanagawaPaperCycleVariant(1) end,  { desc = "Kanagawa Paper: Cycle variant (ink/canvas)" })
+vim.keymap.set("n", "]v", function() _G.KanagawaPaperCycleVariant(1) end,  { desc = "Kanagawa Paper: Next variant" })
+vim.keymap.set("n", "[v", function() _G.KanagawaPaperCycleVariant(-1) end, { desc = "Kanagawa Paper: Previous variant" })
 
 -----------------------------------------------------------------------
 -- 6) User commands (CLI-friendly)
 -----------------------------------------------------------------------
-vim.api.nvim_create_user_command("KansoMinimalToggle",    _G.KansoToggleMinimal,    {})
-vim.api.nvim_create_user_command("KansoSaturationToggle", _G.KansoToggleSaturation, {})
-vim.api.nvim_create_user_command("KansoBackgroundToggle", _G.KansoToggleBackground, {})
-vim.api.nvim_create_user_command("KansoSetVariant", function(opts) _G.KansoSetVariant(opts.args) end, {
+vim.api.nvim_create_user_command("KanagawaPaperDimToggle",          _G.KanagawaPaperToggleDim,          {})
+vim.api.nvim_create_user_command("KanagawaPaperTransparencyToggle", _G.KanagawaPaperToggleTransparency, {})
+vim.api.nvim_create_user_command("KanagawaPaperGutterToggle",       _G.KanagawaPaperToggleGutter,       {})
+vim.api.nvim_create_user_command("KanagawaPaperBackgroundToggle",   _G.KanagawaPaperToggleBackground,   {})
+vim.api.nvim_create_user_command("KanagawaPaperSetVariant", function(opts) _G.KanagawaPaperSetVariant(opts.args) end, {
   nargs = 1, complete = function() return VARIANTS end
 })
-vim.api.nvim_create_user_command("KansoCycleVariant", _G.KansoCycleVariant, {})
+vim.api.nvim_create_user_command("KanagawaPaperCycleVariant", function(opts)
+  _G.KanagawaPaperCycleVariant(opts.args == "-1" and -1 or 1)
+end, { nargs = "?" })

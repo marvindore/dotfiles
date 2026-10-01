@@ -11,3 +11,8 @@ macos-window-buttons = hidden
 # nvimdiff layout): shrink to fit more text, then reset back to normal.
 keybind = super+shift+m=set_font_size:9
 keybind = super+0=reset_font_size
+
+# Ghostty's default clear_screen only clears the primary screen, so it
+# can't reach tmux's alternate-screen scrollback. Send tmux's prefix (C-b)
+# + k instead, bound in tmux.conf to clear the pane and its history.
+keybind = super+k=text:\x02k

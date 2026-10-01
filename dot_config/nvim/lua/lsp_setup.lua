@@ -4,31 +4,6 @@ local M = {}
 local warned_missing_ty = {}
 local warned_missing_go = {}
 
--- DEFERRED HELPER: Only runs when a JS/TS file is opened
-local function detect_angular()
-	local root = vim.fn.getcwd()
-	local angular_files = { root .. "/angular.json", root .. "/nx.json" }
-
-	for _, file in ipairs(angular_files) do
-		if vim.fn.filereadable(file) == 1 then
-			vim.lsp.enable("angularls")
-			return
-		end
-	end
-
-	-- fallback to package.json scanning
-	local pkg_json = root .. "/package.json"
-	if vim.fn.filereadable(pkg_json) == 1 then
-		local f = io.open(pkg_json, "r")
-		if f then
-			local content = f:read("*all"):lower()
-			f:close()
-			if content:find("angular", 1, true) then
-				vim.lsp.enable("angularls")
-			end
-		end
-	end
-end
 
 function M.setup_lsp_attach()
 	vim.api.nvim_create_autocmd("LspAttach", {
@@ -108,8 +83,46 @@ function M.enable_servers(opts)
 		vim.api.nvim_create_autocmd("FileType", {
 			pattern = { "javascript", "typescript", "typescriptreact", "javascriptreact" },
 			callback = function()
-				vim.lsp.enable({ "vtsls", "astro" })
-				detect_angular() -- This now runs ONLY when you open a JS file
+				-- Check for Angular FIRST before enabling any TS server
+				local root = vim.fs.root(0, {
+					"angular.json",
+					"nx.json",
+					"tsconfig.json",
+					"package.json",
+					".git",
+				}) or vim.fn.getcwd()
+				local is_angular = false
+
+				-- Check for angular.json or nx.json
+				for _, file in ipairs({ root .. "/angular.json", root .. "/nx.json" }) do
+					if vim.fn.filereadable(file) == 1 then
+						is_angular = true
+						break
+					end
+				end
+
+				-- Fallback to package.json check
+				if not is_angular then
+					local pkg_json = root .. "/package.json"
+					if vim.fn.filereadable(pkg_json) == 1 then
+						local f = io.open(pkg_json, "r")
+						if f then
+							local content = f:read("*all"):lower()
+							f:close()
+							if content:find("angular", 1, true) then
+								is_angular = true
+							end
+						end
+					end
+				end
+
+				-- Enable ONLY ONE server based on project type
+				if is_angular then
+					vim.lsp.enable("angularls")
+				else
+					vim.lsp.enable({ "vtsls", "astro" })
+				end
+
 				return true -- Only run detection once per session
 			end,
 		})

@@ -5,9 +5,12 @@ local function path_exists(path)
 end
 
 local function get_angularls_cmd()
-  local root = vim.fn.getcwd()
+  local root = vim.fs.root(0, { "angular.json", "nx.json", "package.json" }) or vim.fn.getcwd()
   local nm = root .. "/node_modules"
   local local_server = nm .. "/.bin/ngserver"
+
+  -- Check if this is an Angular project
+  local is_angular = path_exists(root .. "/angular.json") or path_exists(root .. "/nx.json")
 
   -- 1) USE PROJECT-LOCAL SERVER IF AVAILABLE
   if path_exists(local_server) then
@@ -16,24 +19,31 @@ local function get_angularls_cmd()
       "--stdio",
       "--tsProbeLocations", nm,
       "--ngProbeLocations", nm,
-      '--angularCoreVersion', '15.2.10'
+      "--logFile", "/tmp/ngserver.log",
     }
   end
 
-  -- 2) FALLBACK TO MASON INSTALL
-  local mason_root = vim.fn.stdpath("data") .. "/mason/packages/angular-language-server"
+  -- 2) FALLBACK TO MASON INSTALL (probe project node_modules, not mason)
   local global_server = vim.fn.stdpath("data") .. "/mason/bin/ngserver"
 
   if path_exists(global_server) then
     return {
       global_server, "--stdio",
-      "--tsProbeLocations", mason_root,
-      "--ngProbeLocations", mason_root,
+      "--tsProbeLocations", nm,
+      "--ngProbeLocations", nm,
     }
   end
 
-  -- (Optional) final fallback
-  vim.notify("Angular LS not found (project-local or mason).", vim.log.levels.ERROR)
+  -- 3) FINAL FALLBACK
+  if is_angular then
+    vim.notify(
+      "Angular LS not found. Run: npm install --save-dev @angular/language-service",
+      vim.log.levels.ERROR,
+      { title = "Angular Language Server" }
+    )
+  else
+    vim.notify("Angular LS not found (project-local or mason).", vim.log.levels.ERROR)
+  end
   return nil
 end
 
