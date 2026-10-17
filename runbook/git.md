@@ -15,11 +15,11 @@ git show <hash>:<file> | grep -A 14 "phrase"
     # search for commits with the word "keyword" in the commit message
     git log --grep="keyword"
 
-    # Search for commits with either "example" or "ai" in the commit message
-    git log --grep="example" --grep="ai"
+    # Search for commits with either "fix" or "ai" in the commit message
+    git log --grep="fix" --grep="ai"
 
-    # Search for commits with both "example" and "ai" in the commit message (AND logic)
-    git log --grep="example" | grep "ai"
+    # Search for commits with both "fix" and "ai" in the commit message (AND logic)
+    git log --grep="fix" | grep "ai"
 
     # Search for commits by a specific author
     git log --author="Marvin"
@@ -130,3 +130,118 @@ echo "gitdir: ./.bare" > .git
 
     # Delete the remote feature branch from your GitHub fork
     git push origin --delete <FEATURE_BRANCH_NAME>
+
+
+1. Does main have file changes that develop does not have?
+
+git fetch origin
+git diff --stat $(git merge-base origin/main origin/develop) origin/main
+
+This shows what main changed since the branches split. No output means main has no code of its own. Today it prints nothing.
+
+2. Will the release merge put anything on main that is not in develop?
+
+git diff --stat $(git merge-tree --write-tree origin/main origin/develop) origin/develop
+
+This builds the merge result without changing any branch and compares it with develop. No output means that after the merge, main will be exactly develop. Today it prints nothing.
+
+Do not use this for the check
+
+git diff main develop
+
+This compares the two branches directly. It shows develop's 20 new commits, but it does not tell you which side made each change. Old lines that develop has since changed look the same as new lines on main.
+
+After the release and the fast-forward
+
+When you have done the release merge and the fast-forward, both commit counts will be zero:
+
+git rev-list --left-right --count origin/main...origin/develop
+0    0
+
+
+
+
+----
+Step 1: merge develop into main (GitHub UI, "Create a merge commit")
+
+            o---o---o ... o---M        ← main
+           /                 /
+ ---- base                  /
+           \               /
+            x---x---x ... x            ← develop
+
+M has two parents: the last commit of main and the last commit of develop. So main now contains all of develop. develop has no commit that main does not have.
+
+develop is the default branch, so GitHub does not offer to delete it. If it does, do not delete it.
+
+Step 2: fast-forward develop to M
+
+develop is now fully inside main. So git can move the develop pointer forward to M. It does not make a new commit:
+
+git fetch origin
+git switch develop
+git merge --ff-only origin/main
+git push origin develop
+
+            o---o---o ... o---M        ← main, develop
+           /                 /
+ ---- base                  /
+           \               /
+            x---x---x ... x
+
+Both branches point to the same commit. The count is now:
+
+git rev-list --left-right --count origin/main...origin/develop
+0    0
+
+Next release
+
+Developers merge feature PRs into develop as usual:
+
+ ... M---f1---f2---f3        ← develop
+     ↑
+    main
+
+main is fully inside develop, so the history stays a straight line. The next release merge is clean, and after the next fast-forward the count goes back to 0 0.
+
+If develop is protected and needs a PR
+
+The GitHub UI cannot fast-forward a branch. If you merge a main → develop PR with "Create a merge commit", you get this:
+
+ ... o---M                   ← main
+          \
+ ... x-----B                 ← develop  (B = back-merge commit)
+
+develop has one extra commit, B, that main does not have. This is acceptable. B contains no code, and it goes to main with the next release. The bad case is the other direction, where main has commits that develop does not have. That is why you have 89 commits now: releases went into main, and main never went back into develop.
+
+To avoid B, get one of these:
+
+- Permission to push a fast-forward to develop (a bypass in the branch rules), so you can do Step 2.
+- A small GitHub Action that runs git merge --ff-only origin/main and pushes to develop after each push to main.
+
+A merge commit is not just an extra commit, it points back to both branches, so
+the branch that gets the merge commit now contains all the commits of both
+branches (like a pointer).
+
+
+
+Which branches contains XYZ commit?
+git branch --contains XYZ
+
+What commit deleted my files ABC?
+git log --diff-filter=D --all -- ABC
+list all commit history
+git log --all -- ABC
+
+See what author changed
+git show --summary <commit_hash>
+
+visualize graph of file history:
+git log --graph --decorate --oneline --all -- ABC
+
+git sign multi  commits:
+git rebase HEAD~100 --exec 'git commit --amend --no-edit -S'
+
+resigning many commits but you want to preserve the merges so the rebase doesn't
+replay the merge commits use:
+git rebase -i HEAD~3 --rebase-merges -S

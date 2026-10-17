@@ -8,7 +8,7 @@ config-version = 2
 # Keep the workspaces that version 1 inferred from keyboard bindings.
 persistent-workspaces = [
     '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'M', 'O', 'P', 'Q',
+    'A', 'B', 'C', 'D', 'F', 'G', 'I', 'M', 'O', 'P', 'Q',
     'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 ]
 
@@ -155,7 +155,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-b = ['exec-and-forget open /Applications/Google\ Chrome.app', 'workspace B']
     #alt-c = 'workspace C'
     alt-d = ['exec-and-forget open /Applications/DBeaver.app', 'workspace D']
-    alt-e = 'workspace E'
+    # alt-e reserved for Espanso search
     alt-f = 'workspace F'
     alt-g = 'workspace G'
     alt-i = 'workspace I'
@@ -196,7 +196,6 @@ automatically-unhide-macos-hidden-apps = false
     alt-shift-b = 'move-node-to-workspace B'
     alt-shift-c = 'move-node-to-workspace C'
     alt-shift-d = 'move-node-to-workspace D'
-    alt-shift-e = 'move-node-to-workspace E'
     alt-shift-f = 'move-node-to-workspace F'
     alt-shift-g = 'move-node-to-workspace G'
     alt-shift-i = 'move-node-to-workspace I'
@@ -248,10 +247,6 @@ automatically-unhide-macos-hidden-apps = false
 # from terminal enter: aerospace list-apps
 [[on-window-detected]]
 if.app-name-regex-substring = 'Finder'
-run = 'layout floating'
-
-[[on-window-detected]]
-if.app-id = 'com.scriptkit.app'
 run = 'layout floating'
 
 [[on-window-detected]]

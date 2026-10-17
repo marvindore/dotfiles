@@ -66,10 +66,17 @@ vim.opt.copyindent=true
 
 -- Diff mode: align similar lines within a hunk instead of one big block change,
 -- and prefer the histogram algorithm + indent heuristic for more natural hunks
--- (closer to kdiff3's alignment quality).
+-- (closer to kdiff3's alignment quality). Remove the default linematch:40
+-- first so the option holds one linematch value. inline:char (0.12 default)
+-- highlights each changed character, like kdiff3/meld.
+vim.opt.diffopt:remove("linematch:40")
 vim.opt.diffopt:append("linematch:60")
 vim.opt.diffopt:append("algorithm:histogram")
 vim.opt.diffopt:append("indent-heuristic")
+vim.opt.diffopt:append("inline:char")
+-- Sync horizontal scroll across scrollbind (diff) windows, so zh/zl/zH/zL
+-- and trackpad side-scroll move all merge panes together.
+vim.opt.scrollopt:append("hor")
 
 -- highlight color
 --vim.cmd[[ set nowrap ]]

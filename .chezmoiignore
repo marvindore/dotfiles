@@ -16,3 +16,7 @@ docker/**
 
 Library/Application Support/SuperCmd/
 Library/Application Support/SuperCmd/**
+
+{{ if ne .profile "work" }}
+.config/espanso/match/work-local.yml
+{{ end }}

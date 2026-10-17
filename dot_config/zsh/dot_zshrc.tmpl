@@ -23,10 +23,8 @@ export PATH="/opt/homebrew/bin:$PATH"
 export PATH="/opt/homebrew/sbin:$PATH"
 
 # Add .NET Core SDK tools
+# dotnet and DOTNET_ROOT come from the dotnetup block below
 export PATH="$PATH:$HOME/.dotnet/tools"
-export PATH="/usr/local/share/dotnet:$PATH" # Add the actual dotnet binary location to PATH
-export DOTNET_ROOT="/usr/local/share/dotnet" # Recommended: Set DOTNET_ROOT so the CLI can find its own SDKs
-export PATH="$PATH:$HOME/.dotnetup"
 
 export CHEZMOI_SOURCE_PATH=$(chezmoi source-path)
 # Set MANPAGER
@@ -198,6 +196,14 @@ function y() {
 	[ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
 	rm -f -- "$tmp"
 }
+
+# Managed by dotnetup. Keep the markers and content identical to the output of
+# 'dotnetup env set shell', otherwise dotnetup rewrites the block.
+# dotnetup: begin
+if [ -x '{{ .chezmoi.homeDir }}/.dotnetup/dotnetup' ]; then
+    eval "$('{{ .chezmoi.homeDir }}/.dotnetup/dotnetup' env script --shell zsh --dotnet --dotnetup)"
+fi
+# dotnetup: end
 
 # allow work to overwrite env vars
 source ~/.workrc

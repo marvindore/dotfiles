@@ -11,7 +11,7 @@
 {{- if eq $profile "work" }}
 [user]
     name = Marvin Dore
-    email = user@example.com
+    email = {{ .work.email | quote }}
 {{ if $useKeychain }}
     key = "{{ template "keychainGet" "chezmoi_gpg_signing_key" }}"
 {{ end }}

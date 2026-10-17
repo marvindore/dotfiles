@@ -1,0 +1,6 @@
+matches:
+  - trigger: :ghwList
+    replace: gh run list --workflow [workflow] --commit [commit]
+
+  - trigger: ghwRerun
+    replace: gh run rerun [run_id]

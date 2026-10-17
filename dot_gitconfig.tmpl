@@ -1,4 +1,5 @@
 {{- $workOrg  := .work.org_slug -}}
+{{- $profile := (env "CHEZMOI_PROFILE" | default .profile | default "home") -}}
 [user]
 	name = Marvin Dore
 	email = hi@marvindore.com
@@ -6,6 +7,10 @@
 [core]
     pager = delta
 	longpaths = true
+{{- if eq $profile "work" }}
+	# GitGuardian secret scanning hooks, installed by ggshield.
+	hooksPath = {{ .chezmoi.homeDir }}/Library/Application Support/ggshield/git-hooks
+{{- end }}
 
 [interactive]
     diffFilter = delta --color-only
@@ -22,29 +27,23 @@
     plus-emph-style = "bold green 22"
 
 [merge]
-    # Primary conflict resolution is diffview.nvim (`git dm` / shell `gmerge`).
-    # It parses conflict markers directly, so one choose resolves a full
-    # conflict — reliable per-conflict and whole-file choose.
-    # gitcomet is the 4-way merge tool for complex cases (`git mergetool`).
-    # guiDefault=auto uses guitool (--gui) when display available, else tool.
-    # The raw nvimdiff path is retired: its :diffget worked on diff hunks, not
+    # Conflict resolution is diffview.nvim (`git mergetool`, `git dm`, shell
+    # `gmerge`). Its 4-way layout (OURS | BASE | THEIRS over MERGED) parses
+    # conflict markers directly, so one choose resolves a full conflict.
+    # The raw nvimdiff tool is not used: its :diffget worked on diff hunks, not
     # conflict regions, so a single choose left half the conflict behind.
-    tool = gitcomet
-    guitool = gitcomet-gui
+    tool = diffview
     conflictStyle = zdiff3
 
 [mergetool]
     prompt = false
     keepBackup = false
-    guiDefault = auto
 
-[mergetool "gitcomet"]
-    cmd = gitcomet mergetool --base "$BASE" --local "$LOCAL" --remote "$REMOTE" --merged "$MERGED"
-    trustExitCode = true
-
-[mergetool "gitcomet-gui"]
-    cmd = gitcomet mergetool --gui --base "$BASE" --local "$LOCAL" --remote "$REMOTE" --merged "$MERGED"
-    trustExitCode = true
+# Opens diffview with the conflicted file selected. trustExitCode = false:
+# git checks whether MERGED changed instead of trusting nvim's exit code.
+[mergetool "diffview"]
+    cmd = nvim -c \"DiffviewOpen --selected-file=$MERGED\"
+    trustExitCode = false
 
 [alias]
     # Difftastic aliases
@@ -54,10 +53,11 @@
     dlp = -c diff.external=difft log -p --ext-diff
 
     # Primary merge workflow: diffview.nvim resolves conflicts from the working
-    # tree. `dm` opens diffview, then stages everything on exit.
-    # kdiff3 is the GUI fallback via the built-in `git mergetool` (merge.tool).
+    # tree. `dm` opens diffview, checks for remaining conflict markers, then
+    # stages everything on exit. `git mergetool` opens the same view one file
+    # at a time (merge.tool).
     nvim-merge = "!nvim -c DiffviewOpen"
-    dm = "!nvim -c DiffviewOpen && git add . && echo \"Conflicts resolved. Ready to commit.\""
+    dm = "!nvim -c DiffviewOpen && if grep -r '^<<<<<<<' . --exclude-dir=.git >/dev/null; then echo 'ERROR: Conflict markers remain'; exit 1; fi && git add . && echo \"Conflicts resolved. Ready to commit.\""
 
 [difftool]
     difftool = true

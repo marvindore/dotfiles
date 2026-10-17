@@ -1,7 +1,6 @@
 mise.toml
 result
 .config/chezmoi/chezmoi.*
-.chezmoidata/local_overrides.toml
 __pycache__/
 .pytest_cache/
 # SuperCmd extensions have build artifacts
@@ -14,3 +13,6 @@ dot_config/supercmd/extensions/*/.DS_Store
 dot_config/supercmd/extensions/*/bookmarks.json
 dot_config/supercmd/extensions/*/url-templates.json
 **/.DS_STORE
+# Work-only Espanso snippets must never enter the repo
+dot_config/espanso/match/work-local.yml
+dot_config/espanso/match/packages/

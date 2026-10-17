@@ -108,11 +108,13 @@ vim.pack.add({
               merge_tool = { layout = "diff4_mixed", disable_diagnostics = true },
             },
             hooks = {
-              diff_buf_read = function(bufnr)
-                -- change local options in buffer
-                vim.opt_local.wrap = true
-                vim.opt_local.linebreak = true
-                vim.opt_local.breakindent = true
+              diff_buf_read = function(_, ctx)
+                -- Wrap only 2-pane diffs. In 3/4-pane merge layouts each pane
+                -- wraps at a different width, which breaks line alignment.
+                local wrap = ctx.layout_name:match("^diff2") ~= nil
+                vim.opt_local.wrap = wrap
+                vim.opt_local.linebreak = wrap
+                vim.opt_local.breakindent = wrap
               end,
             },
             file_panel = {

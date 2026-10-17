@@ -1,0 +1,98 @@
+# Generic SQL snippets. Safe for any machine. No internal names.
+matches:
+  - trigger: ";sql-sel"
+    label: "SQL - Basic SELECT - where"
+    replace: |
+      SELECT
+          column_name
+      FROM schema_name.table_name
+      WHERE condition;
+
+  - trigger: ";sql-cnt"
+    label: "SQL - Count rows by category - group by - order by"
+    replace: |
+      SELECT
+          category_column,
+          COUNT(*) AS row_count
+      FROM schema_name.table_name
+      GROUP BY
+          category_column
+      ORDER BY
+          row_count DESC;
+
+  - trigger: ";sql-cte"
+    label: "SQL - Common table expression - with"
+    replace: |
+      WITH source_data AS (
+          SELECT
+              column_name
+          FROM schema_name.table_name
+          WHERE condition
+      )
+      SELECT
+          column_name
+      FROM source_data;
+
+  - trigger: ";sql-rn"
+    label: "SQL - Row number by partition - row_number - latest record"
+    replace: |
+      SELECT
+          column_name,
+          ROW_NUMBER() OVER (
+              PARTITION BY partition_column
+              ORDER BY sort_column DESC
+          ) AS row_num
+      FROM schema_name.table_name;
+
+  - trigger: ";sql-dupes"
+    label: "SQL - Find duplicate rows - group by - having - count"
+    replace: |
+      SELECT
+          column_name,
+          COUNT(*) AS row_count
+      FROM schema_name.table_name
+      GROUP BY
+          column_name
+      HAVING COUNT(*) > 1;
+
+  - trigger: ";sql-total"
+    label: "SQL - Running total - sum over"
+    replace: |
+      SELECT
+          sort_column,
+          amount_column,
+          SUM(amount_column) OVER (ORDER BY sort_column) AS running_total
+      FROM schema_name.table_name;
+
+  - trigger: ";sql-txn"
+    label: "SQL - Safe update - transaction - rollback"
+    replace: |
+      BEGIN TRANSACTION;
+
+      -- Make and validate changes here.
+
+      ROLLBACK TRANSACTION;
+      -- Change to COMMIT only after validation.
+
+  - trigger: ";sql-date"
+    label: "SQL - Rows between two dates - date range - form"
+    form: |
+      SELECT
+          *
+      FROM [[schema_name]].[[table_name]]
+      WHERE [[date_column]] >= '[[start_date]]'
+        AND [[date_column]] <  '[[end_date]]'
+      ORDER BY
+          [[date_column]] DESC;
+
+  - trigger: ";sql-limit"
+    label: "SQL - Limited SELECT by dialect - top - limit - fetch first"
+    form: |
+      [[query]]
+    form_fields:
+      query:
+        type: choice
+        values:
+          - "SELECT TOP (100) * FROM schema_name.table_name;"
+          - "SELECT * FROM schema_name.table_name LIMIT 100;"
+          - "SELECT * FROM schema_name.table_name FETCH FIRST 100 ROWS ONLY;"

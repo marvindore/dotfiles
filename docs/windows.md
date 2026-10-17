@@ -2,9 +2,9 @@
 
 ## Per-machine `chezmoi.toml` (required after `chezmoi init`)
 
-The source tree's `<placeholder>` values come from `.chezmoidata/defaults.toml`.
-Override them locally — this file is per-machine and is **not** tracked in git
-(the work org slug is private):
+Replace the `<place_holder>` values from `.chezmoidata.yaml` with real values in
+this file. It is per-machine and is **not** tracked in git. See "Chezmoi
+per-machine config" in `docs/system.md`.
 
 `%USERPROFILE%\.config\chezmoi\chezmoi.toml`
 
@@ -14,6 +14,11 @@ profile = "work"
 
 [data.work]
   org_slug = "YOUR_ORG_SLUG"
+  email = "you@your-company.com"
+
+# Optional: only if you use LiteLLM at work
+[data.opencode.profiles.work]
+  baseURL = "https://litellm.your-company.com/v1"
 ```
 
 Run `chezmoi edit-config` to create/edit it. After saving, `chezmoi apply`.

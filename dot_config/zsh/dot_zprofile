@@ -1,0 +1,11 @@
+# .zprofile is loaded for login shells -> GUI apps
+# Zsh reads this file from $ZDOTDIR (set in ~/.zshenv), not from $HOME.
+
+if [[ "$OSTYPE" == linux* ]]; then
+  export XDG_SESSION_TYPE=wayland
+  export QT_QPA_PLATFORM=wayland
+  export GDK_BACKEND=wayland
+fi
+
+# Ensure mise shims are available to GUI apps (e.g., PyCharm)
+eval "$(mise activate zsh --shims)"

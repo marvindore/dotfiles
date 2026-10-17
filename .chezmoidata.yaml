@@ -11,6 +11,7 @@ silverbulletSpacePath: "$HOME/notes"
 
 work:
   org_slug: "<place_holder>"
+  email: "<place_holder>"
 
 ssh:
   # If true on macOS, include Colima’s SSH config (safe to leave true at work).

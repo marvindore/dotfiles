@@ -12,12 +12,27 @@ end)
 -- Focuses SilverBullet PWA application on active monitor, or searches Chrome tabs, or opens local server
 local SILVERBULLET_URL = "http://localhost:3010"
 
+-- PWA windows live on AeroSpace workspace N.
+-- Resolve the CLI path once at load. A login shell per keypress costs ~1s.
+local AEROSPACE_BIN = nil
+for _, path in ipairs({ "/opt/homebrew/bin/aerospace", "/run/current-system/sw/bin/aerospace" }) do
+    if hs.fs.attributes(path) then
+        AEROSPACE_BIN = path
+        break
+    end
+end
+
+local function goToNotesWorkspace()
+    if not AEROSPACE_BIN then return end
+    hs.task.new(AEROSPACE_BIN, nil, { "workspace", "N" }):start()
+end
+
 hs.hotkey.bind({"alt"}, "n", function()
     -- 1. Check if SilverBullet PWA app is running
     local sbApp = hs.application.find("SilverBullet")
     if sbApp and sbApp:isRunning() then
+        goToNotesWorkspace()
         sbApp:activate()
-        hs.timer.usleep(100000)
         local win = sbApp:mainWindow() or (sbApp:allWindows() and sbApp:allWindows()[1])
         if win then
             win:focus()
@@ -30,6 +45,7 @@ hs.hotkey.bind({"alt"}, "n", function()
     -- 2. Attempt to launch SilverBullet PWA app if installed
     local launched = hs.application.launchOrFocus("SilverBullet")
     if launched then
+        goToNotesWorkspace()
         hs.timer.doAfter(0.3, function()
             local app = hs.application.find("SilverBullet")
             if app then
@@ -134,7 +150,7 @@ local LeaderKey = require("modules.LeaderKey")
 local Actions = require("modules.Actions")
 
 local leader = LeaderKey.new({
-    -- Press Option+L to start the leader sequence.
+    -- Press Option+Space to start the leader sequence.
     modifiers = { "alt" },
     key = "space",
 

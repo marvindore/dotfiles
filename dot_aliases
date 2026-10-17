@@ -279,6 +279,8 @@ ghD() {
     gh dash
 }
 
+alias ghc='gh browse'
+
 # Project type detection with environment info
 # Detects installed language versions (node, python, rust, go, etc.)
 envcheck() {

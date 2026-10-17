@@ -34,15 +34,15 @@ if [ ! -f "$SILVERBULLET_DIR/init-config.sh" ]; then
 #!/bin/sh
 mkdir -p /space
 if [ ! -f /space/CONFIG.md ]; then
-    cat > /space/CONFIG.md << 'EOF'
+    cat > /space/CONFIG.md << 'CONFIGEOF'
 ```space-lua
 config.set {
   plugs = {
-    "ghr:MrMugame/silversearch"
+    "ghr:MrMugame/silversearch",
   }
 }
 ```
-EOF
+CONFIGEOF
     echo "Created CONFIG.md with base plugins"
 fi
 INITSCRIPT

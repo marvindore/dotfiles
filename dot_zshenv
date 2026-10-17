@@ -1,1 +1,6 @@
-ZDOTDIR=$HOME/.config/zsh
+# ~/.zshenv is read by every zsh: interactive, login, and scripts.
+# Keep it minimal. Set only the XDG base and ZDOTDIR here.
+# Do not put secrets here: every zsh process and its children inherit them.
+# Do not print output here.
+export XDG_CONFIG_HOME="$HOME/.config"
+export ZDOTDIR="$XDG_CONFIG_HOME/zsh"

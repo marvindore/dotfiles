@@ -49,9 +49,14 @@ bw_unlock
 
 ### Chezmoi per-machine config
 
-The repo's `<placeholder>` data values come from `.chezmoidata/defaults.toml`.
-Override them locally in `~/.config/chezmoi/chezmoi.toml` — this file is
-per-machine and is intentionally NOT tracked in git (work org slug is private):
+`.chezmoidata.yaml` holds the shared defaults for all template data. It is tracked
+in git. Private values (work org slug, work email, work LiteLLM URL) are
+`<place_holder>` in that file. They must not enter git.
+
+You must add the real values to `~/.config/chezmoi/chezmoi.toml` on each machine.
+These values replace the placeholders. This file is per-machine and is NOT tracked
+in git. If you skip this step, templates render the placeholder text. For example,
+the work git email becomes `<place_holder>`.
 
 ```toml
 [data]
@@ -59,22 +64,19 @@ profile = "work"   # or "home"
 
 [data.work]
   org_slug = "YOUR_ORG_SLUG"
+  email = "you@your-company.com"
+
+# Optional: only if you use LiteLLM at work
+[data.opencode.profiles.work]
+  baseURL = "https://litellm.your-company.com/v1"
 ```
 
-Run `chezmoi edit-config` to create/edit. Re-run `chezmoi apply` after.
+Run `chezmoi edit-config` to create or edit the file. Run `chezmoi apply` after.
+To check a value, run `chezmoi execute-template '{{ .work.email }}'`.
 
 OS-specific secret storage:
 - macOS: see "Apple Security" below.
 - Windows: see `docs/windows.md`.
-
-### Scriptkit
-** bookmarks **
- cat > ~/.scriptkit/plugins/main/scripts/_lib/bookmarks.local.json << 'EOF'
-  [
-    { "name": "Confluence", "url": "https://your-org.atlassian.net/wiki", "keywords": "docs wiki" },
-    { "name": "Jira", "url": "https://your-org.atlassian.net/jira", "keywords": "tickets issues" }
-  ]
-  EOF
 
 ### Apple Security (macOS Keychain)
 
