@@ -9,8 +9,13 @@ for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
 done
 command -v nvim >/dev/null 2>&1 || { echo "nvim bootstrap: nvim is not on PATH" >&2; exit 1; }
 
-log="$(mktemp)"
-trap 'rm -f "$log"' EXIT
+if [ -t 2 ]; then
+  R="$(printf '\033[31m')" B="$(printf '\033[1m')" N="$(printf '\033[0m')"
+else
+  R="" B="" N=""
+fi
+
+log="$(mktemp -t nvim-bootstrap)"
 echo "nvim bootstrap: installing plugins and parsers (the first run can take several minutes)"
 # g:ts_no_auto_install stops the async install in plugins/treesitter.lua; this
 # call does the same install and waits for it (max 15 minutes).
@@ -19,10 +24,30 @@ nvim --headless --cmd 'let g:ts_no_auto_install=1' \
   -c 'qa!' >"$log" 2>&1
 code=$?
 # nvim exits 0 even when a Lua chunk failed (E5113) or a parser build failed.
-if [ "$code" -ne 0 ] || grep -qE 'E[0-9]+:|error:' "$log"; then
-  cat "$log" >&2
-  echo "nvim bootstrap: failed (exit $code). Fix the errors above, then run 'chezmoi apply' again." >&2
-  exit 1
+if [ "$code" -eq 0 ] && ! grep -qE 'E[0-9]+:|error:' "$log"; then
+  rm -f "$log"
+  echo "nvim bootstrap: ok"
+  exit 0
 fi
-echo "nvim bootstrap: ok"
+
+# Plugins (under site/pack/*/opt/<name>/) that appear in the errors. Reinstalling
+# one drops its lockfile entry, so vim.pack re-resolves the `version` in its spec.
+plugins="$(grep -oE 'pack/[^/]+/opt/[^/]+/' "$log" | cut -d/ -f4 | sort -u | tr '\n' ' ')"
+{
+  echo ""
+  echo "${B}nvim bootstrap: ${R}FAILED${N} (nvim exit $code)"
+  echo ""
+  echo "${B}Errors:${N}"
+  grep -E 'E[0-9]+:|error:' "$log" | awk '!seen[$0]++' | head -10 | cut -c1-160 | sed 's/^/    /'
+  echo ""
+  echo "${B}To fix, run:${N}"
+  for p in $plugins; do
+    echo "    nvim --headless -u NONE -c 'lua vim.pack.del({\"$p\"})' -c 'qa!'   # reinstall $p"
+  done
+  [ -z "$plugins" ] && echo "    # fix the errors above (try 'nvim' then ':checkhealth vim.pack')"
+  echo "    chezmoi apply"
+  echo ""
+  echo "Full log: $log"
+} >&2
+exit 1
 {{- end }}

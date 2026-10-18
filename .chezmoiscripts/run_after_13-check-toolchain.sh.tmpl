@@ -2,40 +2,113 @@
 #!/bin/sh
 # Verifies the C toolchain before the Neovim bootstrap. nvim-treesitter compiles
 # parsers with `tree-sitter build`, which needs `cc` and a linker that matches
-# the active SDK. Always runs; it takes less than a second.
+# the active SDK. Always runs; it takes less than a second. On failure it prints
+# a table of checks and the exact commands to run (it queries softwareupdate to
+# find the right Command Line Tools update, which takes a few seconds).
 set -u
 for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
   [ -x "$b" ] && eval "$("$b" shellenv)" && break
 done
 
-fail() {
-  echo "toolchain check: $1" >&2
-  echo "" >&2
-  echo "Diagnostics:" >&2
-  echo "  xcode-select -p: $(xcode-select -p 2>&1)" >&2
-  echo "  ld:              $(ld -v 2>&1 | head -1)" >&2
-  echo "  SDK:             $(xcrun --show-sdk-path 2>&1) ($(xcrun --show-sdk-version 2>&1))" >&2
-  echo "  CLT package:     $(pkgutil --pkg-info=com.apple.pkg.CLTools_Executables 2>&1 | grep version)" >&2
-  echo "" >&2
-  echo "Repair, then run 'chezmoi apply' again:" >&2
-  echo "  softwareupdate --list 2>&1 | grep -i 'command line tools'   # install the listed CLT update, if any" >&2
-  echo "  sudo rm -rf /Library/Developer/CommandLineTools && xcode-select --install   # full reinstall" >&2
+# Colors only when stderr is a terminal.
+if [ -t 2 ]; then
+  G="$(printf '\033[32m')" R="$(printf '\033[31m')" B="$(printf '\033[1m')" N="$(printf '\033[0m')"
+else
+  G="" R="" B="" N=""
+fi
+
+rows="" fix="" failed=0
+# row <check> <ok|FAIL> <detail>
+row() {
+  if [ "$2" = ok ]; then s="${G}ok${N}    "; else s="${R}FAIL${N}  "; failed=1; fi
+  rows="${rows}$(printf '  %-16s %s  %s' "$1" "$s" "$3")
+"
+}
+add_fix() { fix="${fix}    $1
+"; }
+
+report() {
+  if [ "$failed" -eq 0 ]; then
+    echo "toolchain check: ${G}ok${N} ($(cc --version 2>/dev/null | head -1))"
+    exit 0
+  fi
+  {
+    echo ""
+    echo "${B}toolchain check: ${R}FAILED${N}"
+    echo ""
+    printf "  ${B}%-16s %-6s  %s${N}\n" CHECK STATUS DETAIL
+    printf '%s' "$rows"
+    echo ""
+    echo "${B}To fix, run:${N}"
+    printf '%s' "$fix"
+    echo "    chezmoi apply"
+    echo ""
+  } >&2
   exit 1
 }
 
-dev_dir="$(xcode-select -p 2>/dev/null)" || fail "no active developer directory. Run 'xcode-select --install'."
-[ -d "$dev_dir" ] || fail "developer directory '$dev_dir' does not exist."
+# 1. Developer directory
+dev_dir="$(xcode-select -p 2>/dev/null)"
+if [ -n "$dev_dir" ] && [ -d "$dev_dir" ]; then
+  row "Developer dir" ok "$dev_dir"
+else
+  row "Developer dir" FAIL "${dev_dir:-not set}"
+  add_fix "xcode-select --install"
+  report
+fi
 
+# 2. Required tools
+missing=""
 for tool in git nvim tree-sitter; do
-  command -v "$tool" >/dev/null 2>&1 || fail "'$tool' is not on PATH. Run 'brew bundle' (bbi) first."
+  command -v "$tool" >/dev/null 2>&1 || missing="$missing $tool"
 done
+if [ -z "$missing" ]; then
+  row "Required tools" ok "git, nvim, tree-sitter"
+else
+  row "Required tools" FAIL "missing:$missing"
+  add_fix "brew bundle --file ~/.config/homebrew/Brewfile"
+fi
 
+# 3. CLT version vs. SDK version (only meaningful for the standalone CLT)
+sdk_path="$(xcrun --show-sdk-path 2>/dev/null)"
+sdk_ver="$(xcrun --show-sdk-version 2>/dev/null)"
+clt_ver=""
+version_bad=0
+if [ "$dev_dir" = /Library/Developer/CommandLineTools ]; then
+  clt_ver="$(pkgutil --pkg-info=com.apple.pkg.CLTools_Executables 2>/dev/null | sed -n 's/^version: //p' | cut -d. -f1,2)"
+  if [ "${clt_ver%%.*}" = "${sdk_ver%%.*}" ]; then
+    row "CLT vs SDK" ok "CLT $clt_ver, SDK $sdk_ver"
+  else
+    version_bad=1
+    row "CLT vs SDK" FAIL "CLT $clt_ver (linker) is older than SDK $sdk_ver"
+  fi
+fi
+
+# 4. Compile and link a trivial program
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 printf 'int main(void){return 0;}\n' > "$tmp/t.c"
-if ! out="$(cc "$tmp/t.c" -o "$tmp/t" 2>&1)"; then
-  echo "$out" >&2
-  fail "cannot compile and link a C program. The linker is older than the SDK (symptom: 'ld: tapi error ... unknown architecture')."
+link_bad=0
+if out="$(cc "$tmp/t.c" -o "$tmp/t" 2>&1)"; then
+  row "Compile & link" ok "cc test program builds"
+else
+  link_bad=1
+  row "Compile & link" FAIL "$(printf '%s\n' "$out" | grep -m1 -i 'error' | cut -c1-70)"
 fi
-echo "toolchain check: ok ($(cc --version | head -1))"
+
+# Pick the repair for toolchain failures.
+if [ "$version_bad" -eq 1 ] || [ "$link_bad" -eq 1 ]; then
+  echo "toolchain check: failed, looking for a Command Line Tools update..." >&2
+  label="$(softwareupdate --list 2>&1 | sed -n 's/^\* Label: \(Command Line Tools.*\)$/\1/p' | tail -1)"
+  if [ -n "$label" ]; then
+    add_fix "sudo softwareupdate --install \"$label\""
+  elif [ -n "$clt_ver" ] && [ "${sdk_ver%%.*}" -gt "${clt_ver%%.*}" ] 2>/dev/null; then
+    # No update available: the newer SDK is a leftover; remove it so xcrun falls back.
+    add_fix "sudo rm -rf \"$sdk_path\""
+  else
+    add_fix "sudo rm -rf /Library/Developer/CommandLineTools && xcode-select --install"
+  fi
+fi
+
+report
 {{- end }}
