@@ -1,0 +1,13 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Bootstrap glue: install Homebrew when missing. Homebrew's installer also
+# installs the Xcode Command Line Tools. Runs once per content hash.
+set -eu
+if [ -x /opt/homebrew/bin/brew ] || [ -x /usr/local/bin/brew ]; then
+  exit 0
+fi
+echo "Installing Homebrew. Enter your password once for sudo."
+# The installer runs non-interactively and never prompts, so cache sudo first.
+sudo -v
+NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+{{- end }}

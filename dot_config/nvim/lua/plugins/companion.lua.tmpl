@@ -1,10 +1,6 @@
 -- Neovim + CodeCompanion setup via vim.pack.add
--- Usage:
---   - Set CHEZMOI_WORK=1 at work to use LiteLLM (HTTP)
---   - Unset CHEZMOI_WORK at home to use Gemini CLI (ACP)
--- Secrets are resolved from macOS Keychain at runtime:
---   - api_base        -> LiteLLM base URL
---   - api_key         -> LiteLLM API key
+-- Adapter: Gemini CLI (ACP).
+-- Secret resolved from macOS Keychain at runtime:
 --   - gemini_api_key  -> Gemini API key
 
 vim.pack.add({
@@ -35,13 +31,7 @@ vim.pack.add({
         { lhs = "<leader>ac", rhs = "<cmd>CodeCompanionCmd<cr>",        mode = "n", desc = "CodeCompanion Command" },
       },
       after = function(_)
-        -- Decide default adapter at runtime
-        -- Work (CHEZMOI_WORK set): LiteLLM
-        -- Home (CHEZMOI_WORK unset/empty/"0"): Gemini CLI
-        local default_adapter = (function()
-          local v = vim.env.CHEZMOI_WORK
-          return (v ~= nil and v ~= "" and v ~= "0") and "litellm" or "gemini_home"
-        end)()
+        local default_adapter = "gemini_home"
 
         local opts = {
           -- Logging belongs under opts
@@ -86,29 +76,6 @@ vim.pack.add({
               end,
             },
 
-            -- HTTP adapters live here
-            http = {
-              -- Work: LiteLLM via OpenAI-compatible adapter
-              litellm = function()
-                return require("codecompanion.adapters").extend("openai_compatible", {
-                  name = "LiteLLM (Work)",
-                  env = {
-                    -- Resolve at runtime from macOS Keychain
-                    url      = "cmd:security find-generic-password -s 'litellm_api_url' -w | tr -d '\n'",
-                    api_key  = "cmd:security find-generic-password -s 'litellm_api_key'   -w | tr -d '\n'",
-
-                    -- Many OpenAI-compatible proxies use /v1 paths; adjust if your base already includes it
-                    chat_url = "/v1/chat/completions",
-                  },
-                  schema = {
-                    -- Set your default model (as configured/available on your LiteLLM proxy)
-                    model       = { default = "vertex_ai/claude-sonnet-4-6@default" },
-                    num_ctx     = { default = 32000 },
-                    temperature = { default = 0.2 },
-                  },
-                })
-              end,
-            },
           },
 
           -- Strategies choose which adapter to use

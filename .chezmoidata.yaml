@@ -1,13 +1,9 @@
-#
-# set secrets
-# chezmoi secret keyring set --service=opencode_litellm_key_home --user="$USER"
-# chezmoi secret keyring set --service=opencode_litellm_key_home --user="$USER" --value="hello"
-# chezmoi secret keyring get --service=opencode_litellm_key_home --user="$USER"
-#
 profile: "home"
 
-# SilverBullet space path - override in ~/.config/chezmoi/chezmoi.toml
+# SilverBullet. Override in ~/.config/chezmoi/chezmoi.toml.
+# Work: local server, notes folder on disk. Home: URL of the homelab server.
 silverbulletSpacePath: "$HOME/notes"
+silverbulletUrl: "<place_holder>"
 
 work:
   org_slug: "<place_holder>"
@@ -18,19 +14,5 @@ ssh:
   enable_colima_include: true
 
   # Keys (override here if you use different paths)
-  personalKey: "~/.ssh/marvin"
+  homeKey: "~/.ssh/home"
   workKey: "~/.ssh/work"
-
-opencode:
-  profiles:
-    home:
-      baseURL: "http://192.168.1.50:4000/v1"          # ensure /v1 if OpenAI-compatible
-      displayName: "LiteLLM (Home)"
-      defaultModel: "gemini/gemini-3.1-pro-preview"
-      apiKeyService: "litellm_api_key"   # Keychain service name for the API key
-
-    work:
-      baseURL: "<place_holder>"
-      displayName: "LiteLLM (Work)"
-      defaultModel: "vertex_ai/gemini-2.5-flash"
-      apiKeyService: "litellm_api_key"

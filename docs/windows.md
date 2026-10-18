@@ -15,44 +15,13 @@ profile = "work"
 [data.work]
   org_slug = "YOUR_ORG_SLUG"
   email = "you@your-company.com"
-
-# Optional: only if you use LiteLLM at work
-[data.opencode.profiles.work]
-  baseURL = "https://litellm.your-company.com/v1"
 ```
 
 Run `chezmoi edit-config` to create/edit it. After saving, `chezmoi apply`.
 
-## Secrets — Windows Credential Manager
-
-The `opencode.jsonc` template reads its API key via the `keyring` template
-function, keyed by service name + the username `chezmoi` sees. On a
-domain-joined machine that username includes the domain prefix
-(e.g. `CORPORATE_NT\marvin.dore`).
-
-Confirm what chezmoi will look up:
-
-```powershell
-chezmoi execute-template '{{ .chezmoi.username }}'
-```
-
-Then store the entry under that exact username — use single quotes so PowerShell
-preserves the backslash:
-
-```powershell
-chezmoi secret keyring set --service=litellm_api_key --user='CORPORATE_NT\marvin.dore'
-```
-
-Read it back to verify:
-
-```powershell
-chezmoi secret keyring get --service=litellm_api_key --user='CORPORATE_NT\marvin.dore'
-```
-
 ## What is NOT applied on Windows
 
-`docker/` is excluded by `.chezmoiignore`. The LiteLLM proxy runs on the home
-macOS host; the Windows machine only consumes its API.
+`docker/` is excluded by `.chezmoiignore`.
 
 ## XDG_CONFIG_HOME
 

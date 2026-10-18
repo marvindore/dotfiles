@@ -1,57 +1,41 @@
 -- ==========================================
--- Treesitter + Textobjects + Context (Eager Load, Main API)
+-- Treesitter + Textobjects (Eager Load, Main API)
 -- - Eager-load nvim-treesitter (main branch does not support lazy-loading)
--- - Install parsers ONLY when missing (Fix A)
--- - Includes a commented Fix B snippet (install only on PackChanged)
+-- - Parser list: lua/utils/ts_langs.lua
+-- - Missing parsers are installed on startup (async) unless
+--   g:ts_no_auto_install is set (the chezmoi headless bootstrap sets it and
+--   waits on the install instead).
 -- ==========================================
-
--- ------------------------------------------------
--- 0) Language list (with feature flags)
--- ------------------------------------------------
-local install_list = {
-  "bash",
-  "cmake",
-  "comment",
-  "css",
-  "cuda",
-  "dockerfile",
-  "gitignore",
-  "graphql",
-  "html",
-  "http",
-  "javascript",
-  "jsdoc",
-  "json",
-  "json5",
-  "latex",
-  "lua",
-  "make",
-  "markdown",
-  "markdown_inline",
-  "python",
-  "query",
-  "regex",
-  "scss",
-  "sql",
-  "svelte",
-  "todotxt",
-  "toml",
-  "tsx",
-  "typescript",
-  "vim",
-  "vimdoc",
-  "vue",
-  "yaml",
-}
-
-if vim.g.enableRust   then table.insert(install_list, "rust") end
-if vim.g.enableJava   then vim.list_extend(install_list, { "java", "kotlin" }) end
-if vim.g.enableCsharp then table.insert(install_list, "c_sharp") end
-if vim.g.enableGo     then vim.list_extend(install_list, { "go", "gomod", "gowork" }) end
 
 -- ------------------------------------------------
 -- 1) Plugins (vim.pack + lze bridge)
 -- ------------------------------------------------
+local function setup_treesitter()
+  -- Ensure the plugin's loader runs so :TSInstall/:TSUpdate exist.
+  vim.cmd("packadd nvim-treesitter")
+  require("nvim-treesitter").setup({})
+
+  if not vim.g.ts_no_auto_install then
+    vim.defer_fn(function() require("utils.ts_bootstrap").install_missing() end, 0)
+  end
+
+  -- Start Treesitter on FileType; set foldexpr from TS
+  local aug = vim.api.nvim_create_augroup("treesitter_core_integration", { clear = true })
+  vim.api.nvim_create_autocmd("FileType", {
+    group = aug,
+    pattern = "*",
+    callback = function(args)
+      pcall(vim.treesitter.start, args.buf)
+
+      if vim.bo[args.buf].buftype ~= "" then return end
+      if vim.bo[args.buf].filetype == "minifiles" then return end
+
+      vim.opt_local.foldmethod = "expr"
+      vim.opt_local.foldexpr   = "v:lua.vim.treesitter.foldexpr()"
+    end,
+  })
+end
+
 vim.pack.add({
   -- Core nvim-treesitter (EAGER; main branch)
   {
@@ -59,7 +43,7 @@ vim.pack.add({
     name    = "nvim-treesitter",
     version = "main",
     data    = {
-      build = ":TSUpdate",  -- update parsers when plugin updates
+      build = ":TSUpdate",  -- run by the PackChanged hub after :PackUpdate
     },
   },
 
@@ -101,69 +85,7 @@ vim.pack.add({
     local name = (spec.data and spec.data.name) or spec.name
 
     if name == "nvim-treesitter" then
-      -- Ensure the plugin's loader runs so :TSInstall/:TSUpdate exist.
-      -- (pack: start packages auto-load, opt packages need :packadd)
-      vim.cmd("packadd nvim-treesitter")  -- see :h pack and :h :packadd
-
-      -- Main-branch API
-      local ts = require("nvim-treesitter")
-      ts.setup({}) -- optional (you can set install_dir here)
-
-      -- ---- Fix A: install only missing parsers on startup ----
-      local function missing_parsers(list)
-        local missing = {}
-        for _, lang in ipairs(list) do
-          local so   = vim.api.nvim_get_runtime_file("parser/" .. lang .. ".so",   false)
-          local wasm = vim.api.nvim_get_runtime_file("parser/" .. lang .. ".wasm", false)
-          if #so == 0 and #wasm == 0 then table.insert(missing, lang) end
-        end
-        return missing
-      end
-
-      vim.defer_fn(function()
-        local miss = missing_parsers(install_list)
-        if #miss > 0 then
-          ts.install(miss)  -- async; no-op if all present
-        end
-      end, 0)
-
-      -- Start Treesitter on FileType; set foldexpr from TS
-      local aug = vim.api.nvim_create_augroup("treesitter_core_integration", { clear = true })
-      vim.api.nvim_create_autocmd("FileType", {
-        group = aug,
-        pattern = "*",
-        callback = function(args)
-          pcall(vim.treesitter.start, args.buf)
-
-          if vim.bo[args.buf].buftype ~= "" then return end
-          if vim.bo[args.buf].filetype == "minifiles" then return end
-
-          vim.opt_local.foldmethod = "expr"
-          vim.opt_local.foldexpr   = "v:lua.vim.treesitter.foldexpr()"
-        end,
-      })
-
-      --[[
-      -------------------------------------------------------------------------
-      Fix B (optional): install/update only when the plugin changes.
-      Uncomment to use. This runs on :PackUpdate or initial install, and does
-      nothing on normal startups (fastest steady state).
-
-      vim.api.nvim_create_autocmd("PackChanged", {
-        group = vim.api.nvim_create_augroup("ts_install_on_packchange", { clear = true }),
-        pattern = "nvim-treesitter",
-        callback = function(e)
-          if e.data.kind == "install" or e.data.kind == "update" then
-            require("nvim-treesitter").setup({})
-            require("nvim-treesitter").install(install_list)
-            -- Optionally also update existing parsers:
-            -- require("nvim-treesitter").update()
-          end
-        end,
-      })
-      -------------------------------------------------------------------------
-      ]]
-
+      setup_treesitter()
       return
     end
 
@@ -175,39 +97,23 @@ vim.pack.add({
 })
 
 -- ------------------------------------------------
--- 2) One-shot bootstrap command to install missing parsers
+-- 2) Manual bootstrap command to install missing parsers
 -- ------------------------------------------------
--- Uses runtimepath to detect parser files instead of the legacy parsers module.
-local function has_installed_parser(lang)
-  local so   = vim.api.nvim_get_runtime_file("parser/" .. lang .. ".so",   false)
-  local wasm = vim.api.nvim_get_runtime_file("parser/" .. lang .. ".wasm", false)
-  return (#so > 0) or (#wasm > 0)
-end
-
-local function get_missing_parsers(list)
-  local missing = {}
-  for _, lang in ipairs(list) do
-    if not has_installed_parser(lang) then
-      table.insert(missing, lang)
-    end
-  end
-  return missing
-end
-
 vim.api.nvim_create_user_command("TSBootstrap", function()
   if vim.fn.executable("tree-sitter") ~= 1 then
     vim.notify(
-      "tree-sitter CLI not found. Install with `brew install tree-sitter` or `npm i -g tree-sitter-cli`.",
+      "tree-sitter CLI not found. Install with `brew install tree-sitter-cli`.",
       vim.log.levels.WARN
     )
     return
   end
-  local missing = get_missing_parsers(install_list)
+  local missing = require("utils.ts_bootstrap").missing()
   if #missing == 0 then
     vim.notify("All requested parsers already installed.", vim.log.levels.INFO)
     return
   end
-  vim.cmd("TSInstall " .. table.concat(missing, " "))
+  vim.notify("Installing parsers: " .. table.concat(missing, " "), vim.log.levels.INFO)
+  require("nvim-treesitter").install(missing)
 end, {})
 
 -- ------------------------------------------------

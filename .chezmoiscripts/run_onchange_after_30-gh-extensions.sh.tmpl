@@ -1,0 +1,30 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# gh extensions. Reruns when EXTENSIONS changes or when the gh token changes.
+# The next line holds a 12-char SHA-256 prefix of the stored token, read at
+# template time, so the first apply after any `gh auth login` reruns this script
+# without a manual step. `gh auth token` is offline; `gh auth status` calls the API.
+# gh token: {{ output "sh" "-c" "for g in gh /opt/homebrew/bin/gh /usr/local/bin/gh; do t=$(\"$g\" auth token 2>/dev/null) && [ -n \"$t\" ] && { printf %s \"$t\" | shasum -a 256 | cut -c1-12; exit 0; }; done; echo none" | trim }}
+set -eu
+for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+  [ -x "$b" ] && eval "$("$b" shellenv)" && break
+done
+
+# github/gh-copilot is not listed: `gh copilot` is a built-in command since gh 2.101,
+# and gh refuses to install an extension whose name matches a built-in command.
+EXTENSIONS="dlvhdr/gh-dash"
+
+if ! gh auth status >/dev/null 2>&1; then
+  echo "gh extensions: skip. Run 'gh auth login', then 'chezmoi apply'."
+  exit 0
+fi
+
+installed="$(gh extension list | awk -F'\t' '{print $2}')"
+for ext in $EXTENSIONS; do
+  if printf '%s\n' "$installed" | grep -qx "$ext"; then
+    continue
+  fi
+  echo "gh extension install $ext"
+  gh extension install "$ext"
+done
+{{- end }}

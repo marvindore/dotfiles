@@ -66,7 +66,7 @@ local dotnet_spec = {
 
 	-- KEYMAPS: Pressing these tells 'lze' to fire the 'load' and 'after' functions above
 	keys = {
-		{ "<leader>idd", function()
+		{ lhs = "<leader>idd", rhs = function()
 			-- Read environmentVariables from the first Project profile in launchSettings.json,
 			-- mirroring what Rider does automatically, so ASPNETCORE_ENVIRONMENT etc. are set.
 			local function get_launch_settings_env()
@@ -99,10 +99,10 @@ local dotnet_spec = {
 
 			coroutine.wrap(function() require("easy-dotnet").debug_default() end)()
 		end, desc = "Dotnet Debug" },
-		{ "<leader>itp", function() require("easy-dotnet").test() end, desc = "Dotnet Test (Picker)" },
-		{ "<leader>irr", function() require("easy-dotnet").run() end, desc = "Dotnet Run" },
-		{ "<leader>ibb", function() require("easy-dotnet").build() end, desc = "Dotnet Build" },
-		{ "<leader>ise", function() require("easy-dotnet").secrets() end, desc = "Dotnet Secrets" },
+		{ lhs = "<leader>itp", rhs = function() require("easy-dotnet").test() end, desc = "Dotnet Test (Picker)" },
+		{ lhs = "<leader>irr", rhs = function() require("easy-dotnet").run() end, desc = "Dotnet Run" },
+		{ lhs = "<leader>ibb", rhs = function() require("easy-dotnet").build() end, desc = "Dotnet Build" },
+		{ lhs = "<leader>ise", rhs = function() require("easy-dotnet").secrets() end, desc = "Dotnet Secrets" },
 	},
 }
 

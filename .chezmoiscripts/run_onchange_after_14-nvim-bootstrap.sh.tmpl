@@ -1,0 +1,28 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Installs Neovim plugins and tree-sitter parsers headlessly, so that the first
+# interactive `nvim` start is clean. Reruns when the parser list changes:
+# ts langs: {{ include "dot_config/nvim/lua/utils/ts_langs.lua" | sha256sum }}
+set -u
+for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+  [ -x "$b" ] && eval "$("$b" shellenv)" && break
+done
+command -v nvim >/dev/null 2>&1 || { echo "nvim bootstrap: nvim is not on PATH" >&2; exit 1; }
+
+log="$(mktemp)"
+trap 'rm -f "$log"' EXIT
+echo "nvim bootstrap: installing plugins and parsers (the first run can take several minutes)"
+# g:ts_no_auto_install stops the async install in plugins/treesitter.lua; this
+# call does the same install and waits for it (max 15 minutes).
+nvim --headless --cmd 'let g:ts_no_auto_install=1' \
+  -c 'lua local t = require("utils.ts_bootstrap").install_missing(); if t then t:wait(900000) end' \
+  -c 'qa!' >"$log" 2>&1
+code=$?
+# nvim exits 0 even when a Lua chunk failed (E5113) or a parser build failed.
+if [ "$code" -ne 0 ] || grep -qE 'E[0-9]+:|error:' "$log"; then
+  cat "$log" >&2
+  echo "nvim bootstrap: failed (exit $code). Fix the errors above, then run 'chezmoi apply' again." >&2
+  exit 1
+fi
+echo "nvim bootstrap: ok"
+{{- end }}

@@ -1,26 +1,45 @@
+{{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
-# Link SuperCmd extensions from chezmoi to ~/Library/Application Support
-
+# Keeps ~/Library/Application Support/SuperCmd/extensions linked to the chezmoi
+# source. Runs on every apply. Silent when the link is correct. Prints what it
+# repairs, so that a link that keeps disappearing is visible.
 set -euo pipefail
 
-SUPERCMD_EXTENSIONS_HOME="${HOME}/Library/Application Support/SuperCmd/extensions"
-CHEZMOI_EXTENSIONS_SOURCE="{{ .chezmoi.sourceDir }}/dot_config/supercmd/extensions"
+LINK="${HOME}/Library/Application Support/SuperCmd/extensions"
+TARGET="{{ .chezmoi.sourceDir }}/dot_config/supercmd/extensions"
 
-# Create backup if the extensions directory exists as a real directory
-if [[ -d "$SUPERCMD_EXTENSIONS_HOME" && ! -L "$SUPERCMD_EXTENSIONS_HOME" ]]; then
-  BACKUP_PATH="${SUPERCMD_EXTENSIONS_HOME}.backup.$(date +%s)"
-  echo "Backing up existing extensions to $BACKUP_PATH"
-  mv "$SUPERCMD_EXTENSIONS_HOME" "$BACKUP_PATH"
+say() { echo "supercmd: $*"; }
+
+# The extensions live in the chezmoi source. A missing or empty folder means a
+# broken checkout; linking to it would hide that.
+if [[ ! -d "$TARGET" ]] || [[ -z "$(ls -A "$TARGET" 2>/dev/null)" ]]; then
+  say "WARNING: source folder is missing or empty: $TARGET" >&2
+  say "WARNING: skipped linking. Check the chezmoi source checkout." >&2
+  exit 0
 fi
 
-# Create the parent directory if it doesn't exist
-mkdir -p "$(dirname "$SUPERCMD_EXTENSIONS_HOME")"
-
-# Create or update the symlink
-if [[ -L "$SUPERCMD_EXTENSIONS_HOME" ]]; then
-  # Remove old symlink
-  rm "$SUPERCMD_EXTENSIONS_HOME"
+# Happy path: link exists and points to the source.
+if [[ -L "$LINK" && "$(readlink "$LINK")" == "$TARGET" ]]; then
+  exit 0
 fi
 
-ln -s "$CHEZMOI_EXTENSIONS_SOURCE" "$SUPERCMD_EXTENSIONS_HOME"
-echo "✓ SuperCmd extensions symlinked: $SUPERCMD_EXTENSIONS_HOME → $CHEZMOI_EXTENSIONS_SOURCE"
+if [[ -L "$LINK" ]]; then
+  current="$(readlink "$LINK")"
+  if [[ -e "$LINK" ]]; then
+    say "link points to '$current', expected '$TARGET'. Re-linking."
+  else
+    say "link is broken (target '$current' does not exist). Re-linking."
+  fi
+  rm "$LINK"
+elif [[ -e "$LINK" ]]; then
+  backup="${LINK}.backup.$(date +%s)"
+  say "found a real folder instead of the link (SuperCmd may have recreated it). Moving it to '$backup'."
+  mv "$LINK" "$backup"
+else
+  say "link does not exist (first run, or it was deleted). Creating it."
+fi
+
+mkdir -p "$(dirname "$LINK")"
+ln -s "$TARGET" "$LINK"
+say "linked '$LINK' -> '$TARGET'"
+{{- end }}

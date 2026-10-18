@@ -9,13 +9,15 @@ hs.hotkey.bind({ "ctrl" }, "escape", function()
 end)
 
 -- Navigate or open SilverBullet PWA / Web App (alt+n)
--- Focuses SilverBullet PWA application on active monitor, or searches Chrome tabs, or opens local server
-local SILVERBULLET_URL = "http://localhost:3010"
+-- Focuses SilverBullet PWA application on active monitor, or searches Chrome tabs, or opens the server URL.
+-- Work: local server from start-silverbullet. Home: homelab URL from ~/.config/chezmoi/chezmoi.toml.
+{{- $sbUrl := ternary "http://localhost:3010" .silverbulletUrl (eq .profile "work") }}
+local SILVERBULLET_URL = {{ if eq $sbUrl "<place_holder>" }}nil{{ else }}{{ $sbUrl | quote }}{{ end }}
 
 -- PWA windows live on AeroSpace workspace N.
 -- Resolve the CLI path once at load. A login shell per keypress costs ~1s.
 local AEROSPACE_BIN = nil
-for _, path in ipairs({ "/opt/homebrew/bin/aerospace", "/run/current-system/sw/bin/aerospace" }) do
+for _, path in ipairs({ "/opt/homebrew/bin/aerospace", "/usr/local/bin/aerospace" }) do
     if hs.fs.attributes(path) then
         AEROSPACE_BIN = path
         break
@@ -62,6 +64,10 @@ hs.hotkey.bind({"alt"}, "n", function()
     end
 
     -- 3. Fallback: Search Chrome windows/tabs for SilverBullet or open URL
+    if not SILVERBULLET_URL then
+        hs.alert.show("SilverBullet: set silverbulletUrl in ~/.config/chezmoi/chezmoi.toml, then chezmoi apply")
+        return
+    end
     local chrome = hs.application.find("Google Chrome")
 
     if chrome and chrome:isRunning() then
@@ -78,7 +84,7 @@ hs.hotkey.bind({"alt"}, "n", function()
                 var win = chrome.windows[w];
                 for (var t = 0; t < win.tabs.length; t++) {
                     var tab = win.tabs[t];
-                    if (tab.url().includes("3010") || tab.url().includes("silverbullet")) {
+                    if (tab.url().indexOf("]] .. SILVERBULLET_URL .. [[") === 0 || tab.url().includes("silverbullet")) {
                         notesFound = true;
                         windowIndex = w;
                         tabIndex = t;

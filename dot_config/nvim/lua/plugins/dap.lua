@@ -15,7 +15,7 @@ vim.pack.add({
 				local cmd = is_win
 						and 'npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && powershell -NoProfile -Command "if (Test-Path out) { Remove-Item -Recurse -Force out }; Move-Item -Path dist -Destination out"'
 					or "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out"
-				vim.system({ "bash", "-c", cmd }, { cwd = p.spec.path }):wait()
+				vim.system({ "bash", "-c", cmd }, { cwd = p.path }):wait()
 			end,
 		},
 	},

@@ -6,14 +6,12 @@ alias copyq='flatpak run com.github.hluk.copyq'
 alias flatseal='flatpak run com.github.tchx84.Flatseal'
 alias flameshot='env QT_SCREEN_SCALE_FACTORS="1;1.5;" flatpak run org.flameshot.Flameshot gui'
 alias upgradedistrobox='curl -s https://raw.githubusercontent.com/89luca89/distrobox/main/install | sudo sh -s -- --next'
-alias flake='nvim ~/.config/nix-darwin/'
 alias msbuild='$HOME/.local/share/mise/shims/dotnet'
 alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
-alias nix_dryrun="nix build github:nix-community/neovim-nightly-overlay#default --dry-run"
 
 alias nvimc='nvim --cmd "cd $(chezmoi source-path)/dot_config/nvim"'
 
-alias ca="CHEZMOI_SECRETS=1 chezmoi apply"
+alias ca="chezmoi apply"
 alias oc="opencode"
 alias agyd="agy --dangerously-skip-permissions"
 
@@ -38,25 +36,15 @@ alias sail='[ -f sail ] && bash sail || bash vendor/bin/sail'
 
 # Python
 alias py="uv run python"
-alias python='uv run python'
 
 # apps
 alias vd="nvim -d"
 alias nv="nvim"
-alias sv="sudo nvim"
+alias sv='sudo -e' # sudoedit: edits a copy as you, writes it back as root
 alias v="nvim"
-alias zj="zellij"
-alias zjn="zellij -s"
 
 alias l="eza"
 
-alias wiki="nvim ~/vimwiki/index.md"
-
-alias litellm_up="docker compose -f ~/docker/litellm/docker-compose.yml up -d"
-alias litellm_down="docker compose -f ~/docker/litellm/docker-compose.yml down"
-
-# Define path to the driver
-DRIVER_PATH="/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon"
 
 # Unload Kanata and revert to native keyboard instantly
 alias k-stop="sudo launchctl bootout system /Library/LaunchDaemons/com.example.kanata.plist"
@@ -89,64 +77,6 @@ function kanata_status() {
     fi
 }
 
-function darwin_upgrade() {
-  local dest_dir="$HOME/.config/nix-darwin"
-  # Dynamically ask chezmoi for the source path
-  local src_dir=$(chezmoi source-path "$dest_dir")
-
-  # Safety check
-  if [ ! -d "$src_dir" ]; then
-    echo "Error: Cannot find chezmoi source directory at $src_dir."
-    echo "Please ensure you have run 'chezmoi add ~/.config/nix-darwin'"
-    return 1
-  fi
-
-  echo "Updating flake.lock in chezmoi source ($src_dir)..."
-  cd "$src_dir" || return 1
-  
-  # Update happens in the source repo
-  nix flake update
-  
-  # Push the freshly updated flake.lock to the system path
-  echo "Applying updated lock file to system path..."
-  chezmoi apply "$dest_dir"
-  
-  cd - > /dev/null
-}
-
-function darwin_update() {
-  local dest_dir="$HOME/.config/nix-darwin"
-  # Dynamically ask chezmoi for the source path
-  local src_dir=$(chezmoi source-path "$dest_dir")
-
-  # Safety check
-  if [ ! -d "$src_dir" ]; then
-    echo "Error: Cannot find chezmoi source directory at $src_dir."
-    echo "Please ensure you have run 'chezmoi add ~/.config/nix-darwin'"
-    return 1
-  fi
-
-  # 1. Move to the source directory to build.
-  cd "$src_dir" || return 1
-  echo "Building system configuration as unprivileged user..."
-  nix build .#darwinConfigurations.mchip.system
-
-  if [ $? -eq 0 ]; then
-    # 2. If build succeeds, push the exact config/lock to the system
-    echo "Syncing config and lock file to system..."
-    chezmoi apply "$dest_dir"
-
-    # 3. Switch the system using the newly synced destination files
-    echo "Build successful. Switching system configuration as root..."
-    sudo darwin-rebuild switch --flake "$dest_dir#mchip"
-  else
-    echo "Nix build failed. Aborting switch."
-  fi
-
-  # 4. Manage the garbage collection roots (now located in your source dir)
-  rm -rf ./result
-  cd - > /dev/null
-}
 
 function cht() {
 # :list
@@ -229,20 +159,6 @@ gmerge() {
     return 0
   fi
   nvim -c DiffviewOpen
-}
-
-# Open conflicted files in kdiff3
-gmergex() {
-  local files
-  files=$(git ls-files -m | xargs grep -l '^<<<<<<<\|^=======\|^>>>>>>>' 2>/dev/null)
-  if [ -z "$files" ]; then
-    echo "No conflicted files to resolve."
-    return 0
-  fi
-  while IFS= read -r file; do
-    git update-index --unresolve "$file"
-    git mergetool --tool=kdiff3 "$file"
-  done <<< "$files"
 }
 
 # File history for a path, defaulting to current directory
@@ -358,7 +274,7 @@ envcheck() {
 alias rgh='rg --heading --line-number --color=always -i'
 
 # Search with 2 lines of context before and after each match
-# Great for understanding surrounding code
+# Great for understanding surrounding code. Daily driver.
 # Usage: rgc "search-term"
 alias rgc='rg --heading --line-number --color=always -C 2 -i'
 
@@ -411,14 +327,33 @@ alias rgsrc='rg -i \
 alias rgfz='rg --line-number --no-heading --color=always -i | fzf --ansi'
 
 ###############################################################################
-# MY FAVORITE DAILY DRIVER
+# HOMEBREW (source of truth: ~/.config/homebrew/Brewfile, managed by chezmoi)
 ###############################################################################
 
-# Best balance of readability and context
-# Shows:
-#   File heading
-#   Line numbers
-#   2 lines before/after
-#   Colored matches
-# Usage: rgcode "search-term"
-alias rgcode='rg --heading --line-number --color=always -C 2 -i'
+# Edit the Brewfile template, then apply. Installs anything new.
+alias brewfile='chezmoi edit --apply ~/.config/homebrew/Brewfile'
+
+# Install everything missing from the Brewfile. No upgrades.
+alias bbi='HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --global'
+
+# List what the Brewfile declares but is not installed.
+alias bbc='brew bundle check --no-upgrade --verbose --global'
+
+# List installed packages not in the Brewfile. Report only, never removes.
+function bbx() {
+  brew bundle cleanup --global </dev/null 2>&1 \
+    | awk '/^Would uninstall/ { show=1 } /^Would `brew cleanup`/ { show=0 } show'
+  return 0
+}
+
+# Remove installed packages not in the Brewfile. Preview first with `bbx`.
+alias bbclean='brew bundle cleanup --force --global'
+
+# Make the system match the Brewfile: install missing, then remove extras.
+# Removes nothing if an install fails. No upgrades.
+alias bbs='HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --global --cleanup'
+
+# Upgrade everything, then reconcile with the Brewfile.
+function brewup() {
+  brew update && brew upgrade && brew bundle install --global && brew cleanup
+}

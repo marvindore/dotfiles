@@ -1,0 +1,5 @@
+.config/nix-darwin
+scripts/macos-setup.sh
+docker/litellm
+.config/zellij
+.config/nvim/lua/plugins/zellij.lua

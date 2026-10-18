@@ -149,7 +149,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-8 = 'workspace 8'
     alt-9 = 'workspace 9'
     alt-a = [
-        "exec-and-forget bash -c 'if [ -d \"/Applications/Bruno.app\" ]; then open -a /Applications/Bruno.app; elif [ -x \"/run/current-system/sw/bin/bruno\" ]; then open -a bruno; else echo \"Bruno not found\"; fi'",
+        "exec-and-forget open -a Bruno",
         "workspace A"
     ]
     alt-b = ['exec-and-forget open /Applications/Google\ Chrome.app', 'workspace B']
@@ -172,7 +172,7 @@ automatically-unhide-macos-hidden-apps = false
     alt-s = 'workspace S'
 
     alt-t = [
-        "exec-and-forget bash -c 'if [ -d \"/Applications/Ghostty.app\" ]; then open -a /Applications/Ghostty.app; elif [ -x \"/run/current-system/sw/bin/ghostty\" ]; then open -a ghostty; else echo \"Ghostty not found\"; fi'",
+        "exec-and-forget open -a Ghostty",
         "workspace T"
     ]
     alt-u = 'workspace U'
@@ -322,7 +322,3 @@ run = 'move-node-to-workspace I'
 [[on-window-detected]]
 if.app-id = 'com.jetbrains.intellij'
 run = 'move-node-to-workspace I'
-
-[[on-window-detected]]
-if.app-name-regex-substring = "Meld"
-run = "move-node-to-workspace G"

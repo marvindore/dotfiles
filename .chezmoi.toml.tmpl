@@ -1,0 +1,25 @@
+{{- /* Prompts only. Values are written to ~/.config/chezmoi/chezmoi.toml, which is not tracked. */ -}}
+{{- /* *Once functions reuse existing values, so re-running `chezmoi init` prompts for nothing. */ -}}
+{{- /* Keys read with `dig` are never prompted. They keep the value already in the local file, else "<place_holder>". */ -}}
+{{- $profile := promptChoiceOnce . "profile" "Profile" (list "home" "work") }}
+[data]
+profile = {{ $profile | quote }}
+{{ if eq $profile "work" -}}
+{{- $sb := promptStringOnce . "silverbulletSpacePath" "SilverBullet space path" "$HOME/notes" -}}
+silverbulletSpacePath = {{ $sb | quote }}
+{{ else -}}
+# URL of the homelab SilverBullet. Replace the placeholder, then run `chezmoi apply`.
+silverbulletUrl = {{ dig "silverbulletUrl" "<place_holder>" . | quote }}
+{{ end -}}
+{{ if eq $profile "work" -}}
+{{- $slug := promptStringOnce . "work.org_slug" "Work org slug" -}}
+{{- $email := promptStringOnce . "work.email" "Work email" }}
+[data.work]
+  org_slug = {{ $slug | quote }}
+  email = {{ $email | quote }}
+{{ end }}
+[merge]
+# Three-way merge in Neovim. Left: file on disk (edit and :w this one).
+# Middle: what chezmoi wants to write. Right: previous target state.
+command = "nvim"
+args = ["-d", "{{ "{{ .Destination }}" }}", "{{ "{{ .Source }}" }}", "{{ "{{ .Target }}" }}"]

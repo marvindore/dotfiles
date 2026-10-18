@@ -1,0 +1,41 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# Verifies the C toolchain before the Neovim bootstrap. nvim-treesitter compiles
+# parsers with `tree-sitter build`, which needs `cc` and a linker that matches
+# the active SDK. Always runs; it takes less than a second.
+set -u
+for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+  [ -x "$b" ] && eval "$("$b" shellenv)" && break
+done
+
+fail() {
+  echo "toolchain check: $1" >&2
+  echo "" >&2
+  echo "Diagnostics:" >&2
+  echo "  xcode-select -p: $(xcode-select -p 2>&1)" >&2
+  echo "  ld:              $(ld -v 2>&1 | head -1)" >&2
+  echo "  SDK:             $(xcrun --show-sdk-path 2>&1) ($(xcrun --show-sdk-version 2>&1))" >&2
+  echo "  CLT package:     $(pkgutil --pkg-info=com.apple.pkg.CLTools_Executables 2>&1 | grep version)" >&2
+  echo "" >&2
+  echo "Repair, then run 'chezmoi apply' again:" >&2
+  echo "  softwareupdate --list 2>&1 | grep -i 'command line tools'   # install the listed CLT update, if any" >&2
+  echo "  sudo rm -rf /Library/Developer/CommandLineTools && xcode-select --install   # full reinstall" >&2
+  exit 1
+}
+
+dev_dir="$(xcode-select -p 2>/dev/null)" || fail "no active developer directory. Run 'xcode-select --install'."
+[ -d "$dev_dir" ] || fail "developer directory '$dev_dir' does not exist."
+
+for tool in git nvim tree-sitter; do
+  command -v "$tool" >/dev/null 2>&1 || fail "'$tool' is not on PATH. Run 'brew bundle' (bbi) first."
+done
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+printf 'int main(void){return 0;}\n' > "$tmp/t.c"
+if ! out="$(cc "$tmp/t.c" -o "$tmp/t" 2>&1)"; then
+  echo "$out" >&2
+  fail "cannot compile and link a C program. The linker is older than the SDK (symptom: 'ld: tapi error ... unknown architecture')."
+fi
+echo "toolchain check: ok ($(cc --version | head -1))"
+{{- end }}

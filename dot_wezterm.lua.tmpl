@@ -22,7 +22,7 @@ elseif is_linux() then
   zoxide_path = "/usr/bin/zoxide"
 end
 
--- Resolve an executable via the user's login shell PATH (works for Homebrew, Nix, AppImage, etc.)
+-- Resolve an executable via the user's login shell PATH (works for Homebrew, AppImage, etc.)
 local function find_executable(name)
   local shell  = os.getenv("SHELL") or "sh"
   -- 'command -v' outputs nothing on failure (unlike 'which' which prints "not found")
@@ -40,7 +40,6 @@ local function find_executable(name)
     "/opt/homebrew/bin/" .. name,                        -- macOS Homebrew (Apple Silicon)
     "/usr/local/bin/"   .. name,                         -- macOS Homebrew (Intel) / Linux
     "/usr/bin/"         .. name,                         -- Linux system package
-    wezterm.home_dir .. "/.nix-profile/bin/" .. name,   -- Nix home-manager
     wezterm.home_dir .. "/.local/bin/"       .. name,   -- AppImage / manual install
   }
   for _, path in ipairs(candidates) do

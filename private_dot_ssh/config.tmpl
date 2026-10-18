@@ -1,7 +1,7 @@
 {{- /* Load data from .chezmoidata.yaml */ -}}
 {{- $workOrg  := .work.org_slug -}}
 {{- $isDarwin := eq .chezmoi.os "darwin" -}}
-{{- $homeKey  := .ssh.personalKey | default "~/.ssh/marvin" -}}
+{{- $homeKey  := .ssh.homeKey     | default "~/.ssh/home" -}}
 {{- $workKey  := .ssh.workKey     | default "~/.ssh/work" -}}
 {{- $colimaOn := .ssh.enable_colima_include | default true -}}
 

@@ -1,0 +1,9 @@
+[tools]
+java = "zulu-17.60.17.0"
+kubectl = "1.24.0"
+node = "26.10.0"
+pnpm = "10.28.2"
+uv = "0.9.29"
+
+[settings]
+python.uv_venv_auto = "create|source"

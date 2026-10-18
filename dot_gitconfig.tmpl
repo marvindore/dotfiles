@@ -1,5 +1,5 @@
 {{- $workOrg  := .work.org_slug -}}
-{{- $profile := (env "CHEZMOI_PROFILE" | default .profile | default "home") -}}
+{{- $profile := .profile -}}
 [user]
 	name = Marvin Dore
 	email = hi@marvindore.com

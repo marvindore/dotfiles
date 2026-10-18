@@ -1,18 +1,5 @@
-{{- $profile := (env "CHEZMOI_PROFILE" | default .profile | default "home") -}}
-{{- $workOrg  := .work.org_slug -}}
-
-{{- define "keychainGet" -}}
-  {{- $service := . -}}
-  {{- (output "/bin/sh" "-c" (printf "/usr/bin/security find-generic-password -s %q -w 2>/dev/null || true" $service)) | trim -}}
-{{- end }}
-
-{{- $useKeychain := and (env "CHEZMOI_SECRETS") (env "CHEZMOI_WORK") (lookPath "security") }}
-
-{{- if eq $profile "work" }}
+{{- if eq .profile "work" }}
 [user]
     name = Marvin Dore
     email = {{ .work.email | quote }}
-{{ if $useKeychain }}
-    key = "{{ template "keychainGet" "chezmoi_gpg_signing_key" }}"
-{{ end }}
 {{ end }}

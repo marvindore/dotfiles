@@ -1,0 +1,68 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/sh
+# macOS defaults. Idempotent: every write is preceded by a read and happens
+# only when the value differs. The Dock restarts only if a Dock key changed.
+# Safe to rerun by hand. chezmoi reruns it only when this file changes.
+#
+# clear_dock_apps empties the Dock. It acts only when pinned apps exist, so it
+# removes pins whenever this script changes and pins exist.
+set -eu
+
+DOCK_CHANGED=0
+
+current() {
+  defaults read "$1" "$2" 2>/dev/null || echo "<unset>"
+}
+
+note_dock() {
+  [ "$1" = "com.apple.dock" ] && DOCK_CHANGED=1
+  return 0
+}
+
+# set_pref <domain> <key> <type> <value> <expected-read-value>
+set_pref() {
+  [ "$(current "$1" "$2")" = "$5" ] && return 0
+  echo "defaults: $1 $2 -> $4"
+  defaults write "$1" "$2" "-$3" "$4"
+  note_dock "$1"
+}
+
+dock_app_count() {
+  defaults export com.apple.dock - | plutil -extract persistent-apps raw -o - - 2>/dev/null || echo 0
+}
+
+clear_dock_apps() {
+  [ "$(dock_app_count)" = "0" ] && return 0
+  echo "defaults: com.apple.dock persistent-apps -> []"
+  defaults write com.apple.dock persistent-apps -array
+  DOCK_CHANGED=1
+}
+
+set_guest_disabled() {
+  domain=/Library/Preferences/com.apple.loginwindow
+  [ "$(current "$domain" GuestEnabled)" = "0" ] && return 0
+  if ! sudo -n true 2>/dev/null; then
+    echo "skip (needs sudo): sudo defaults write $domain GuestEnabled -bool false"
+    return 0
+  fi
+  echo "defaults: loginwindow GuestEnabled -> false"
+  sudo defaults write "$domain" GuestEnabled -bool false
+}
+
+restart_dock() {
+  [ "$DOCK_CHANGED" = "1" ] && killall Dock
+  return 0
+}
+
+main() {
+  set_pref com.apple.dock autohide bool true 1
+  set_pref com.apple.dock appswitcher-all-displays bool true 1
+  set_pref NSGlobalDomain KeyRepeat int 2 2 # takes effect at next login
+  set_pref com.apple.WindowManager EnableStandardClickToShowDesktop bool false 0
+  clear_dock_apps
+  set_guest_disabled
+  restart_dock
+}
+
+main "$@"
+{{- end }}

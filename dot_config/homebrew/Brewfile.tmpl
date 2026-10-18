@@ -1,0 +1,125 @@
+# Homebrew Bundle. Single source of truth for installed software.
+# Edit with `chezmoi edit ~/.config/homebrew/Brewfile`, then `chezmoi apply`.
+# Audit: `brew bundle check --verbose --global`, `brew bundle cleanup --global` (dry run). Remove extras: `bbclean`. Sync: `bbs`.
+# Third-party taps: use the full name and `trusted: true` (Homebrew 7 tap trust lives in ~/.config/homebrew/trust.json).
+# Profile: {{ .profile }}
+
+# --- taps -------------------------------------------------------------------
+tap "nikitabobko/tap"
+tap "supercmdlabs/supercmd"
+
+# --- formulae ---------------------------------------------------------------
+brew "act"
+brew "age"
+brew "atuin"
+brew "bat"
+brew "bottom"
+brew "chezmoi"
+brew "cmake"
+brew "colima"
+brew "difftastic"
+brew "docker"         # CLI only. colima is the runtime; no Docker Desktop.
+brew "docker-compose"
+brew "dua-cli"
+brew "eza"
+brew "fd"
+brew "ffmpeg"
+brew "fx"
+brew "fzf"
+brew "gcc" # optional, heavy; Apple clang covers most needs
+brew "gh"
+brew "git"
+brew "git-delta"
+brew "git-filter-repo"
+brew "git-lfs"
+brew "gnupg"
+brew "httpie"
+brew "imagemagick"
+brew "iproute2mac"
+brew "jc"
+brew "jj"
+brew "jq"
+brew "just"
+brew "k9s"
+brew "lazydocker"
+brew "lazygit"
+brew "lnav"
+brew "miller"
+brew "mise"
+brew "neovim"
+brew "opencode"
+brew "pngpaste"
+brew "procs"
+brew "ripgrep"
+brew "rustup"
+brew "sesh"
+brew "somo"
+brew "sox_ng"
+brew "starship"
+brew "tealdeer"
+brew "tmux"
+brew "tree-sitter-cli"
+brew "whisper.cpp"
+brew "worktrunk"
+brew "yazi"
+brew "zk"
+brew "zoxide"
+
+# --- casks ------------------------------------------------------------------
+cask "nikitabobko/tap/aerospace", trusted: true
+cask "antigravity-cli"
+cask "bitwarden"
+cask "bruno"
+cask "claude-code@latest"
+cask "codex"
+cask "copilot-cli"
+cask "espanso"
+cask "font-hack-nerd-font"
+cask "font-jetbrains-mono-nerd-font"
+cask "ghostty"
+cask "gitbutler" # desktop app + `but` CLI
+cask "gitcomet"
+cask "google-chrome"
+cask "hammerspoon"
+cask "macshot"
+cask "obs"
+cask "scoot"
+cask "slack"
+cask "supercmdlabs/supercmd/supercmd", trusted: true
+cask "thaw"
+cask "visual-studio-code"
+
+# Previously listed, not installed. Uncomment to opt in.
+# cask "hiddenbar"
+# cask "linearmouse"
+# cask "meetingbar"
+# brew "ec"        # editorconfig-checker
+# brew "ilspycmd"
+# cask "wezterm"
+# cask "docker-desktop"  # adopt an existing manual install: brew install --cask docker-desktop --adopt
+{{ if eq .profile "work" }}
+# --- work -------------------------------------------------------------------
+tap "microsoft/mssql-release"
+brew "jfrog-cli"
+brew "maven"
+brew "microsoft/mssql-release/msodbcsql17", trusted: true
+brew "sshpass"
+cask "datagrip"
+cask "dbeaver-community"
+cask "gcloud-cli"
+cask "ilspy"
+cask "intellij-idea"
+cask "pycharm"
+cask "rider"
+{{ end -}}
+{{ if eq .profile "home" }}
+# --- home -------------------------------------------------------------------
+brew "mas" # Mac App Store CLI; sign in to the App Store before applying
+brew "bitwarden-cli"
+brew "wireguard-tools"
+cask "google-drive"
+cask "utm"
+mas "Pages", id: 361309726
+mas "Numbers", id: 361304891
+mas "WireGuard", id: 1451685025
+{{ end -}}

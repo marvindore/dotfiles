@@ -10,11 +10,8 @@ export TERM=xterm-256color
 # Override config path
 export XDG_CONFIG_HOME="$HOME/.config"
 
-export CHEZMOI_PROFILE="home"
-
 # Path
 export PATH=/usr/local/sbin:$PATH
-export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
 export PATH="$HOME/bin:$PATH"
 # export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
 
@@ -40,7 +37,6 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export EDITOR="nvim"
 export VISUAL="$EDITOR"
 export BROWSER="open"
-export flake="nvim $HOME/dotfiles/.config/nix-darwin/flake.nix"
 
 # Enable colors and change prompt:
 autoload -U colors && colors
@@ -205,8 +201,8 @@ if [ -x '{{ .chezmoi.homeDir }}/.dotnetup/dotnetup' ]; then
 fi
 # dotnetup: end
 
-# allow work to overwrite env vars
-source ~/.workrc
+# allow work to overwrite env vars (file exists only on work machines)
+[ -f ~/.workrc ] && source ~/.workrc
 
 # Initialize completions (only if interactive)
 if [[ -o interactive ]]; then

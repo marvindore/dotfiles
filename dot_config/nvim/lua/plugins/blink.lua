@@ -1,14 +1,12 @@
--- 1. Add Blink and dependencies (Removed blink-cmp-avante)
+-- 1. Add Blink and dependencies
+-- blink.cmp `main` is v2 pre-release and needs saghen/blink.lib. Stay on the
+-- last 1.x release until v2 is tagged. vim.pack resolves the range to the
+-- newest 1.x tag on install and on :PackUpdate.
 vim.pack.add({
 	"https://github.com/rafamadriz/friendly-snippets",
 	{
 		src = "https://github.com/saghen/blink.cmp",
-		data = {
-			run = function(p)
-				vim.notify("Pinning blink.cmp to v1.9.1...", vim.log.levels.INFO)
-				vim.system({ "git", "checkout", "tags/v1.9.1" }, { cwd = p.spec.path }):wait()
-			end,
-		},
+		version = vim.version.range("1.*"),
 	},
 })
 
@@ -37,9 +35,9 @@ require("blink.cmp").setup({
 	},
 
 	fuzzy = {
+		-- Version is detected from the checked-out tag; no force_version needed.
 		prebuilt_binaries = {
 			download = true,
-			force_version = "v1.9.1",
 		},
 	},
 })

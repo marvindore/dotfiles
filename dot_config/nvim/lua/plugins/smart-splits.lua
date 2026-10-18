@@ -2,12 +2,7 @@
 vim.pack.add({
 	{
 		src = "https://github.com/mrjones2014/smart-splits.nvim.git",
-		data = {
-			run = function(p)
-				vim.notify("Pinning smart splits to v2.0.5...", vim.log.levels.INFO)
-				vim.system({ "git", "checkout", "tags/v2.0.5" }, { cwd = p.spec.path }):wait()
-			end,
-		},
+		version = "v2.0.5",
 	},
 })
 
