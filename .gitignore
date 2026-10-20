@@ -3,16 +3,13 @@ result
 .config/chezmoi/chezmoi.*
 __pycache__/
 .pytest_cache/
-# SuperCmd extensions have build artifacts
-dot_config/supercmd/extensions/*/.sc-build/
-dot_config/supercmd/extensions/*/dist/
-dot_config/supercmd/extensions/*/node_modules/
-dot_config/supercmd/extensions/*/package-lock.json
-dot_config/supercmd/extensions/*/.DS_Store
-# SuperCmd extension data files (contain company-sensitive URLs/data)
-dot_config/supercmd/extensions/*/bookmarks.json
-dot_config/supercmd/extensions/*/url-templates.json
 **/.DS_STORE
 # Work-only Espanso snippets must never enter the repo
 dot_config/espanso/match/work-local.yml
 dot_config/espanso/match/packages/
+# Private Hammerspoon picker data (company URLs). Only *.example.json is tracked.
+dot_hammerspoon/data/*.json
+!dot_hammerspoon/data/*.example.json
+# Log files and dumps can hold company data. Never track them.
+*.log
+*.log.*

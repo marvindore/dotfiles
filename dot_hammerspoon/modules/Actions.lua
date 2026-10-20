@@ -373,23 +373,6 @@ function Actions.hotkeyString(shortcut, options)
     )
 end
 
--- Alias emphasizing its use for SuperCmd command hotkeys.
---
--- SuperCmd is still responsible for registering the global command
--- shortcut. Hammerspoon simply emits that shortcut.
---
--- Example:
---
---     Actions.superCmdHotkey(
---         "Command+Shift+B"
---     )
-function Actions.superCmdHotkey(shortcut, options)
-    return Actions.hotkeyString(
-        shortcut,
-        options
-    )
-end
-
 -- Types ordinary text.
 --
 -- Example:

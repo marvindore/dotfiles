@@ -12,6 +12,14 @@ alias MSBuild='$HOME/.local/share/mise/shims/dotnet'
 alias nvimc='nvim --cmd "cd $(chezmoi source-path)/dot_config/nvim"'
 
 alias ca="chezmoi apply"
+
+# SilverBullet (work profile). The deploy script skips when nothing changed.
+# Image updates at most every 7 days, or when the config repo changes.
+# Force a pull, init, and redeploy now:
+alias sbu='SB_FORCE=1 chezmoi apply'
+# Edit the script, for example PULL_MAX_AGE_DAYS to change the interval:
+alias sbe='${EDITOR:-nvim} "$(chezmoi source-path)/.chezmoiscripts/run_after_start-silverbullet.sh.tmpl"'
+
 alias oc="opencode"
 alias agyd="agy --dangerously-skip-permissions"
 

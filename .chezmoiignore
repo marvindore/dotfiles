@@ -23,3 +23,7 @@ docker/**
 .config/homebrew
 .config/homebrew/**
 {{ end }}
+
+# Log files are not dotfiles. Never apply them.
+*.log
+**/*.log

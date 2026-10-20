@@ -70,8 +70,7 @@ The daily command is `chezmoi apply`. It deploys changed files only, and runs a 
    - `14-nvim-bootstrap` starts Neovim headless once. It installs the plugins and builds the tree-sitter parsers, so that the first interactive `nvim` start shows no errors. It reruns when the parser list in `dot_config/nvim/lua/utils/ts_langs.lua` changes.
    - `20-install-hammerspoon-spoons` installs the RecursiveBinder Spoon when it is missing or has no `init.lua`. It runs on every apply and prints nothing when the Spoon is present. A failed download prints a warning and does not stop the apply.
    - `30-gh-extensions` installs the gh extensions. On a new Mac it skips, because `gh` is not logged in yet. See step 8.
-   - `link-supercmd-extensions` links `~/Library/Application Support/SuperCmd/extensions` to the chezmoi source. It runs on every apply and prints nothing when the link is correct. It prints what it repairs: a missing, broken, or wrong link, or a real folder in place of the link, which it moves to a `.backup.<time>` folder.
-   - Work profile only: `start-silverbullet` starts colima if Docker is not running, then starts SilverBullet. The home profile uses the homelab SilverBullet.
+   - Work profile only: `start-silverbullet` starts colima if Docker is not running, then syncs the config repo. It deploys SilverBullet only when the repo, the settings, or the container state changed, or when the last image pull is 7 or more days old. The home profile uses the homelab SilverBullet.
 
 5. If the command stops with an error, fix the cause and run `chezmoi apply`. A failed script stops the scripts after it, and `chezmoi apply` runs it again. The usual cause is a Mac App Store app that your Apple ID does not own yet. See step 2. If `13-check-toolchain` fails, see [fix the parser build](#how-to-fix-neovim-parser-build-fails-with-ld-tapi-error).
 
@@ -102,6 +101,7 @@ The daily command is `chezmoi apply`. It deploys changed files only, and runs a 
    ```
 
 9. Open AeroSpace, Hammerspoon, Espanso, Scoot, and Thaw once. Give each one the Accessibility permission in System Settings, Privacy & Security, when macOS asks.
+   Optional: for the Hammerspoon Bookmarks (leader s, b) and URL Builder (leader s, u) pickers, copy `~/.hammerspoon/data/bookmarks.example.json` to `bookmarks.json` and `url-templates.example.json` to `url-templates.json`, then edit them. chezmoi does not manage the copies, so they stay on the machine.
 10. Create your SSH keys, `~/.ssh/home` for personal and `~/.ssh/work` for work, and add the public keys to GitHub. Then switch the repo remote to SSH. `home` is the host alias in `~/.ssh/config` that uses your personal key:
 
    ```sh
@@ -256,10 +256,10 @@ Cause: the linker in the Command Line Tools (CLT) is older than the macOS SDK th
 | `run_after_13-check-toolchain.sh.tmpl` | always, after files | every apply; it stops the apply when `cc` cannot link |
 | `run_onchange_after_14-nvim-bootstrap.sh.tmpl` | on change, after files | the parser list `dot_config/nvim/lua/utils/ts_langs.lua` changes (hash in a comment) |
 | `run_after_20-install-hammerspoon-spoons.sh` | always, after files | every apply; it installs only when the Spoon is missing |
+| `run_after_start-silverbullet.sh.tmpl` | always, after files | every apply; it deploys only when the repo SHA, the `.env`, or the container state changed, or the image pull is 7 or more days old |
 | `run_onchange_after_30-gh-extensions.sh.tmpl` | on change, after files | the extension list or the stored `gh` token changes |
-| `run_after_link-supercmd-extensions.sh.tmpl` | always, after files | every apply; it relinks only when the link is wrong |
 
-All of them are idempotent on their own. Running them twice changes nothing. The three `run_after_` scripts, `13-check-toolchain`, `20-install-hammerspoon-spoons`, and `link-supercmd-extensions`, run on every apply so that they detect and repair breakage. Each one checks first and stays silent when nothing is wrong. Scripts are ordered by target name with prefixes stripped: `00-`, `10-`, `11-`, `12-`, `13-`, `14-`, `20-install-hammerspoon-spoons`, `30-gh-extensions`, `link-supercmd-extensions`, `start-silverbullet`. `run_once_load_launchagents.sh` at the repo root has no `before` or `after` prefix, so it runs with the files.
+All of them are idempotent on their own. Running them twice changes nothing. The `run_after_` scripts `13-check-toolchain` and `20-install-hammerspoon-spoons` run on every apply so that they detect and repair breakage. Each one checks first and stays silent when nothing is wrong. Scripts are ordered by target name with prefixes stripped: `00-`, `10-`, `11-`, `12-`, `13-`, `14-`, `20-install-hammerspoon-spoons`, `30-gh-extensions`, `start-silverbullet`.
 
 The bundle script sets `HOMEBREW_BUNDLE_NO_UPGRADE=1` and `HOMEBREW_NO_AUTO_UPDATE=1`, and passes `--no-upgrade` to `brew bundle check`. The env var stops `install` from upgrading, but `check` ignores it: without the flag, `check` treats outdated formulae as unsatisfied. Upgrades belong to `brewup`.
 

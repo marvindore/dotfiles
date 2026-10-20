@@ -1,0 +1,13 @@
+lnav-pod:
+  shortCut: Shift-L
+  description: View pod logs in lnav
+  confirm: false
+  scopes:
+    - pods
+  command: bash
+  background: false
+  args:
+    - -c
+    - >
+      kubectl logs --follow --all-containers
+      --tail=5000 $NAME -n $NAMESPACE --context $CONTEXT | lnav

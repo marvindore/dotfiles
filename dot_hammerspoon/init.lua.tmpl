@@ -155,6 +155,9 @@ end)
 local LeaderKey = require("modules.LeaderKey")
 local Actions = require("modules.Actions")
 
+-- Starred-repo picker (alt+g). Star repos on GitHub to add them.
+require("modules.RepoPicker").bind({ "alt" }, "g")
+
 local leader = LeaderKey.new({
     -- Press Option+Space to start the leader sequence.
     modifiers = { "alt" },
@@ -170,32 +173,24 @@ local leader = LeaderKey.new({
 })
 
 -- ---------------------------------------------------------------------
--- SuperCmd extensions
+-- Search group
 -- ---------------------------------------------------------------------
 
+local Bookmarks = require("modules.Bookmarks")
+local UrlBuilder = require("modules.UrlBuilder")
 
--- ---------------------------------------------------------------------
--- Speech group
--- ---------------------------------------------------------------------
-
--- leader:group("a", "Audio and Speech")
-
--- Leader, S, W
+-- Leader, S, B
 leader:bind(
-    { "s", "w" },
-    Actions.superCmdHotkey(
-        "Command+Shift+W"
-    ),
-    "Whisper"
+    { "s", "b" },
+    Actions.callback(Bookmarks.show),
+    "Bookmarks"
 )
 
--- Leader, A, S
+-- Leader, S, U
 leader:bind(
-    { "a", "s" },
-    Actions.superCmdHotkey(
-        "Command+Shift+S"
-    ),
-    "Speak"
+    { "s", "u" },
+    Actions.callback(UrlBuilder.show),
+    "URL Builder"
 )
 
 -- ---------------------------------------------------------------------
@@ -213,44 +208,18 @@ leader:bind(
 )
 
 {{ if eq .profile "work" -}}
-
 -- ---------------------------------------------------------------------
 -- Work
 -- ---------------------------------------------------------------------
 
--- Leader, S, B
+-- Leader, U, C: UltiPro context. Sends the Ctrl+Shift+U hotkey that
+-- local-scripts.lua (machine-local, not in git) handles.
 leader:bind(
-    {"s", "b" },
-    Actions.superCmdHotkey(
-        "Command+Shift+B"
-    ),
-    "Bookmarks"
-)
-
--- Leader, S, U
-leader:bind(
-    { "s", "u" },
-    Actions.superCmdHotkey(
-        "Command+Shift+U"
-    ),
-    "URL Builder"
-)
-
-leader:bind(
-   {"u", "u"},
-    Actions.superCmdHotkey(
-        "Command+Shift+u"
-    ),
-    "UrlBuilder"
-)
-
-leader:bind(
-  { "u", "c" },
-    Actions.superCmdHotkey(
-        "Control+Shift+u"
-    ),
+    { "u", "c" },
+    Actions.hotkeyString("Control+Shift+u"),
     "UltiProContext"
 )
- {{ end -}}
+{{ end -}}
+
 -- Register the leader hotkey after all bindings have been added.
 leader:start()

@@ -1,0 +1,188 @@
+{{- if eq .profile "work" -}}
+#!/bin/bash
+# Work profile only. Home uses the homelab SilverBullet (Portainer).
+# Runs on every `chezmoi apply`. It always syncs the public config repo and writes
+# deploy/.env. It pulls images, re-syncs Library/Local, and runs `up -d` only when
+# something changed: the repo commit (SHA, so force pushes count), the .env content,
+# a stopped container, or an image pull older than PULL_MAX_AGE_DAYS.
+# Override: SB_FORCE=1 forces a deploy. SB_DRY_RUN=1 prints the decision and stops.
+# Exits non-zero on hard failure. A failed repo update only warns.
+set -euo pipefail
+
+REPO_URL="https://github.com/marvindore/silverbullet-config.git"
+REPO_DIR="$HOME/docker/silverbullet-config"
+DEPLOY_DIR="$REPO_DIR/deploy"
+CERT_DIR="$HOME/docker/silverbullet"
+CA_BUNDLE="$CERT_DIR/ca-certificates.pem"
+SPACE_PATH="{{ .silverbulletSpacePath }}"
+BIND="127.0.0.1:3010"
+PROJECT="silverbullet"
+STATE_FILE="${SB_STATE_FILE:-$CERT_DIR/.deploy-state}"
+PULL_MAX_AGE_DAYS=7
+
+# chezmoi may run before the shell has Homebrew in PATH (first setup).
+for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+    [ -x "$b" ] && eval "$("$b" shellenv)" && break
+done
+
+require_cmd() {
+    command -v "$1" &>/dev/null && return 0
+    echo "ERROR: $1 is not installed. Run 'bbi', then 'chezmoi apply'." >&2
+    exit 1
+}
+
+# Use whatever Docker is already running (Docker Desktop or colima).
+# Start colima only when no Docker daemon answers.
+ensure_docker_running() {
+    docker info &>/dev/null && return 0
+    require_cmd colima
+    echo "Docker is not running. Starting colima..."
+    colima start
+    docker info &>/dev/null && return 0
+    echo "ERROR: Docker is still not reachable after 'colima start'." >&2
+    exit 1
+}
+
+# Prefer the `docker compose` plugin. Fall back to the standalone binary,
+# because Homebrew's docker-compose is not registered as a plugin by default.
+compose() {
+    if docker compose version &>/dev/null; then
+        docker compose "$@"
+    else
+        docker-compose "$@"
+    fi
+}
+
+sb_compose() {
+    compose -p "$PROJECT" -f docker-compose.yml -f docker-compose.work.yml "$@"
+}
+
+sync_repo() {
+    if [ ! -d "$REPO_DIR/.git" ]; then
+        echo "Cloning silverbullet-config..."
+        git clone --depth 1 "$REPO_URL" "$REPO_DIR"
+        return 0
+    fi
+    # Deploy-only clone: match the remote exactly, even after a force push.
+    { git -C "$REPO_DIR" fetch --depth 1 --quiet origin \
+        && git -C "$REPO_DIR" reset --hard --quiet FETCH_HEAD; } \
+        || echo "WARNING: repo update failed. Using the existing checkout." >&2
+}
+
+export_certificates() {
+    [ -f "$CA_BUNDLE" ] && return 0
+    echo "Exporting macOS system certificates..."
+    mkdir -p "$CERT_DIR"
+    security find-certificate -a -p /Library/Keychains/System.keychain > "$CA_BUNDLE" 2>/dev/null || true
+}
+
+write_env() {
+    cat > "$DEPLOY_DIR/.env" << ENVFILE
+SPACE_PATH="$SPACE_PATH"
+CA_BUNDLE="$CA_BUNDLE"
+BIND="$BIND"
+ENVFILE
+}
+
+# Remove the compose file and init script that older versions of this script wrote.
+retire_legacy_stack() {
+    local old="$CERT_DIR/docker-compose.yml"
+    [ -f "$old" ] || return 0
+    echo "Removing the legacy SilverBullet stack..."
+    (cd "$CERT_DIR" && compose down --remove-orphans) || true
+    rm -f "$old" "$CERT_DIR/init-config.sh"
+}
+
+wait_for_server() {
+    echo "Waiting for SilverBullet server to start..."
+    for _ in $(seq 1 30); do
+        curl -sf "http://$BIND/" &>/dev/null && return 0
+        sleep 1
+    done
+    echo "WARNING: SilverBullet took longer than expected to start"
+}
+
+# State file: one `key=value` line each for sha, env, pulled (epoch seconds).
+state_get() {
+    [ -f "$STATE_FILE" ] || return 0
+    sed -n "s/^$1=//p" "$STATE_FILE"
+}
+
+# Written only after a successful deploy, so a failed deploy retries next apply.
+state_save() {
+    local tmp="$STATE_FILE.tmp"
+    printf 'sha=%s\nenv=%s\npulled=%s\n' "$1" "$2" "$3" > "$tmp"
+    mv "$tmp" "$STATE_FILE"
+}
+
+current_sha() {
+    git -C "$REPO_DIR" rev-parse HEAD
+}
+
+env_hash() {
+    shasum -a 256 "$DEPLOY_DIR/.env" | cut -d' ' -f1
+}
+
+container_running() {
+    [ -n "$(docker ps -q \
+        --filter "label=com.docker.compose.project=$PROJECT" \
+        --filter "label=com.docker.compose.service=silverbullet" \
+        --filter status=running)" ]
+}
+
+pull_is_due() {
+    local pulled
+    pulled="$(state_get pulled)"
+    [ -n "$pulled" ] || return 0
+    [ $(( $(date +%s) - pulled )) -ge $(( PULL_MAX_AGE_DAYS * 86400 )) ]
+}
+
+# Prints the reason to deploy, or nothing when the stack is up to date.
+# Args: current SHA, current .env hash.
+deploy_reason() {
+    if [ "${SB_FORCE:-}" = "1" ]; then echo "SB_FORCE is set"
+    elif [ "$(state_get sha)" != "$1" ]; then echo "config repo changed"
+    elif [ "$(state_get env)" != "$2" ]; then echo "deploy .env changed"
+    elif ! container_running; then echo "container is not running"
+    elif pull_is_due; then echo "image pull older than $PULL_MAX_AGE_DAYS days"
+    fi
+    return 0 # no reason is not a failure under `set -e`
+}
+
+deploy() {
+    echo "Starting SilverBullet local environment..."
+    cd "$DEPLOY_DIR"
+    sb_compose pull
+    sb_compose run --rm silverbullet-init
+    sb_compose up -d
+    wait_for_server
+    echo "SilverBullet is running on http://$BIND. Run 'System: Reload' in SilverBullet to apply page changes."
+}
+
+main() {
+    require_cmd git
+    require_cmd docker
+    ensure_docker_running
+
+    mkdir -p "$SPACE_PATH"
+    retire_legacy_stack
+    sync_repo
+    export_certificates
+    write_env
+
+    local sha env reason
+    sha="$(current_sha)"
+    env="$(env_hash)"
+    reason="$(deploy_reason "$sha" "$env")"
+    if [ -z "$reason" ]; then
+        echo "SilverBullet is up to date (config ${sha:0:7}). Set SB_FORCE=1 to redeploy."
+        return 0
+    fi
+    echo "Deploying SilverBullet: $reason."
+    [ "${SB_DRY_RUN:-}" = "1" ] && return 0
+    deploy
+    state_save "$sha" "$env" "$(date +%s)"
+}
+
+main "$@"
+{{- end }}
