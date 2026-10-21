@@ -29,7 +29,7 @@ vim.pack.add({
 			cmd = { "DapContinue", "DapToggleBreakpoint" },
 			keys = {
 				{ lhs = "<leader>dn", rhs = ":lua require('osv').launch({port = 5677})<CR>", mode = "n", desc =  "Debug Neovim-kind" }, -- one step for vim kind debugger
-				{ lhs = "<F5>", rhs = ":lua local dap = require('dap'); if dap.session() then dap.continue() else require('dap_grouped_picker').pick_configuration() end<CR>", mode = "n", desc =  "Debug continue/select config" },
+				{ lhs = "<F5>", rhs = ":lua require('config.dap.config_picker').continue()<CR>", mode = "n", desc =  "Debug continue/select config" },
 				{ lhs = "<S-F5>", rhs = ":lua require'dap'.close()<cr>", mode = "n", desc =  "Debug stop" },
 
 				{ lhs = "<F10>", rhs = ":lua require('dap').step_over()<CR>", mode = "n", desc =  "Debug step over" },
@@ -37,7 +37,7 @@ vim.pack.add({
 				{ lhs = "<S-F11>", rhs = ":lua require('dap').step_out()<CR>", mode = "n", desc =  "Debug step out" },
 				{
 					lhs = "<leader>db",
-					rhs = ":lua require('dap.breakpoints').toggle_breakpoint()<CR>",
+					rhs = ":lua require('config.dap.breakpoints').toggle_breakpoint()<CR>",
 					mode = "n",
 					desc = "Debug toggle breakpoint",
 				},
@@ -79,7 +79,7 @@ vim.pack.add({
 			},
 			after = function(_)
 				local dap = require("dap")
-				local h = require("dap.helpers")
+				local h = require("config.dap.helpers")
 				local icons = require("config.icons")
 				local last_picked_dll = nil
 
@@ -176,42 +176,9 @@ vim.pack.add({
 					callback({ type = "server", host = config.host or "127.0.0.1", port = 5677 })
 				end
 
-				-- We tell DAP how to map custom debug types to Neovim filetypes.
-				require("dap.ext.vscode").type_to_filetypes = {
-					coreclr = { "cs", "csharp" },
-					["pwa-node"] = js_langs,
-				}
-
-				-- Load .vscode/launch.json configs from the project and mark them as project-sourced
-				-- Note: load_launchjs() is deprecated (dap now auto-loads on-demand), but we call it
-				-- explicitly here to mark configs with _vscode_source so the grouped picker can
-				-- distinguish project-specific configs from hardcoded editor configs.
-				local function load_and_mark_vscode_configs()
-					local dap = require("dap")
-					-- Before loading, capture current config names per filetype
-					local before_configs = {}
-					for ft, configs in pairs(dap.configurations) do
-						before_configs[ft] = {}
-						for _, cfg in ipairs(configs) do
-							before_configs[ft][cfg.name] = true
-						end
-					end
-
-					-- Load .vscode/launch.json (calls deprecated function, but needed for _vscode_source marking)
-					require("dap.ext.vscode").load_launchjs()
-
-					-- After loading, mark newly added configs
-					for ft, configs in pairs(dap.configurations) do
-						for _, cfg in ipairs(configs) do
-							if not (before_configs[ft] and before_configs[ft][cfg.name]) then
-								-- This config was just added from .vscode/launch.json
-								cfg._vscode_source = true
-							end
-						end
-					end
-				end
-
-				load_and_mark_vscode_configs()
+				-- Register the local provider (<cwd>/.nvim/launch.json) used by the grouped F5 picker.
+				-- .vscode/launch.json is read automatically by nvim-dap's built-in provider.
+				require("config.dap.config_picker").setup()
 
 					-- Load dap-view so its internal auto_toggle listeners are registered
 				require("dap-view")

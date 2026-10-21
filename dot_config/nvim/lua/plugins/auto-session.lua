@@ -2,8 +2,9 @@
 -- 1) Safer sessionoptions
 ---------------------------------------
 -- Avoid 'globals' to prevent state corruption across sessions.
--- Also avoid restoring exact window positions/tabs unless you really need it. No `globals`
-vim.o.sessionoptions = "blank,buffers,curdir,folds,help,winsize,terminal,localoptions,globals"
+-- Avoid 'localoptions': it persists window-local flags set by plugins (e.g. 'winfixbuf')
+-- and version-specific options (e.g. 'winpinned') that break restore on other nvim builds.
+vim.o.sessionoptions = "blank,buffers,curdir,folds,help,winsize,terminal"
 
 
 ---------------------------------------
