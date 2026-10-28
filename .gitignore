@@ -13,3 +13,4 @@ dot_hammerspoon/data/*.json
 # Log files and dumps can hold company data. Never track them.
 *.log
 *.log.*
+dot_config/nushell/history.txt

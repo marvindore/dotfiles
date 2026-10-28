@@ -1,25 +1,30 @@
 {{- if eq .chezmoi.os "windows" -}}
-# Chezmoi Windows script: set XDG_CONFIG_HOME (User) only if missing.
-$Name    = "XDG_CONFIG_HOME"
-$Scope   = "User"
-$Desired = Join-Path $env:USERPROFILE ".config"
+# Chezmoi Windows script: set User env vars only if missing.
+# Keep this file ASCII-only. Windows PowerShell 5.1 reads BOM-less files as cp1252.
+$Scope  = "User"
+$Config = Join-Path $env:USERPROFILE ".config"
+
+function Set-UserEnvIfMissing($Name, $Desired) {
+    $Current = [Environment]::GetEnvironmentVariable($Name, $Scope)
+    if (-not [string]::IsNullOrWhiteSpace($Current)) {
+        Write-Host "$Name (User) already set: $Current - no change."
+        return
+    }
+    if (-not (Test-Path -LiteralPath $Desired)) {
+        [System.IO.Directory]::CreateDirectory($Desired) | Out-Null
+    }
+    [Environment]::SetEnvironmentVariable($Name, $Desired, $Scope)
+    Write-Host "Set $Name (User) to: $Desired"
+    Write-Host "NOTE: Restart shells/IDEs for new processes to pick it up."
+}
 
 try {
-    $Current = [Environment]::GetEnvironmentVariable($Name, $Scope)
-    if ([string]::IsNullOrWhiteSpace($Current)) {
-        if (-not (Test-Path -LiteralPath $Desired)) {
-            [System.IO.Directory]::CreateDirectory($Desired) | Out-Null
-        }
-        [Environment]::SetEnvironmentVariable($Name, $Desired, $Scope)
-        Write-Host "Set XDG_CONFIG_HOME (User) to: $Desired"
-        Write-Host "NOTE: Restart shells/IDEs for new processes to pick it up."
-    }
-    else {
-        Write-Host "XDG_CONFIG_HOME (User) already set: $Current — no change."
-    }
+    Set-UserEnvIfMissing "XDG_CONFIG_HOME" $Config
+    # Espanso ignores XDG_CONFIG_HOME on Windows. Restart Espanso after the first set.
+    Set-UserEnvIfMissing "ESPANSO_CONFIG_DIR" (Join-Path $Config "espanso")
 }
 catch {
-    Write-Warning "Failed to set XDG_CONFIG_HOME: $($_.Exception.Message)"
+    Write-Warning "Failed to set user env vars: $($_.Exception.Message)"
     exit 1
 }
 {{- end -}}

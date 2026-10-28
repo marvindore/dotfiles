@@ -1,3 +1,4 @@
+{{ if eq .chezmoi.os "darwin" -}}
 #!/bin/sh
 # Ensures the required Hammerspoon Spoons are installed. Runs on every apply.
 # Silent when every Spoon is present. Prints what it repairs.
@@ -55,3 +56,4 @@ install_spoon() {
 install_spoon \
     "RecursiveBinder" \
     "https://raw.githubusercontent.com/Hammerspoon/Spoons/master/Spoons/RecursiveBinder.spoon.zip"
+{{ end -}}

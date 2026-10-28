@@ -24,41 +24,37 @@ for _, path in ipairs({ "/opt/homebrew/bin/aerospace", "/usr/local/bin/aerospace
     end
 end
 
-local function goToNotesWorkspace()
-    if not AEROSPACE_BIN then return end
-    hs.task.new(AEROSPACE_BIN, nil, { "workspace", "N" }):start()
+-- Let AeroSpace place the window. Moving it with hs (moveToScreen) fights
+-- AeroSpace and can strand the window off-screen on a hidden workspace.
+local function showOnNotesWorkspace(app)
+    local win = app:mainWindow() or app:allWindows()[1]
+    if not win then return end
+    if not AEROSPACE_BIN then
+        win:focus()
+        return
+    end
+    -- move-node-to-workspace is a no-op (and does not focus) when the window
+    -- is already on N, so focus it in a second step.
+    local id = tostring(win:id())
+    hs.task.new(AEROSPACE_BIN, function()
+        hs.task.new(AEROSPACE_BIN, nil, { "focus", "--window-id", id }):start()
+    end, { "move-node-to-workspace", "--window-id", id, "N" }):start()
 end
 
 hs.hotkey.bind({"alt"}, "n", function()
     -- 1. Check if SilverBullet PWA app is running
     local sbApp = hs.application.find("SilverBullet")
     if sbApp and sbApp:isRunning() then
-        goToNotesWorkspace()
-        sbApp:activate()
-        local win = sbApp:mainWindow() or (sbApp:allWindows() and sbApp:allWindows()[1])
-        if win then
-            win:focus()
-            local activeScreen = hs.mouse.getCurrentScreen()
-            win:moveToScreen(activeScreen)
-        end
+        showOnNotesWorkspace(sbApp)
         return
     end
 
     -- 2. Attempt to launch SilverBullet PWA app if installed
     local launched = hs.application.launchOrFocus("SilverBullet")
     if launched then
-        goToNotesWorkspace()
         hs.timer.doAfter(0.3, function()
             local app = hs.application.find("SilverBullet")
-            if app then
-                app:activate()
-                local win = app:mainWindow() or (app:allWindows() and app:allWindows()[1])
-                if win then
-                    win:focus()
-                    local activeScreen = hs.mouse.getCurrentScreen()
-                    win:moveToScreen(activeScreen)
-                end
-            end
+            if app then showOnNotesWorkspace(app) end
         end)
         return
     end
@@ -103,10 +99,14 @@ hs.hotkey.bind({"alt"}, "n", function()
                 local chromeWindows = chrome:allWindows()
                 if chromeWindows[decoded.windowIndex + 1] then
                     local targetWindow = chromeWindows[decoded.windowIndex + 1]
-                    targetWindow:focus()
-
-                    local activeScreen = hs.mouse.getCurrentScreen()
-                    targetWindow:moveToScreen(activeScreen)
+                    -- AeroSpace switches to the window's workspace. Do not move it with hs.
+                    if AEROSPACE_BIN then
+                        hs.task.new(AEROSPACE_BIN, nil, {
+                            "focus", "--window-id", tostring(targetWindow:id()),
+                        }):start()
+                    else
+                        targetWindow:focus()
+                    end
                     hs.timer.usleep(200000)
 
                     hs.osascript.javascript([[
@@ -179,9 +179,9 @@ local leader = LeaderKey.new({
 local Bookmarks = require("modules.Bookmarks")
 local UrlBuilder = require("modules.UrlBuilder")
 
--- Leader, S, B
+-- Leader, B
 leader:bind(
-    { "s", "b" },
+    { "b" },
     Actions.callback(Bookmarks.show),
     "Bookmarks"
 )
@@ -191,6 +191,35 @@ leader:bind(
     { "s", "u" },
     Actions.callback(UrlBuilder.show),
     "URL Builder"
+)
+
+-- ---------------------------------------------------------------------
+-- AeroSpace
+-- ---------------------------------------------------------------------
+
+leader:group("a", "AeroSpace")
+
+-- Same as AeroSpace service mode (alt+shift+;), then w.
+-- run-callback exits non-zero when one window has no monitor, even if the
+-- others moved. Ignore the exit code so that no false alert shows.
+if AEROSPACE_BIN then
+    leader:bind(
+        { "a", "r" },
+        Actions.shell(
+            AEROSPACE_BIN .. " run-callback --for-every-window on-window-detected >/dev/null 2>&1; true",
+            { successMessage = "AeroSpace window rules applied" }
+        ),
+        "Reapply Window Rules"
+    )
+end
+
+-- Leader, N, G: notes file picker in tmux (was alt+shift+n).
+leader:group("n", "Notes")
+
+leader:bind(
+    { "n", "g" },
+    Actions.shell("~/.local/bin/tmux-workspace N && aerospace workspace T"),
+    "Notes Grep (tmux)"
 )
 
 -- ---------------------------------------------------------------------

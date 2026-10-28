@@ -1,6 +1,9 @@
 matches:
-  - trigger: :ghwList
+  - trigger: ;ghwList
     replace: gh run list --workflow [workflow] --commit [commit]
 
-  - trigger: ghwRerun
+  - trigger: ;ghwRerun
     replace: gh run rerun [run_id]
+
+  - trigger: ;guip
+    replace: is:pr is:open author:@me

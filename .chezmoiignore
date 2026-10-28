@@ -3,27 +3,63 @@ docs/
 docs/**
 runbook/
 runbook/**
-{{- if ne .chezmoi.os "windows" -}}
+
+{{ if ne .chezmoi.os "windows" }}
 .chezmoiscripts/run_after_set-xdg-config-home-windows.cmd.tmpl
 AppData/
 AppData/**
-{{- end -}}
-{{- if eq .chezmoi.os "windows" }}
+{{ end }}
+
+{{ if eq .chezmoi.os "windows" }}
 docker/
 docker/**
-{{- end -}}
+scripts/windows-setup.ps1
+scripts/*.sh
+.config/alacritty/
+.config/alacritty/**
+.config/helix/
+.config/helix/**
+.config/ghostty/
+.config/ghostty/**
+.config/tmux/
+.config/tmux/**
+.config/zsh/
+.config/zsh/**
+.zshenv
+.local/bin/tmux-workspace
+.local/bin/wezterm-jump
+{{ end }}
 
+# Linux only
+{{ if ne .chezmoi.os "linux" }}
+.config/hypr/
+.config/hypr/**
+.config/waybar/
+.config/waybar/**
+.config/wofi/
+.config/wofi/**
+{{ end }}
 
 
 {{ if ne .profile "work" }}
 .config/espanso/match/work-local.yml
 {{ end }}
 
+# macOS only
 {{ if ne .chezmoi.os "darwin" }}
 .config/homebrew
 .config/homebrew/**
+.hammerspoon/
+.hammerspoon/**
+.config/aerospace/
+.config/aerospace/**
+.colima/
+.colima/**
 {{ end }}
 
 # Log files are not dotfiles. Never apply them.
 *.log
 **/*.log
+
+# Nushell command history. Never track or apply it.
+.config/nushell/history.txt

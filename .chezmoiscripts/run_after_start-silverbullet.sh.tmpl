@@ -1,4 +1,4 @@
-{{- if eq .profile "work" -}}
+{{- if and (eq .profile "work") (ne .chezmoi.os "windows") -}}
 #!/bin/bash
 # Work profile only. Home uses the homelab SilverBullet (Portainer).
 # Runs on every `chezmoi apply`. It always syncs the public config repo and writes

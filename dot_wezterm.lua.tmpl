@@ -13,6 +13,9 @@ end
 local function is_darwin()
   return wezterm.target_triple:find("darwin") ~= nil
 end
+local function is_windows()
+  return wezterm.target_triple:find("windows") ~= nil
+end
 
 -- zoxide path per platform
 local zoxide_path = ""
@@ -20,10 +23,14 @@ if is_darwin() then
   zoxide_path = "/opt/homebrew/bin/zoxide"
 elseif is_linux() then
   zoxide_path = "/usr/bin/zoxide"
+else
+  zoxide_path = "zoxide"
 end
 
 -- Resolve an executable via the user's login shell PATH (works for Homebrew, AppImage, etc.)
 local function find_executable(name)
+  -- Windows has no login shell to ask; rely on PATH at spawn time
+  if is_windows() then return name end
   local shell  = os.getenv("SHELL") or "sh"
   -- 'command -v' outputs nothing on failure (unlike 'which' which prints "not found")
   local handle = io.popen(shell .. " -l -c 'command -v " .. name .. "' 2>/dev/null")
@@ -140,7 +147,9 @@ local function jump_workspace(opts)
         name  = opts.name,
         spawn = {
           cwd  = opts.cwd,
-          args = { os.getenv("SHELL") or "bash", "-c", opts.cmd },
+          args = is_windows()
+            and { "pwsh.exe", "-NoProfile", "-Command", opts.cmd }
+            or { os.getenv("SHELL") or "bash", "-c", opts.cmd },
         },
       },
       pane
@@ -255,7 +264,7 @@ config.font_size = 15
 config.color_scheme = "MaterialDarker"
 
 -- Default shell/program on Windows
-if os.getenv("OS") == "Windows_NT" then
+if is_windows() then
   config.default_prog = { "pwsh.exe" }
 end
 
