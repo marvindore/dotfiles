@@ -15,4 +15,3 @@ ssh:
 
   # Keys (override here if you use different paths)
   homeKey: "~/.ssh/home"
-  workKey: "~/.ssh/work"

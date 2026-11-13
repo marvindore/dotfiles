@@ -2,7 +2,6 @@
 {{- $workOrg  := .work.org_slug -}}
 {{- $isDarwin := eq .chezmoi.os "darwin" -}}
 {{- $homeKey  := .ssh.homeKey     | default "~/.ssh/home" -}}
-{{- $workKey  := .ssh.workKey     | default "~/.ssh/work" -}}
 {{- $colimaOn := .ssh.enable_colima_include | default true -}}
 
 # =========================
@@ -22,12 +21,4 @@ Host home
   IdentityFile {{ $homeKey }}
   IdentitiesOnly yes
 
-# =========================
-# GitHub — WORK ({{ $workOrg }})
-# Usage: git@work:{{ $workOrg }}/REPO.git
-# =========================
-Host work
-  HostName github.com
-  User git
-  IdentityFile {{ $workKey }}
-  IdentitiesOnly yes
+# Work ({{ $workOrg }}) uses HTTPS only, no SSH key. See ~/.gitconfig.

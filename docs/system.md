@@ -1,14 +1,18 @@
 # System
-## Setup ssh
-- https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=mac
+## GitHub authentication
+- Personal repos use SSH with the `home` host alias in `~/.ssh/config` (key `~/.ssh/home`).
+  See https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=mac
+- Work repos use HTTPS only. Git gets the token from `gh` (`[credential "https://github.com"]` in `.gitconfig`).
+  `.gitconfig` rewrites `git@github.com:WORKORG/` to `https://github.com/WORKORG/`, so SSH clone URLs for work repos also use HTTPS.
 
-## Git remap alias
-run this command: `git config --global url."git@work:WORKORG/".insteadOf "git@github.com:WORKORG/"`
-to create:
-```
-[url "git@work:WORKORG/"]
-	insteadOf = git@github.com:WORKORG/
-```
+### Restore SSH for work repos
+The work SSH setup was removed when work moved to HTTPS only. To restore it:
+1. Find the old config: `chezmoi git -- log -S 'Host work' --oneline`
+2. Restore the `Host work` block in `private_dot_ssh/config.tmpl`, `workKey` in
+   `.chezmoidata.yaml`, and the `git@work:` url/includeIf rules in `dot_gitconfig.tmpl`
+   (`chezmoi git -- show <commit>^:<file>`).
+3. Remove the work HTTPS `insteadOf` rule, so work URLs go to `git@work:` again.
+4. Create `~/.ssh/work`, add the public key to GitHub, and authorize it for SSO.
 
 ## Set zsh as default shell
 First view list of shells, if bash not listed and you add zsh you might find you can no longer log in as root and bash doesn't work

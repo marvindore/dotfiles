@@ -93,16 +93,19 @@ The daily command is `chezmoi apply`. It deploys changed files only, and runs a 
    Home profile: `silverbulletUrl` is the only placeholder. Until you set it, alt+n in Hammerspoon shows an alert instead of opening SilverBullet.
 
    To skip this step on the next Mac, create the file from the template before step 3. `chezmoi init` keeps the values that are already in the file and does not prompt for them.
-8. Log in to GitHub, then apply again. The gh extension script sees the login and installs `gh-dash`:
+8. Log in to GitHub, then apply again. Do this one time on each machine. Git uses this login for HTTPS remotes, and the gh extension script sees the login and installs `gh-dash`:
 
    ```sh
-   gh auth login
+   # work: sign in with your work GitHub account
+   gh auth login --hostname github.com --git-protocol https --web
+   # home
+   gh auth login --hostname github.com --git-protocol ssh --web
    chezmoi apply
    ```
 
 9. Open AeroSpace, Hammerspoon, Espanso, Scoot, and Thaw once. Give each one the Accessibility permission in System Settings, Privacy & Security, when macOS asks.
    Optional: for the Hammerspoon Bookmarks (leader s, b) and URL Builder (leader s, u) pickers, copy `~/.hammerspoon/data/bookmarks.example.json` to `bookmarks.json` and `url-templates.example.json` to `url-templates.json`, then edit them. chezmoi does not manage the copies, so they stay on the machine.
-10. Create your SSH keys, `~/.ssh/home` for personal and `~/.ssh/work` for work, and add the public keys to GitHub. Then switch the repo remote to SSH. `home` is the host alias in `~/.ssh/config` that uses your personal key:
+10. Create your personal SSH key, `~/.ssh/home`, and add the public key to GitHub. Work repos use HTTPS through `gh`, so they need no SSH key. Then switch the repo remote to SSH. `home` is the host alias in `~/.ssh/config` that uses your personal key:
 
    ```sh
    chezmoi git -- remote set-url origin git@home:marvindore/dotfiles.git
@@ -283,7 +286,7 @@ Every write is preceded by a read and happens only when the value differs. The D
 | `profile` | both | choice: home, work | Brewfile blocks, `.chezmoiignore`, work-only scripts |
 | `silverbulletSpacePath` | work | string | `start-silverbullet` script |
 | `silverbulletUrl` | home | none, placeholder | Hammerspoon alt+n (`dot_hammerspoon/init.lua.tmpl`) |
-| `work.org_slug` | work | string | work git and SSH templates |
+| `work.org_slug` | work | string | work git templates |
 | `work.email` | work | string | work git templates |
 
 ### chezmoi.toml template

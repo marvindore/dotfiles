@@ -90,22 +90,29 @@
 # User different gitconfig based on directory
 {{ end -}}
 
-# Deterministic SSH key selection via host aliases.
-# Longest-prefix match wins, so the work rule beats the personal catch-all.
-# `git@work:` and `git@home:` are defined in ~/.ssh/config with IdentitiesOnly yes.
-[url "git@work:{{$workOrg}}/"]
+# Work: HTTPS only, authenticated by gh. Catches copy-pasted SSH clone URLs
+# and SSH submodule URLs; without it they hit the git@home: rule below and
+# fail with the personal key. Longest-prefix match wins, so this rule beats
+# the personal catch-all.
+[url "https://github.com/{{$workOrg}}/"]
     insteadOf = git@github.com:{{$workOrg}}/
-    insteadOf = https://github.com/{{$workOrg}}/
 
-# Only ssh form is rewritten here. Rewriting https://github.com/ would also
+# Personal: SSH via the `home` host alias in ~/.ssh/config.
+# Only the ssh form is rewritten. Rewriting https://github.com/ would also
 # capture public https submodules in third-party repos and force them through
 # the personal key, breaking unauthenticated read access.
 [url "git@home:"]
     insteadOf = git@github.com:
 
-[includeIf "hasconfig:remote.*.url:git@github.com:{{$workOrg}}/**"]
-    path = .gitconfig-work
+# HTTPS auth uses the token from `gh auth login`. The empty helper clears
+# system defaults (osxkeychain, manager) so only gh answers for github.com.
+# Set here instead of `gh auth setup-git`, because chezmoi owns ~/.gitconfig.
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+
 [includeIf "hasconfig:remote.*.url:https://github.com/{{$workOrg}}/**"]
     path = .gitconfig-work
-[includeIf "hasconfig:remote.*.url:git@work:{{$workOrg}}/**"]
+# Matches the raw URL in .git/config, before insteadOf, for clones made from SSH URLs.
+[includeIf "hasconfig:remote.*.url:git@github.com:{{$workOrg}}/**"]
     path = .gitconfig-work

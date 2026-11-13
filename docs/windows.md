@@ -26,6 +26,16 @@ Install these tools before `chezmoi apply`. `.gitconfig` calls them:
 - `delta` (git pager)
 - `difft` (difftastic, git difftool)
 - `nvim` (chezmoi merge tool)
+- `gh` (git credential helper for HTTPS): `winget install GitHub.cli`
+
+## GitHub sign-in
+
+Do this one time on each machine. Git uses this login for HTTPS remotes. Sign
+in with your work GitHub account:
+
+```powershell
+gh auth login --hostname github.com --git-protocol https --web
+```
 
 ## What is NOT applied on Windows
 
