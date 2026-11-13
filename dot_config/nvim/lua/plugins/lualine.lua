@@ -44,6 +44,13 @@ local file_progress = {
 local diff = {
 	"diff",
 	colored = true,
+	-- Follow gitsigns' base, so the counts match the PR during review mode
+	source = function()
+		local s = vim.b.gitsigns_status_dict
+		if s then
+			return { added = s.added, modified = s.changed, removed = s.removed }
+		end
+	end,
 	symbols = { modified = "  " },
 }
 

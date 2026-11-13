@@ -20,6 +20,13 @@ alias sbu='SB_FORCE=1 chezmoi apply'
 # Edit the script, for example PULL_MAX_AGE_DAYS to change the interval:
 alias sbe='${EDITOR:-nvim} "$(chezmoi source-path)/.chezmoiscripts/run_after_start-silverbullet.sh.tmpl"'
 
+# Public study notes (~/study). Commit all changes, then pull and push.
+studysync() {
+    git -C "$HOME/study" add -A
+    git -C "$HOME/study" diff --cached --quiet || git -C "$HOME/study" commit -m "${1:-sync notes}"
+    git -C "$HOME/study" pull --rebase && git -C "$HOME/study" push
+}
+
 alias oc="opencode"
 alias agyd="agy --dangerously-skip-permissions"
 

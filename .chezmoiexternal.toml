@@ -3,3 +3,9 @@
 #     type = "git-repo"
 #     url = "https://github.com/author/SomeName.spoon"
 #     refreshPeriod = "168h"
+
+# Public study notes. Cloned once on every machine. No refreshPeriod, so chezmoi never
+# pulls over local commits. Use the `studysync` alias to pull and push.
+["study"]
+    type = "git-repo"
+    url = "https://github.com/marvindore/study.git"

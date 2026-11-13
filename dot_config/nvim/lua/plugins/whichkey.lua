@@ -13,6 +13,8 @@ wk.setup({
 wk.add({
 	{ "<leader>f", group = "file/find" },
 	{ "<leader>g", group = "git" },
+	{ "<leader>gh", group = "hunk" },
+	{ "<leader>gi", group = "github (issues/PRs)" },
 	{ "<leader>d", group = "debug" },
 	{ "<leader>r", group = "repl/iron" },
 	{ "<leader>t", group = "test" },

@@ -15,6 +15,7 @@ DEPLOY_DIR="$REPO_DIR/deploy"
 CERT_DIR="$HOME/docker/silverbullet"
 CA_BUNDLE="$CERT_DIR/ca-certificates.pem"
 SPACE_PATH="{{ .silverbulletSpacePath }}"
+STUDY_PATH="$HOME/study"
 BIND="127.0.0.1:3010"
 PROJECT="silverbullet"
 STATE_FILE="${SB_STATE_FILE:-$CERT_DIR/.deploy-state}"
@@ -76,9 +77,17 @@ export_certificates() {
     security find-certificate -a -p /Library/Keychains/System.keychain > "$CA_BUNDLE" 2>/dev/null || true
 }
 
+# Docker creates a missing bind-mount source as root. Fail first instead.
+require_study_repo() {
+    [ -d "$STUDY_PATH/.git" ] && return 0
+    echo "ERROR: $STUDY_PATH is not a git repo. Run 'chezmoi apply' again to clone it." >&2
+    exit 1
+}
+
 write_env() {
     cat > "$DEPLOY_DIR/.env" << ENVFILE
 SPACE_PATH="$SPACE_PATH"
+STUDY_PATH="$STUDY_PATH"
 CA_BUNDLE="$CA_BUNDLE"
 BIND="$BIND"
 ENVFILE
@@ -164,6 +173,7 @@ main() {
     require_cmd docker
     ensure_docker_running
 
+    require_study_repo
     mkdir -p "$SPACE_PATH"
     retire_legacy_stack
     sync_repo

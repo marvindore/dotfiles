@@ -477,6 +477,6 @@ set("n", "<leader>gb", git_blame_file, {
   desc = "Git blame file (open in browser)",
 })
 
-set("n", "<leader>gB", git_blame_commits, {
+set("n", "<leader>gH", git_blame_commits, {
   desc = "Git file history",
 })

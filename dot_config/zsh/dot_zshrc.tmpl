@@ -46,6 +46,7 @@ export COLORTERM=truecolor
 HISTSIZE=1000
 SAVEHIST=1000
 HISTFILE=~/.cache/zsh/history
+setopt HIST_IGNORE_SPACE # don't save commands that start with a space
 
 # Environment Vars
 #export VIRTUAL_ENV="$HOME/neovim/debug/python/debugpy"

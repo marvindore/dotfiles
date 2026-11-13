@@ -8,6 +8,7 @@ Generic config is in the public repo `https://github.com/marvindore/silverbullet
 |---|---|---|
 | `SB_USER` (`user:password`) | Portainer stack variable. Required. | Not set. The port is local only. |
 | `SPACE_PATH` | Portainer stack variable | Written by chezmoi from `silverbulletSpacePath` |
+| `STUDY_PATH` | Portainer stack variable. Required. Full path of the study clone, for example `/home/<user>/study`. | Written by chezmoi. Value: `$HOME/study`. |
 | `BIND` | Portainer stack variable | Written by chezmoi. Value: `127.0.0.1:3010`. |
 | `CA_BUNDLE` | Not used | Written by chezmoi. Value: `~/docker/silverbullet/ca-certificates.pem`. |
 | `CONFIG_REPO_URL` | Do not set. The default is the public repo. | Do not set. |
@@ -58,6 +59,27 @@ Do not put variables in `.bashrc` or `.zshrc`. Docker Compose reads `.env`, not 
 To update the server after you change the public repo, redeploy the stack in Portainer. You can also turn on the GitOps update setting. Check once that a redeploy runs the init container again. If it does not, redeploy with the Re-pull image and redeploy option.
 
 Keep a copy of the three variable values in your password manager. A rebuilt server needs them again.
+
+## How-to: set up the public study notes on the home server
+
+The public repo `https://github.com/marvindore/study` is mounted over the `Study/` folder in the space. The clone is on local disk, not on the NAS.
+
+1. On the Docker host, run `git clone https://github.com/marvindore/study.git ~/study`. Use a deploy key or token if you want to push.
+2. In Portainer, add the stack variable `STUDY_PATH` with the full path, for example `/home/<user>/study`.
+3. Redeploy the stack. The stack does not start if `STUDY_PATH` is not set.
+4. Add a cron job on the host. It pulls, commits, and pushes. Example: `*/10 * * * * cd ~/study && git add -A && (git diff --cached --quiet || git commit -qm sync) && git pull -q --rebase && git push -q`.
+
+On the work Mac, `chezmoi apply` clones the repo to `~/study`. Run `studysync` to commit, pull, and push.
+
+## Reference: public and private paths in the space
+
+| Path in the space | Source | Visibility |
+|---|---|---|
+| `Library/Local/` | `silverbullet-config`, copied by the init container | Public |
+| `Study/` | `study`, mounted from `STUDY_PATH` | Public |
+| All other paths | The space only | Private |
+
+Do not link from a page in `Study/` to a private page. The link text shows the private page name. Do not put work names, ticket numbers, or internal URLs in `Study/`.
 
 ## How-to: add private pages
 
