@@ -1,10 +1,81 @@
 # Windows
 
-## Per-machine `chezmoi.toml` (required after `chezmoi init`)
+Windows uses the work profile. chezmoi owns the files in `%USERPROFILE%`. The
+software list is in `scripts/windows-setup.ps1` (Scoop and winget).
 
-Replace the `<place_holder>` values from `.chezmoidata.yaml` with real values in
-this file. It is per-machine and is **not** tracked in git. See "Chezmoi
-per-machine config" in `docs/system.md`.
+The daily command is `chezmoi apply`. It deploys changed files only.
+
+## How-to: set up a new Windows PC
+
+### Before you start
+
+1. Make sure that `winget` works. It comes with App Installer from the
+   Microsoft Store:
+
+   ```powershell
+   winget --version
+   ```
+
+2. Install the tools that `.gitconfig` calls. See [Prerequisites](#prerequisites).
+
+### Run the setup
+
+3. Open PowerShell in your home folder and run one of these commands:
+
+   **winget:**
+
+   ```powershell
+   cd ~
+   winget install --id twpayne.chezmoi -e
+   # Open a new PowerShell, so that chezmoi is on PATH
+   chezmoi init --apply marvindore `
+     --promptChoice "Profile=work" `
+     --promptString "Work org slug=<slug>,Work email=<email>,SilverBullet space path=<path>"
+   ```
+
+   **No winget (download):**
+
+   ```powershell
+   cd ~
+   (irm -useb https://get.chezmoi.io/ps1) | powershell -c -
+   ./bin/chezmoi init --apply marvindore `
+     --promptChoice "Profile=work" `
+     --promptString "Work org slug=<slug>,Work email=<email>,SilverBullet space path=<path>"
+   ```
+
+   The download command puts a temporary chezmoi in `~\bin`. The winget
+   command installs chezmoi for good.
+
+   The flags match the prompt text in `.chezmoi.toml.tmpl`, not the key name.
+   If you change a prompt text, change these commands too. `<path>` is
+   required by the prompt, but the Windows setup does not use it.
+
+   What runs: chezmoi deploys the files, then `set-xdg-config-home.ps1` sets
+   the User environment variables. See
+   [User environment variables](#user-environment-variables).
+
+4. If the command stops with an error, fix the cause and run `chezmoi apply`.
+
+### After the setup
+
+5. Download-method only: delete the temporary copy, then install chezmoi with
+   winget:
+
+   ```powershell
+   Remove-Item ~\bin\chezmoi.exe
+   winget install --id twpayne.chezmoi -e
+   ```
+
+6. Fill in the private values. See [Per-machine chezmoi.toml](#per-machine-chezmoitoml).
+7. Sign in to GitHub. See [GitHub sign-in](#github-sign-in).
+8. Restart shells, IDEs, and Espanso, so that they get the new environment
+   variables.
+
+## Per-machine `chezmoi.toml`
+
+chezmoi writes this file at `chezmoi init`. Replace the `<place_holder>` values
+from `.chezmoidata.yaml` with real values. The file is per-machine and is
+**not** tracked in git. See "Chezmoi per-machine config" in `docs/system.md`.
 
 `%USERPROFILE%\.config\chezmoi\chezmoi.toml`
 
@@ -23,10 +94,12 @@ Run `chezmoi edit-config` to create/edit it. After saving, `chezmoi apply`.
 
 Install these tools before `chezmoi apply`. `.gitconfig` calls them:
 
-- `delta` (git pager)
-- `difft` (difftastic, git difftool)
-- `nvim` (chezmoi merge tool)
+- `delta` (git pager): `winget install dandavison.delta`
+- `difft` (difftastic, git difftool): `scoop install difftastic`
+- `nvim` (chezmoi merge tool): `winget install Neovim.Neovim.Nightly`
 - `gh` (git credential helper for HTTPS): `winget install GitHub.cli`
+
+To install the full software list, run `scripts/windows-setup.ps1`.
 
 ## GitHub sign-in
 

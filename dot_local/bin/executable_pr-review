@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# Usage:
+#   pr-review <nvim|claude> <owner/repo> <pr-number> <base-ref>
+#   pr-review prune
+#
+# Opens a PR in a worktree, in a new tmux window (or the current terminal).
+#   nvim   - diffview of origin/<base>...HEAD
+#   claude - AI code review
+# The clone is the git repo of the current directory when its origin matches.
+# Otherwise clones are searched under $PR_REVIEW_ROOTS (colon separated, default ~/projects).
+# Worktrees live in $PR_REVIEW_WORKTREE_DIR (default: nvim data dir, pr-worktrees).
+# To add a review mode, define a mode_<name> function (see mode_nvim).
+
+set -euo pipefail
+
+ROOTS="${PR_REVIEW_ROOTS:-$HOME/projects}"
+WORKTREE_DIR="${PR_REVIEW_WORKTREE_DIR:-$HOME/.local/share/nvim/pr-worktrees}"
+
+# Print a message, and show it in tmux (gh-dash hides command output).
+notify() {
+    echo "pr-review: $*" >&2
+    if [ -n "${TMUX:-}" ]; then
+        tmux display-message "pr-review: $*"
+    fi
+}
+
+die() {
+    notify "$@"
+    exit 1
+}
+
+# --- Repository lookup -------------------------------------------------------
+
+# Print owner/repo for a git remote URL (https or ssh).
+slug_from_url() {
+    sed -E 's#^.*[:/]([^/:]+/[^/]+)$#\1#; s#\.git$##' <<<"$1"
+}
+
+# True when dir is a git clone whose origin is owner/repo.
+clone_matches() {
+    local dir="$1" slug="$2" url
+    url="$(git -C "$dir" remote get-url origin 2>/dev/null)" || return 1
+    [ "$(slug_from_url "$url")" = "$slug" ]
+}
+
+# Print every directory that could hold a clone named name.
+clone_candidates() {
+    local name="$1" root
+    local -a roots
+    IFS=: read -ra roots <<<"$ROOTS"
+    for root in "${roots[@]}"; do
+        echo "$root/$name"
+        compgen -G "$root/*/$name" || true
+    done
+}
+
+# Print the local clone path for owner/repo.
+# Order: the repo gh-dash was started in, then clones under $ROOTS.
+find_clone() {
+    local slug="$1" candidate cwd_repo
+    cwd_repo="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+    if [ -n "$cwd_repo" ] && clone_matches "$cwd_repo" "$slug"; then
+        echo "$cwd_repo"
+        return 0
+    fi
+    while read -r candidate; do
+        [ -d "$candidate/.git" ] || continue
+        if clone_matches "$candidate" "$slug"; then
+            echo "$candidate"
+            return 0
+        fi
+    done < <(clone_candidates "${slug#*/}")
+    return 1
+}
+
+# --- Worktree ----------------------------------------------------------------
+
+# Create the worktree, or move an existing one to the latest PR head.
+prepare_worktree() {
+    local clone="$1" pr="$2" base="$3" wt="$4"
+    git -C "$clone" fetch --quiet --no-tags origin \
+        "+refs/pull/$pr/head:refs/remotes/origin/pr/$pr" \
+        "+refs/heads/$base:refs/remotes/origin/$base" \
+        || die "fetch failed for PR #$pr"
+    if [ -d "$wt" ]; then
+        git -C "$wt" checkout --quiet --detach "origin/pr/$pr" \
+            || die "cannot update worktree $wt (local changes?)"
+        return
+    fi
+    mkdir -p "$WORKTREE_DIR"
+    git -C "$clone" worktree add --quiet --detach "$wt" "origin/pr/$pr" \
+        || die "worktree add failed for PR #$pr"
+}
+
+# --- Review modes: print the command, one argument per line ------------------
+
+mode_nvim() {
+    local base="$2"
+    printf '%s\n' nvim -c "DiffviewOpen origin/$base...HEAD --imply-local"
+}
+
+mode_claude() {
+    local pr="$1" base="$2"
+    printf '%s\n' claude \
+        "Review PR #$pr. Run \`gh pr view $pr\` first for context, then examine the changed files against origin/$base and give a thorough code review."
+}
+
+# --- Launching ---------------------------------------------------------------
+
+# Run a command in dir: new tmux window when inside tmux, else in place.
+launch() {
+    local dir="$1" title="$2"
+    shift 2
+    if [ -z "${TMUX:-}" ]; then
+        cd "$dir" && exec "$@"
+    fi
+    tmux new-window -c "$dir" -n "$title" "$(printf '%q ' "$@")"
+}
+
+open_pr() {
+    [ "$#" -eq 4 ] || die "usage: pr-review <nvim|claude> <owner/repo> <pr> <base-ref>"
+    local mode="$1" slug="$2" pr="$3" base="$4" clone wt
+    local -a cmd=()
+    local arg
+    [[ "$pr" =~ ^[0-9]+$ ]] || die "invalid PR number '$pr'"
+    declare -F "mode_$mode" >/dev/null || die "unknown mode '$mode'"
+    clone="$(find_clone "$slug")" || die "no local clone of $slug (cwd or $ROOTS)"
+    while IFS= read -r arg; do cmd+=("$arg"); done < <("mode_$mode" "$pr" "$base")
+    wt="$WORKTREE_DIR/pr-${slug#*/}-$pr"
+    prepare_worktree "$clone" "$pr" "$base" "$wt"
+    launch "$wt" "pr-$pr" "${cmd[@]}"
+}
+
+# --- Prune -------------------------------------------------------------------
+
+# Print "<clone> <owner/repo> <pr>" for a worktree.
+describe_worktree() {
+    local wt="$1" clone
+    clone="$(dirname "$(git -C "$wt" rev-parse --path-format=absolute --git-common-dir)")"
+    echo "$clone $(slug_from_url "$(git -C "$clone" remote get-url origin)") ${wt##*-}"
+}
+
+# Remove worktrees whose PR is no longer open.
+prune() {
+    local wt clone slug pr state removed=0
+    for wt in "$WORKTREE_DIR"/pr-*; do
+        [ -e "$wt/.git" ] || continue
+        read -r clone slug pr < <(describe_worktree "$wt")
+        state="$(gh pr view "$pr" --repo "$slug" --json state --jq .state 2>/dev/null || echo UNKNOWN)"
+        [ "$state" = "MERGED" ] || [ "$state" = "CLOSED" ] || continue
+        echo "removing $wt ($slug#$pr $state)"
+        git -C "$clone" worktree remove --force "$wt"
+        removed=$((removed + 1))
+    done
+    notify "pruned $removed worktree(s)"
+}
+
+case "${1:-}" in
+    prune) prune ;;
+    *) open_pr "$@" ;;
+esac

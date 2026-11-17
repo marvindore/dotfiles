@@ -83,7 +83,18 @@ defaults:
                 width: 20
                 hidden: true
     refetchIntervalMinutes: 30
-keybindings: {}
+keybindings:
+    universal:
+        - key: ctrl+p
+          name: prune merged/closed PR worktrees
+          command: pr-review prune
+    prs:
+        - key: D
+          name: review in nvim diffview
+          command: pr-review nvim {{.RepoName}} {{.PrNumber}} {{.BaseRefName}}
+        - key: V
+          name: review with claude
+          command: pr-review claude {{.RepoName}} {{.PrNumber}} {{.BaseRefName}}
 repoPaths: {}
 theme:
     ui:
