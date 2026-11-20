@@ -43,15 +43,26 @@ end
 -- --------------------------------------------------------------------
 
 -- 2) Adapters + core (lazy via lze)
+local function lze_load(p)
+	local spec = p.spec.data or {}
+	spec.name = p.spec.name
+	require("lze").load(spec)
+end
+
+if vim.g.enableGo then
+	vim.pack.add({
+		{ src = "https://github.com/fredrikaverpil/neotest-golang", data = { on_require = { "neotest-golang" } } },
+	}, { load = lze_load })
+end
+
 vim.pack.add({
 	-- Adapters (wake on first `require("<name>")`)
+	-- Go: neotest-golang (added above when enableGo). Rust: rustaceanvim.neotest (from rustaceanvim).
 	{ src = "https://github.com/nvim-neotest/neotest-python", data = { on_require = { "neotest-python" } } },
 	{ src = "https://github.com/nvim-neotest/neotest-plenary", data = { on_require = { "neotest-plenary" } } },
-	{ src = "https://github.com/nvim-neotest/neotest-go", data = { on_require = { "neotest-go" } } },
 	{ src = "https://github.com/haydenmeade/neotest-jest", data = { on_require = { "neotest-jest" } } },
+	{ src = "https://github.com/marilari88/neotest-vitest", data = { on_require = { "neotest-vitest" } } },
 	{ src = "https://github.com/nsidorenco/neotest-vstest", data = { on_require = { "neotest-vstest" } } },
-	{ src = "https://github.com/stevanmilic/neotest-scala", data = { on_require = { "neotest-scala" } } },
-	{ src = "https://github.com/rouge8/neotest-rust", data = { on_require = { "neotest-rust" } } },
 	{ src = "https://github.com/nvim-neotest/neotest-vim-test", data = { on_require = { "neotest-vim-test" } } },
 
 	-- Core Neotest
@@ -157,7 +168,7 @@ vim.pack.add({
 					elseif vim.fn.executable(cwd .. "/venv/bin/python") == 1 then
 						return cwd .. "/venv/bin/python"
 					end
-					local home = vim.g.homeDir or vim.loop.os_homedir()
+					local home = vim.g.homeDir or vim.uv.os_homedir()
 					local mise_py = home .. "/.local/share/mise/shims/python3"
 					if vim.fn.executable(mise_py) == 1 then
 						return mise_py
@@ -181,6 +192,46 @@ vim.pack.add({
 				warn_if_ts_python_missing()
 
 				----------------------------------------------------------------------
+				-- Adapters: one per language; Go and Rust only when their flag is on
+				----------------------------------------------------------------------
+				local function build_adapters(python)
+					local adapters = {
+						-- Python (pytest/unittest)
+						require("neotest-python")({
+							dap = { justMyCode = false },
+							python = python,
+							pytest_discover_instances = false, -- experimental
+						}),
+						-- .NET (vstest)
+						require("neotest-vstest")({}),
+						-- JS/TS: jest and vitest detect their own config and command
+						require("neotest-jest")({
+							env = { CI = true },
+							cwd = function()
+								return vim.fn.getcwd()
+							end,
+						}),
+						require("neotest-vitest")({}),
+						-- Plenary (Lua tests)
+						require("neotest-plenary")({}),
+					}
+					if vim.g.enableGo then
+						table.insert(adapters, require("neotest-golang")({}))
+					end
+					if vim.g.enableRust then
+						table.insert(adapters, require("rustaceanvim.neotest"))
+					end
+					-- vim-test catch-all (skip languages that have an explicit adapter)
+					table.insert(adapters, require("neotest-vim-test")({
+						ignore_file_types = {
+							"python", "vim", "lua", "cs", "rust", "go",
+							"javascript", "javascriptreact", "typescript", "typescriptreact",
+						},
+					}))
+					return adapters
+				end
+
+				----------------------------------------------------------------------
 				-- Neotest setup
 				-- NOTE: It's safe to pass only the fields you need; Neotest merges defaults.
 				----------------------------------------------------------------------
@@ -198,46 +249,7 @@ vim.pack.add({
 					output = { enabled = true, open_on_run = "short" },
 					output_panel = { enabled = true, open = "botright split | resize 15" },
 
-					adapters = {
-						-- Python (pytest/unittest)
-						require("neotest-python")({
-							dap = { justMyCode = false },
-							python = pick_python,
-							pytest_discover_instances = false, -- experimental
-						}),
-
-						-- Rust
-						require("neotest-rust")({}),
-
-						-- .NET (vstest)
-						require("neotest-vstest")({}),
-
-						-- Scala
-						require("neotest-scala")({}),
-
-						-- Jest
-						require("neotest-jest")({
-							-- Valid adapter options: jestCommand, jestArguments, jestConfigFile, env, cwd, isTestFile
-							jestCommand = "npm test --",
-							jestConfigFile = "custom.jest.config.ts",
-							env = { CI = true },
-							cwd = function()
-								return vim.fn.getcwd()
-							end,
-							-- jestArguments = function(defaultArgs, ctx) return defaultArgs end,
-						}),
-
-						-- Go
-						require("neotest-go")({}),
-
-						-- Plenary (Lua tests)
-						require("neotest-plenary")({}),
-
-						-- vim-test catch-all (avoid duplicates with explicit adapters)
-						require("neotest-vim-test")({
-							ignore_file_types = { "python", "vim", "lua", "cs", "rust", "scala" },
-						}),
-					},
+					adapters = build_adapters(pick_python),
 				})
 
 				----------------------------------------------------------------------
@@ -276,9 +288,5 @@ vim.pack.add({
 	},
 }, {
 	-- lze bridge
-	load = function(p)
-		local spec = p.spec.data or {}
-		spec.name = p.spec.name
-		require("lze").load(spec)
-	end,
+	load = lze_load,
 })

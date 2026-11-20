@@ -4,6 +4,52 @@ local M = {}
 local warned_missing_ty = {}
 local warned_missing_go = {}
 
+-- fzf-lua picker when available, else the vim.lsp.buf fallback.
+local function has_fzf_lua()
+	local ok, fzf = pcall(require, "fzf-lua")
+	return ok and fzf or nil
+end
+
+local function hover()
+	vim.lsp.buf.hover({ border = "rounded" })
+end
+
+local function toggle_inlay_hints()
+	vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end
+
+-- { lhs, fzf-lua function name, vim.lsp.buf fallback, desc }
+local PICKERS = {
+	{ "gd", "lsp_definitions", vim.lsp.buf.definition, "Go To Definition" },
+	{ "gD", "lsp_declarations", vim.lsp.buf.declaration, "Go To Declaration" },
+	{ "<leader>lr", "lsp_references", vim.lsp.buf.references, "References" },
+	{ "<leader>li", "lsp_implementations", vim.lsp.buf.implementation, "Implementation" },
+	{ "<leader>lt", "lsp_typedefs", vim.lsp.buf.type_definition, "Type Definition" },
+	{ "<leader>ls", "lsp_document_symbols", vim.lsp.buf.document_symbol, "Document Symbols" },
+	{ "<leader>lS", "lsp_live_workspace_symbols", vim.lsp.buf.workspace_symbol, "Workspace Symbols" },
+	{ "<leader>la", "lsp_code_actions", vim.lsp.buf.code_action, "Code Action", mode = { "n", "x" } },
+	-- gr* defaults: use the same fzf-lua pickers
+	{ "grr", "lsp_references", vim.lsp.buf.references, "References" },
+	{ "gri", "lsp_implementations", vim.lsp.buf.implementation, "Implementation" },
+	{ "grt", "lsp_typedefs", vim.lsp.buf.type_definition, "Type Definition" },
+	{ "gO", "lsp_document_symbols", vim.lsp.buf.document_symbol, "Document Symbols" },
+}
+
+---@param fzf table|nil
+---@return { lhs: string, rhs: function, desc: string, mode: string|string[]|nil }[]
+local function lsp_maps(fzf)
+	local maps = {
+		{ lhs = "K", rhs = hover, desc = "Hover" },
+		{ lhs = "<leader>ln", rhs = vim.lsp.buf.rename, desc = "Rename (name)" },
+		{ lhs = "<leader>lh", rhs = toggle_inlay_hints, desc = "Toggle Inlay Hints" },
+	}
+	for _, p in ipairs(PICKERS) do
+		local lhs, picker, fallback, desc = p[1], p[2], p[3], p[4]
+		local rhs = fzf and fzf[picker] or fallback
+		table.insert(maps, { lhs = lhs, rhs = rhs, desc = desc, mode = p.mode })
+	end
+	return maps
+end
 
 function M.setup_lsp_attach()
 	vim.api.nvim_create_autocmd("LspAttach", {
@@ -18,27 +64,11 @@ function M.setup_lsp_attach()
 				vim.keymap.set(mode, keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
 			end
 
-			-- Helper to use fzf-lua pickers if available
-			local has_fzf, fzf = pcall(require, "fzf-lua")
-
-			map("n", "gd", has_fzf and fzf.lsp_definitions or vim.lsp.buf.definition, "Go To Definition")
-			map("n", "gr", has_fzf and fzf.lsp_references or vim.lsp.buf.references, "References")
-			map("n", "gi", has_fzf and fzf.lsp_implementations or vim.lsp.buf.implementation, "Go To Implementation")
-			map("n", "gs", has_fzf and fzf.lsp_document_symbols or vim.lsp.buf.document_symbol, "Document Symbols")
-			map("n", "K", function()
-				vim.lsp.buf.hover({ border = "rounded" })
-			end, "Hover")
-			map("n", "gt", has_fzf and fzf.lsp_typedefs or vim.lsp.buf.type_definition, "Type Definition")
-			map("n", "rn", vim.lsp.buf.rename, "Rename")
-			map("n", "gc", vim.lsp.buf.code_action, "Code Action")
-			map("n", "gD", has_fzf and fzf.lsp_declarations or vim.lsp.buf.declaration, "Go To Declaration")
-
-			-- Diagnostics & Hints
-			map("n", "[d", vim.diagnostic.goto_prev, "Prev Diagnostic")
-			map("n", "]d", vim.diagnostic.goto_next, "Next Diagnostic")
-			map("n", "<leader>th", function()
-				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-			end, "Toggle Inlay Hints")
+			-- gd/gD/K plus the <leader>l (LSP) group. The Neovim 0.11+ defaults
+			-- (grn, gra, grr, gri, grt, gO, [d, ]d) stay as aliases.
+			for _, m in ipairs(lsp_maps(has_fzf_lua())) do
+				map(m.mode or "n", m.lhs, m.rhs, m.desc)
+			end
 
 			-- Server-specific logic
 			if client.name == "jdtls" then
@@ -50,17 +80,15 @@ function M.setup_lsp_attach()
 end
 
 function M.setup_global_capabilities()
-	-- Use vim.schedule to ensure blink is ready without blocking startup
-	vim.schedule(function()
-		local success, blink = pcall(require, "blink.cmp")
-		if success then
-			vim.lsp.config("*", {
-				capabilities = blink.get_lsp_capabilities({
-					workspace = { didChangeWatchedFiles = { dynamicRegistration = true } },
-				}),
-			})
-		end
-	end)
+	-- blink.cmp is loaded eagerly (plugins/blink.lua), so set this before any server starts.
+	local success, blink = pcall(require, "blink.cmp")
+	if success then
+		vim.lsp.config("*", {
+			capabilities = blink.get_lsp_capabilities({
+				workspace = { didChangeWatchedFiles = { dynamicRegistration = true } },
+			}),
+		})
+	end
 end
 
 function M.enable_servers(opts)
@@ -78,54 +106,10 @@ function M.enable_servers(opts)
 	-- 2. Setup Autocmds for Heavy/Context-Dependent servers
 	-- This moves the "IF" logic from Startup to File Open
 
-	-- JavaScript / TypeScript / Angular
+	-- JavaScript / TypeScript: tsc (TS 7) by default, vtsls for Angular/Astro/tsserver plugins.
+	-- Each server's root_dir asks utils/ts_server.lua if it must attach in that project.
 	if opts.enable_js or g.enableJavascript then
-		vim.api.nvim_create_autocmd("FileType", {
-			pattern = { "javascript", "typescript", "typescriptreact", "javascriptreact" },
-			callback = function()
-				-- Check for Angular FIRST before enabling any TS server
-				local root = vim.fs.root(0, {
-					"angular.json",
-					"nx.json",
-					"tsconfig.json",
-					"package.json",
-					".git",
-				}) or vim.fn.getcwd()
-				local is_angular = false
-
-				-- Check for angular.json or nx.json
-				for _, file in ipairs({ root .. "/angular.json", root .. "/nx.json" }) do
-					if vim.fn.filereadable(file) == 1 then
-						is_angular = true
-						break
-					end
-				end
-
-				-- Fallback to package.json check
-				if not is_angular then
-					local pkg_json = root .. "/package.json"
-					if vim.fn.filereadable(pkg_json) == 1 then
-						local f = io.open(pkg_json, "r")
-						if f then
-							local content = f:read("*all"):lower()
-							f:close()
-							if content:find("angular", 1, true) then
-								is_angular = true
-							end
-						end
-					end
-				end
-
-				-- Enable ONLY ONE server based on project type
-				if is_angular then
-					vim.lsp.enable("angularls")
-				else
-					vim.lsp.enable({ "vtsls", "astro" })
-				end
-
-				return true -- Only run detection once per session
-			end,
-		})
+		vim.lsp.enable({ "tsc", "vtsls", "angularls", "astro", "eslint" })
 	end
 
 	-- Python
@@ -148,7 +132,7 @@ function M.enable_servers(opts)
 
 				if not has_project_ty and not has_global_ty and not warned_missing_ty[root] then
 					vim.notify(
-						"ty is not installed. Run: uv add --dev ty",
+						"ty is not installed. Run: uv add --dev ty (or :MasonToolsInstall)",
 						vim.log.levels.WARN,
 						{ title = "Python LSP" }
 					)

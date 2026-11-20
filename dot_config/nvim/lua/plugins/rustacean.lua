@@ -23,20 +23,12 @@ vim.pack.add({
 -- ==========================================
 
 vim.pack.add({
-	-- 1. rust.vim
-	{
-		src = "https://github.com/rust-lang/rust.vim",
-		data = {
-			-- Lazy load only when a Rust file is opened
-			ft = "rust",
-		},
-	},
-	-- 2. crates.nvim
+	-- crates.nvim
 	{
 		src = "https://github.com/saecki/crates.nvim",
 		data = {
-			-- Lazy load only when a TOML file (like Cargo.toml) is opened
-			ft = "toml",
+			-- Lazy load only for Cargo.toml
+			event = { "BufRead Cargo.toml" },
 
 			after = function(_)
 				require("crates").setup({

@@ -16,6 +16,7 @@ wk.add({
 	{ "<leader>gh", group = "hunk" },
 	{ "<leader>gi", group = "github (issues/PRs)" },
 	{ "<leader>d", group = "debug" },
+	{ "<leader>l", group = "lsp" },
 	{ "<leader>r", group = "repl/iron" },
 	{ "<leader>t", group = "test" },
 	{

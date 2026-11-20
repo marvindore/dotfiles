@@ -1,24 +1,8 @@
-local js_langs = { "typescript", "javascript", "typescriptreact", "javascriptreact", "vue" }
-
 vim.pack.add({
 	-- 1. DAP Adapters and UI (Safely tucked away in opt/)
 	{ src = "https://github.com/mfussenegger/nvim-dap-python", data = { on_require = { "dap-python" } } },
 	{ src = "https://github.com/jbyuki/one-small-step-for-vimkind", data = { on_require = { "osv" } } },
 	{ src = "https://github.com/leoluz/nvim-dap-go", data = { on_require = { "dap-go" } } },
-	{
-		src = "https://github.com/microsoft/vscode-js-debug",
-		data = {
-			-- Lazy load this massive binary folder only when you open a JS/TS file
-			ft = js_langs,
-			run = function(p)
-				local is_win = (vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1)
-				local cmd = is_win
-						and 'npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && powershell -NoProfile -Command "if (Test-Path out) { Remove-Item -Recurse -Force out }; Move-Item -Path dist -Destination out"'
-					or "npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out"
-				vim.system({ "bash", "-c", cmd }, { cwd = p.path }):wait()
-			end,
-		},
-	},
 
 	-- 2. Main Debugger
 	{
@@ -169,6 +153,11 @@ vim.pack.add({
 
 				if vim.g.enableGo then
 					require("dap-go").setup({})
+				end
+
+				-- JS / TS (js-debug-adapter from Mason)
+				if vim.g.enableJavascript then
+					require("config.dap.js").setup(dap)
 				end
 
 				-- LUA

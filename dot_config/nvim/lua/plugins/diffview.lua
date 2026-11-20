@@ -11,6 +11,8 @@ vim.pack.add({
         "DiffviewFocusFiles",
         "DiffviewToggleFiles",
         "DiffviewRefresh",
+        "DiffviewDiffFiles",
+        "DiffviewDiffDirs",
       },
       on_require = { "diffview" },
       keys = {

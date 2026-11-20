@@ -1,6 +1,5 @@
 return {
   cmd = { "bash-language-server", "start" },
-  filetypes = { "sh" },
-  ignoreRootPaths = { "~" },
-  allowlist = { "sh", "bash" }
+  filetypes = { "sh", "bash", "zsh" },
+  root_markers = { ".git" },
 }

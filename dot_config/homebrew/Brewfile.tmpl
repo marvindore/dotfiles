@@ -1,6 +1,6 @@
 # Homebrew Bundle. Single source of truth for installed software.
 # Edit with `chezmoi edit ~/.config/homebrew/Brewfile`, then `chezmoi apply`.
-# Audit: `brew bundle check --verbose --global`, `brew bundle cleanup --global` (dry run). Remove extras: `bbclean`. Sync: `bbs`.
+# Audit: `brewfile_missing`, `brewfile_extras` (dry run). Remove extras: `brewfile_remove_extras`. Sync: `brewfile_sync`.
 # Third-party taps: use the full name and `trusted: true` (Homebrew 7 tap trust lives in ~/.config/homebrew/trust.json).
 # Profile: {{ .profile }}
 
@@ -53,11 +53,9 @@ brew "rustup"
 brew "scc"
 brew "sesh"
 brew "somo"
-brew "sox_ng"
 brew "starship"
 brew "tmux"
 brew "tree-sitter-cli"
-brew "whisper.cpp"
 brew "yazi"
 brew "zoxide"
 

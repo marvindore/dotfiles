@@ -341,34 +341,108 @@ alias rgsrc='rg -i \
 # Usage: rgfz "search-term"
 alias rgfz='rg --line-number --no-heading --color=always -i | fzf --ansi'
 
+# Fuzzy-find your own aliases and functions, with descriptions from comments
+# Requires: fzf 0.63+, bat
+# Usage: als [query]   or press Ctrl-x at the prompt to insert a name at the cursor
+# Ctrl-e opens the chezmoi source file at that line. Run `ca` after you edit.
+# Description: inline comment, else first comment line above, else the alias value
+_als_list() {
+  awk '
+    function strip(s) { sub(/^[[:space:]]*#+[[:space:]]*/, "", s); gsub(/^-+[[:space:]]*|[[:space:]]*-+$/, "", s); return s }
+    FNR == 1                  { cmt = ""; sect = "" }
+    /^[[:space:]]*#+[[:space:]]*$/ { next }
+    /^[[:space:]]*#{3,}/      { t = strip($0); if (t == "") banner = 1; else sect = t; next }
+    /^[[:space:]]*#/          { t = strip($0)
+                                if (banner) { sect = t; banner = 0 }
+                                else if (cmt == "" && t !~ /^(Usage|Requires|Example)/) cmt = t
+                                next }
+                              { banner = 0 }
+    match($0, /^[[:space:]]*alias[[:space:]]+[[:alnum:]_.:-]+=/) {
+      name = substr($0, RSTART, RLENGTH - 1); sub(/^[[:space:]]*alias[[:space:]]+/, "", name); kind = 36
+      body = substr($0, RSTART + RLENGTH); gsub(/^["\x27]|["\x27]$/, "", body)
+    }
+    match($0, /^[[:space:]]*(function[[:space:]]+)?[[:alnum:]_.:-]+[[:space:]]*\(\)/) {
+      name = substr($0, RSTART, RLENGTH); sub(/^[[:space:]]*(function[[:space:]]+)?/, "", name); sub(/[[:space:]]*\(\)$/, "", name); kind = 33
+    }
+    name == "" && /^[[:space:]]*function[[:space:]]+[[:alnum:]_.:-]+/ { name = $2; kind = 33 }
+    name != "" && name !~ /^_/ && !(name in seen) {
+      seen[name]; desc = cmt
+      if (match($0, /[[:space:]]#[[:space:]][^"\x27]*$/)) desc = substr($0, RSTART + 3)
+      sub(/[[:space:]:]+$/, "", desc)
+      if (desc == "" && body != "") desc = "\033[2m" substr(body, 1, 70) "\033[0m"
+      if (desc == "" && sect != "") desc = "\033[2m[" sect "]\033[0m"
+      printf "%s\t\033[%sm%-22s\033[0m %s\t%s\t%d\n", name, kind, name, desc, FILENAME, FNR
+    }
+    { name = ""; body = ""; cmt = "" }
+  ' ~/.aliases "${ZDOTDIR:-$HOME/.config/zsh}/zsh-aliases" 2>/dev/null
+}
+
+_als_clip() {
+  local c
+  for c in pbcopy wl-copy 'xclip -selection clipboard'; do
+    (( $+commands[${c%% *}] )) && { print -r -- "$c"; return }
+  done
+}
+
+_als_pick() {
+  local clip=$(_als_clip) copy=()
+  [[ -n $clip ]] && copy=(--bind "ctrl-y:execute-silent(printf %s {1} | $clip)")
+  _als_list | fzf --ansi --delimiter '\t' --with-nth 2 --accept-nth 1 \
+    --style full --tiebreak begin --height 60% --tmux center,80% \
+    --query "$*" --input-label ' aliases & functions ' \
+    --preview 'bat --color=always --style=numbers --highlight-line {4} {3}' \
+    --preview-window 'right,50%,+{4}-/2,<60(down,50%,+{4}-/2)' \
+    --bind 'ctrl-e:execute(${EDITOR:-nvim} +{4} "$(chezmoi source-path {3} 2>/dev/null || echo {3})" </dev/tty >/dev/tty)' \
+    "${copy[@]}" \
+    --footer 'enter: insert · ctrl-e: edit source · ctrl-y: copy name'
+}
+
+# Pick an alias or function and put it on the next prompt
+als() {
+  local name=$(_als_pick "$@")
+  [[ -n $name ]] && print -z -- "$name "
+}
+
+# Ctrl-x: insert an alias or function name at the cursor (vi insert mode only,
+# because ^X is a prefix key in emacs mode)
+if [[ -n $ZSH_VERSION && -o interactive ]]; then
+  _als_widget() {
+    local name=$(_als_pick)
+    [[ -n $name ]] && LBUFFER+="$name "
+    zle reset-prompt
+  }
+  zle -N _als_widget
+  bindkey -M viins '^X' _als_widget
+fi
+
 ###############################################################################
 # HOMEBREW (source of truth: ~/.config/homebrew/Brewfile, managed by chezmoi)
 ###############################################################################
 
 # Edit the Brewfile template, then apply. Installs anything new.
-alias brewfile='chezmoi edit --apply ~/.config/homebrew/Brewfile'
+alias brewfile_edit='chezmoi edit --apply ~/.config/homebrew/Brewfile'
 
 # Install everything missing from the Brewfile. No upgrades.
-alias bbi='HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --global'
+alias brewfile_install='HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --global'
 
 # List what the Brewfile declares but is not installed.
-alias bbc='brew bundle check --no-upgrade --verbose --global'
+alias brewfile_missing='brew bundle check --no-upgrade --verbose --global'
 
 # List installed packages not in the Brewfile. Report only, never removes.
-function bbx() {
+brewfile_extras() {
   brew bundle cleanup --global </dev/null 2>&1 \
     | awk '/^Would uninstall/ { show=1 } /^Would `brew cleanup`/ { show=0 } show'
   return 0
 }
 
-# Remove installed packages not in the Brewfile. Preview first with `bbx`.
-alias bbclean='brew bundle cleanup --force --global'
+# Remove installed packages not in the Brewfile. Preview first with `brewfile_extras`.
+alias brewfile_remove_extras='brew bundle cleanup --force --global'
 
 # Make the system match the Brewfile: install missing, then remove extras.
 # Removes nothing if an install fails. No upgrades.
-alias bbs='HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --global --cleanup'
+alias brewfile_sync='HOMEBREW_BUNDLE_NO_UPGRADE=1 brew bundle install --global --cleanup'
 
 # Upgrade everything, then reconcile with the Brewfile.
-function brewup() {
+brewfile_upgrade() {
   brew update && brew upgrade && brew bundle install --global && brew cleanup
 }

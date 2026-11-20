@@ -309,7 +309,10 @@ local function update_winbar()
     .. ") "
     .. "%#WinBar1#%{expand('%:~')}"
     .. "%*%=%#WinBar2#"
+    .. "%{%v:lua.require'utils.diff_status'.winbar()%}"
 end
+
+require("utils.diff_status").setup()
 
 -- Update on common lifecycle events
 vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete", "BufEnter", "BufWipeout", "WinEnter", "TabEnter" }, {

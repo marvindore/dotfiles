@@ -7,7 +7,7 @@ for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
   [ -x "$b" ] && eval "$("$b" shellenv)" && break
 done
 if ! command -v mise >/dev/null 2>&1; then
-  echo "mise: not installed. Run 'bbi', then 'chezmoi apply'." >&2
+  echo "mise: not installed. Run 'brewfile_install', then 'chezmoi apply'." >&2
   exit 1
 fi
 # Installs the tools in ~/.config/mise/config.toml. Idempotent. Upgrades belong to `mise upgrade`.

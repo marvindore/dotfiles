@@ -66,6 +66,7 @@ vim.pack.add({
 
 			-- 2. CRITICAL: Load when LSP attaches so your lsp_setup.lua pickers work!
 			event = "LspAttach",
+			on_require = { "fzf-lua" },
 
 			after = function(_)
 				require("fzf-lua").setup({})

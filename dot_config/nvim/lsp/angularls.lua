@@ -1,54 +1,49 @@
-local uv = vim.loop
+-- Angular LS. Attaches only in Angular projects, next to vtsls (see lua/utils/ts_server.lua).
+local ts = require("utils.ts_server")
+local uv = vim.uv
 
 local function path_exists(path)
   return uv.fs_stat(path) ~= nil
 end
 
-local function get_angularls_cmd()
-  local root = vim.fs.root(0, { "angular.json", "nx.json", "package.json" }) or vim.fn.getcwd()
+local warned_roots = {}
+
+local function get_angularls_cmd(root)
   local nm = root .. "/node_modules"
-  local local_server = nm .. "/.bin/ngserver"
 
-  -- Check if this is an Angular project
-  local is_angular = path_exists(root .. "/angular.json") or path_exists(root .. "/nx.json")
-
-  -- 1) USE PROJECT-LOCAL SERVER IF AVAILABLE
-  if path_exists(local_server) then
-    return {
-      local_server,
-      "--stdio",
-      "--tsProbeLocations", nm,
-      "--ngProbeLocations", nm,
-      "--logFile", "/tmp/ngserver.log",
-    }
+  -- 1) USE PROJECT-LOCAL SERVER IF AVAILABLE, 2) FALLBACK TO MASON INSTALL
+  for _, server in ipairs({ nm .. "/.bin/ngserver", vim.fn.stdpath("data") .. "/mason/bin/ngserver" }) do
+    if path_exists(server) then
+      return {
+        server,
+        "--stdio",
+        "--tsProbeLocations", nm,
+        "--ngProbeLocations", nm,
+      }
+    end
   end
 
-  -- 2) FALLBACK TO MASON INSTALL (probe project node_modules, not mason)
-  local global_server = vim.fn.stdpath("data") .. "/mason/bin/ngserver"
-
-  if path_exists(global_server) then
-    return {
-      global_server, "--stdio",
-      "--tsProbeLocations", nm,
-      "--ngProbeLocations", nm,
-    }
-  end
-
-  -- 3) FINAL FALLBACK
-  if is_angular then
+  if not warned_roots[root] then
+    warned_roots[root] = true
     vim.notify(
       "Angular LS not found. Run: npm install --save-dev @angular/language-service",
       vim.log.levels.ERROR,
       { title = "Angular Language Server" }
     )
-  else
-    vim.notify("Angular LS not found (project-local or mason).", vim.log.levels.ERROR)
   end
   return nil
 end
 
-  return {
-    cmd = get_angularls_cmd(),
-    filetypes = { "typescript", "html", "typescriptreact", "typescript.tsx" },
-    root_markers = { "angular.json", "nx.json" },
-  }
+return {
+  cmd = function(dispatchers, config)
+    return vim.lsp.rpc.start(get_angularls_cmd(config.root_dir), dispatchers)
+  end,
+  filetypes = { "typescript", "html", "typescriptreact", "htmlangular" },
+  -- Attach only in Angular projects that have ngserver; root_dir runs before cmd.
+  root_dir = function(bufnr, on_dir)
+    local root = ts.root(bufnr)
+    if ts.is_angular(root) and get_angularls_cmd(root) then
+      on_dir(root)
+    end
+  end,
+}

@@ -6,4 +6,5 @@ matches:
     replace: gh run rerun [run_id]
 
   - trigger: ;guip
+    description: GitHub open PRs by me (git pr search)
     replace: is:pr is:open author:@me

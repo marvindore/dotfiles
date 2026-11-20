@@ -54,26 +54,22 @@ vim.pack.add({
     version = "main",
     data    = {
       after = function(_)
-        pcall(function()
-          require("nvim-treesitter-textobjects").setup({
-            select = {
-              enable = true,
-              lookahead = true,
-              selection_modes = {
-                ["@parameter.outer"] = "v",
-                ["@function.outer"]  = "V",
-                ["@class.outer"]     = "<c-v>",
-              },
-              include_surrounding_whitespace = false,
-            },
-            move = { set_jumps = true },
-            swap = {
-              enable = true,
-              swap_next     = { ["<leader>a"] = "@parameter.inner" },
-              swap_previous = { ["<leader>A"] = "@parameter.inner" },
-            },
-          })
-        end)
+        -- main API: setup() takes only select/move options; keymaps are set here.
+        -- Select text objects come from mini.ai (plugins/mini.lua).
+        require("nvim-treesitter-textobjects").setup({ move = { set_jumps = true } })
+
+        local swap = require("nvim-treesitter-textobjects.swap")
+        local move = require("nvim-treesitter-textobjects.move")
+        local function map(lhs, fn, query, desc)
+          vim.keymap.set({ "n", "x", "o" }, lhs, function() fn(query, "textobjects") end, { desc = desc })
+        end
+
+        vim.keymap.set("n", "<leader>a", function() swap.swap_next("@parameter.inner") end, { desc = "Swap parameter with next" })
+        vim.keymap.set("n", "<leader>A", function() swap.swap_previous("@parameter.inner") end, { desc = "Swap parameter with previous" })
+        map("]f", move.goto_next_start, "@function.outer", "Next function start")
+        map("[f", move.goto_previous_start, "@function.outer", "Previous function start")
+        map("]k", move.goto_next_start, "@class.outer", "Next class start")
+        map("[k", move.goto_previous_start, "@class.outer", "Previous class start")
       end,
     },
   },

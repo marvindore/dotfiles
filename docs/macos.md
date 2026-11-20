@@ -124,15 +124,15 @@ Shell shortcuts from `dot_aliases`:
 
 | Command | Does |
 |---|---|
-| `brewfile` | edit the Brewfile template, then apply (installs anything new) |
-| `bbi` | install everything missing from the Brewfile, no upgrades |
-| `bbc` | list what the Brewfile declares but is not installed |
-| `bbx` | list installed packages not in the Brewfile, never removes |
-| `bbclean` | remove installed packages not in the Brewfile |
-| `bbs` | sync: install everything missing, then remove extras, no upgrades |
-| `brewup` | upgrade everything, then reconcile with the Brewfile |
+| `brewfile_edit` | edit the Brewfile template, then apply (installs anything new) |
+| `brewfile_install` | install everything missing from the Brewfile, no upgrades |
+| `brewfile_missing` | list what the Brewfile declares but is not installed |
+| `brewfile_extras` | list installed packages not in the Brewfile, never removes |
+| `brewfile_remove_extras` | remove installed packages not in the Brewfile |
+| `brewfile_sync` | sync: install everything missing, then remove extras, no upgrades |
+| `brewfile_upgrade` | upgrade everything, then reconcile with the Brewfile |
 
-Use `bbi` after uninstalling something by hand. `chezmoi apply` reruns brew bundle only when the Brewfile changes.
+Use `brewfile_install` after uninstalling something by hand. `chezmoi apply` reruns brew bundle only when the Brewfile changes.
 
 The raw commands follow.
 
@@ -153,7 +153,7 @@ cask "nikitabobko/tap/aerospace", trusted: true
 Upgrade everything, then reconcile with the Brewfile:
 
 ```sh
-brewup   # brew update && brew upgrade && brew bundle install --global && brew cleanup
+brewfile_upgrade   # brew update && brew upgrade && brew bundle install --global && brew cleanup
 ```
 
 Audit:
@@ -165,7 +165,7 @@ chezmoi verify                         # files on disk match the source
 chezmoi doctor                         # chezmoi environment check
 ```
 
-`brew bundle cleanup --force` (`bbclean`, `bbs`) removes only packages that Homebrew installed. It does not touch apps installed by hand or from a `.pkg`, and it does not remove Mac App Store apps. Each Mac compares against its own rendered Brewfile, so home and work keep their own lists. Check that `profile` in `~/.config/chezmoi/chezmoi.toml` is correct before you run it: a wrong profile removes every app of the other profile. Run `bbx` first to see the list. Cleanup does not use `--zap`, so app settings in `~/Library` stay.
+`brew bundle cleanup --force` (`brewfile_remove_extras`, `brewfile_sync`) removes only packages that Homebrew installed. It does not touch apps installed by hand or from a `.pkg`, and it does not remove Mac App Store apps. Each Mac compares against its own rendered Brewfile, so home and work keep their own lists. Check that `profile` in `~/.config/chezmoi/chezmoi.toml` is correct before you run it: a wrong profile removes every app of the other profile. Run `brewfile_extras` first to see the list. Cleanup does not use `--zap`, so app settings in `~/Library` stay.
 
 
 ## How-to: reapply macOS settings or rerun a script
@@ -180,7 +180,7 @@ chezmoi execute-template < "$(chezmoi source-path)/.chezmoiscripts/run_onchange_
 
 The script prints one line for each setting it corrects. It prints nothing when every setting matches. It is safe to run at any time.
 
-The same pattern works for any chezmoi script. Render it with `chezmoi execute-template`, then pipe it to `sh`. Reinstall missing packages with `bbi` instead.
+The same pattern works for any chezmoi script. Render it with `chezmoi execute-template`, then pipe it to `sh`. Reinstall missing packages with `brewfile_install` instead.
 
 Rerun scripts on the next apply. chezmoi keeps the state of the two script types in different buckets:
 
@@ -264,7 +264,7 @@ Cause: the linker in the Command Line Tools (CLT) is older than the macOS SDK th
 
 All of them are idempotent on their own. Running them twice changes nothing. The `run_after_` scripts `13-check-toolchain` and `20-install-hammerspoon-spoons` run on every apply so that they detect and repair breakage. Each one checks first and stays silent when nothing is wrong. Scripts are ordered by target name with prefixes stripped: `00-`, `10-`, `11-`, `12-`, `13-`, `14-`, `20-install-hammerspoon-spoons`, `30-gh-extensions`, `start-silverbullet`.
 
-The bundle script sets `HOMEBREW_BUNDLE_NO_UPGRADE=1` and `HOMEBREW_NO_AUTO_UPDATE=1`, and passes `--no-upgrade` to `brew bundle check`. The env var stops `install` from upgrading, but `check` ignores it: without the flag, `check` treats outdated formulae as unsatisfied. Upgrades belong to `brewup`.
+The bundle script sets `HOMEBREW_BUNDLE_NO_UPGRADE=1` and `HOMEBREW_NO_AUTO_UPDATE=1`, and passes `--no-upgrade` to `brew bundle check`. The env var stops `install` from upgrading, but `check` ignores it: without the flag, `check` treats outdated formulae as unsatisfied. Upgrades belong to `brewfile_upgrade`.
 
 ### macOS defaults
 

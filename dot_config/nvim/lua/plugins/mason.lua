@@ -8,7 +8,7 @@ vim.pack.add({
 
 			after = function(_)
 				require("mason").setup({
-					PATH = "append",
+					PATH = "skip", -- lsp_setup.lua prepends mason/bin to PATH
 					ui = {
 						check_outdated_packages_on_open = true,
 						border = "none",
@@ -70,7 +70,7 @@ vim.pack.add({
 					vim.list_extend(ensure_installed, { "csharpier", "netcoredbg", "roslyn" })
 				end
 				if vim.g.enableGo then
-					vim.list_extend(ensure_installed, { "gopls", "delve" })
+					vim.list_extend(ensure_installed, { "gopls", "delve", "goimports", "gofumpt", "golangci-lint" })
 				end
 				if vim.g.enableJava then
 					vim.list_extend(ensure_installed, { "java-debug-adapter", "java-test", "jdtls" })
@@ -85,12 +85,13 @@ vim.pack.add({
 						"biome",
 						"eslint-lsp",
 						"prettier",
+						"prettierd",
 						"js-debug-adapter",
 						"vtsls",
 					})
 				end
 				if vim.g.enablePython then
-					vim.list_extend(ensure_installed, { "debugpy", "ruff" })
+					vim.list_extend(ensure_installed, { "debugpy", "ruff", "ty" })
 				end
 				if vim.g.enableRust then
 					vim.list_extend(ensure_installed, { "rust-analyzer", "codelldb" })

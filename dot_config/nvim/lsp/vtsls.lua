@@ -1,109 +1,68 @@
-local function get_tsdk()
-  local root_dir = vim.fn.getcwd()
-  local local_tsdk = root_dir .. "/node_modules/typescript/lib"
-  if vim.uv.fs_stat(local_tsdk) then
-    return local_tsdk
-  end
+-- vtsls: fallback TS server for projects that need tsserver (see lua/utils/ts_server.lua).
+-- tsdk and typescript-plugin-css-modules are resolved per project root in before_init,
+-- so no shell calls run when the config loads.
+local ts = require("utils.ts_server")
 
-  local pnpm_root = vim.fn.system("pnpm root -g"):gsub("%s+$", "")
-  local global_tsdk = pnpm_root .. "/typescript/lib"
-  if vim.uv.fs_stat(global_tsdk) then
-    return global_tsdk
-  end
-
-  local npm_root = vim.fn.system("npm root -g"):gsub("%s+$", "")
-  local npm_global_tsdk = npm_root .. "/typescript/lib"
-  if vim.uv.fs_stat(npm_global_tsdk) then
-    return npm_global_tsdk
-  end
-
-  return nil
-end
-
--- 🔍 Utility that finds typescript-plugin-css-modules
-local function get_css_modules_plugin()
-  local cwd = vim.fn.getcwd()
-
-  -- 1) Check local project installation
-  local local_path = cwd .. "/node_modules/typescript-plugin-css-modules"
-  if vim.uv.fs_stat(local_path) then
-    return local_path
-  end
-
-  -- 2) Check global pnpm installation
-  local pnpm_root = vim.fn.system("pnpm root -g"):gsub("%s+$", "")
-  local pnpm_global_path = pnpm_root .. "/typescript-plugin-css-modules"
-  if vim.uv.fs_stat(pnpm_global_path) then
-    return pnpm_global_path
-  end
-
-  -- 3) Check global npm installation
-  local npm_root = vim.fn.system("npm root -g"):gsub("%s+$", "")
-  local npm_global_path = npm_root .. "/typescript-plugin-css-modules"
-  if vim.uv.fs_stat(npm_global_path) then
-    return npm_global_path
-  end
-
-  -- Nothing found
-  return nil
-end
-
-local mason_vtsls = vim.fn.stdpath("data") .. "/mason/bin/vtsls"
-local tsdk = get_tsdk()
-local css_plugin_path = get_css_modules_plugin()
-
--- Construct plugin entry dynamically
-local css_plugin = {
-  name = "typescript-plugin-css-modules",
-  enableForWorkspaceTypeScriptVersions = true,
-}
-
--- Attach location only if found
-if css_plugin_path then
-  css_plugin.location = css_plugin_path
+local function global_plugins(root)
+	local location = ts.find_module(root, "typescript-plugin-css-modules")
+	if not location then
+		return {}
+	end
+	return {
+		{
+			name = "typescript-plugin-css-modules",
+			location = location,
+			enableForWorkspaceTypeScriptVersions = true,
+		},
+	}
 end
 
 return {
-  cmd = { mason_vtsls, "--stdio" },
+	cmd = { vim.fn.stdpath("data") .. "/mason/bin/vtsls", "--stdio" },
 
-  filetypes = {
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact",
-    "typescript.tsx",
-    "astro",
-  },
+	filetypes = {
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact",
+		"typescript.tsx",
+		"astro",
+	},
 
-  init_options = {
-    typescript = {
-      tsdk = tsdk,
-    },
-  },
+	root_dir = ts.root_dir("vtsls"),
 
-  settings = {
-    vtsls = {
-      tsserver = {
-        globalPlugins = { css_plugin },
-      },
-    },
+	before_init = function(params, config)
+		local root = config.root_dir or vim.fn.getcwd()
+		local tsdk = ts.find_module(root, "typescript/lib")
+		params.initializationOptions = vim.tbl_deep_extend("force", params.initializationOptions or {}, {
+			typescript = { tsdk = tsdk },
+		})
+		config.settings.vtsls.tsserver.globalPlugins = global_plugins(root)
+	end,
 
-    typescript = {
-      preferences = {
-        importModuleSpecifier = "non-relative",
-        quoteStyle = "single",
-      },
-      inlayHints = {
-        includeInlayParameterNameHints = "literals",
-        includeInlayVariableTypeHints = true,
-      },
-    },
+	settings = {
+		vtsls = {
+			tsserver = {
+				globalPlugins = {},
+			},
+		},
 
-    javascript = {
-      inlayHints = {
-        includeInlayParameterNameHints = "literals",
-        includeInlayVariableTypeHints = true,
-      },
-    },
-  },
+		typescript = {
+			preferences = {
+				importModuleSpecifier = "non-relative",
+				quoteStyle = "single",
+			},
+			inlayHints = {
+				includeInlayParameterNameHints = "literals",
+				includeInlayVariableTypeHints = true,
+			},
+		},
+
+		javascript = {
+			inlayHints = {
+				includeInlayParameterNameHints = "literals",
+				includeInlayVariableTypeHints = true,
+			},
+		},
+	},
 }

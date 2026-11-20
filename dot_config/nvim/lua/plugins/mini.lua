@@ -1,7 +1,15 @@
 vim.pack.add({ { src = "https://github.com/echasnovski/mini.nvim" } })
 
 -- Configurations
-require("mini.ai").setup()
+-- Treesitter text objects (queries from nvim-treesitter-textobjects): F = function, c = class.
+-- mini.ai defaults keep f = function call, a = argument.
+local ai = require("mini.ai")
+ai.setup({
+	custom_textobjects = {
+		F = ai.gen_spec.treesitter({ a = "@function.outer", i = "@function.inner" }),
+		c = ai.gen_spec.treesitter({ a = "@class.outer", i = "@class.inner" }),
+	},
+})
 
 require("mini.comment").setup()
 

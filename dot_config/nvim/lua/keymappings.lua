@@ -99,6 +99,8 @@ vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 map("n", "<leader><space>", "<C-^>", "Go to previous buffer")
+map("n", "[j", require("utils.file_jump").back, "Jump back to previous file")
+map("n", "]j", require("utils.file_jump").forward, "Jump forward to next file")
 map({ "n", "x" }, "<leader>%", require("utils.block_motion").toggle, "Go to matching block boundary")
 map("n", "<leader>bd", ":bdelete<cr>", "Buffer Delete")
 map("n", "<leader>bD", ":bdelete!<cr>", "Buffer Force Delete")
@@ -273,7 +275,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	pattern = "*",
 })
 
-local home = vim.loop.os_homedir() -- Get the home directory dynamically
+local home = vim.uv.os_homedir() -- Get the home directory dynamically
 local runbook_path = vim.g.chezmoi_home .. "/runbook/" -- Append the notes directory
 local notesplus_path = home .. "/notesplus/"
 

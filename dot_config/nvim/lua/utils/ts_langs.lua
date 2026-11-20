@@ -8,7 +8,10 @@ local langs = {
   "comment",
   "css",
   "cuda",
+  "diff",
   "dockerfile",
+  "git_config",
+  "gitcommit",
   "gitignore",
   "graphql",
   "html",
@@ -35,6 +38,7 @@ local langs = {
   "vim",
   "vimdoc",
   "vue",
+  "xml",
   "yaml",
 }
 
@@ -43,7 +47,7 @@ local optional = {
   { flag = "enableRust",   langs = { "rust" } },
   { flag = "enableJava",   langs = { "java", "kotlin" } },
   { flag = "enableCsharp", langs = { "c_sharp" } },
-  { flag = "enableGo",     langs = { "go", "gomod", "gowork" } },
+  { flag = "enableGo",     langs = { "go", "gomod", "gosum", "gowork", "gotmpl" } },
 }
 for _, o in ipairs(optional) do
   if vim.g[o.flag] then vim.list_extend(langs, o.langs) end

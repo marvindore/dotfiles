@@ -1,7 +1,10 @@
-vim.g.current_os = vim.loop.os_uname().sysname:lower()
+vim.g.current_os = vim.uv.os_uname().sysname:lower()
 vim.g.enableCsharp = true
 vim.g.enableGo = false
 vim.g.enableJavascript = true
+-- TS server: "auto" (tsc when the project's typescript >= 7, else vtsls), "tsc" (also use a
+-- global TS 7 for older projects), or "vtsls". See lua/utils/ts_server.lua.
+vim.g.tsLsp = "auto"
 vim.g.enableJava = false
 vim.g.enableKotlin = false
 vim.g.enablePython = true

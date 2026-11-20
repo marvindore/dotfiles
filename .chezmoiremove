@@ -3,3 +3,9 @@ scripts/macos-setup.sh
 docker/litellm
 .config/zellij
 .config/nvim/lua/plugins/zellij.lua
+.hammerspoon/whispr.lua
+.hammerspoon/whispr_process.py
+.hammerspoon/whispr_rec.py
+.hammerspoon/readme.md
+.hammerspoon/tests
+.hammerspoon/__pycache__

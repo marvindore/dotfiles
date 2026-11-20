@@ -13,7 +13,8 @@ vim.pack.add({
             cs = { "csharpier" },
             html = { "prettierd", "prettier", stop_after_first = true },
             lua = { "stylua" },
-            python = { "isort", "black" },
+            go = { "goimports", "gofumpt" },
+            python = { "ruff_organize_imports", "ruff_format" },
             rust = { "rustfmt", lsp_format = "fallback" },
             javascript = { "prettierd", "prettier", stop_after_first = true },
             javascriptreact = { "prettierd", "prettier", stop_after_first = true },
@@ -101,7 +102,11 @@ vim.pack.add({
             -- it does NOT mean "fallback if formatter fails". [4](https://github.com/stevearc/conform.nvim/issues/437)[5](https://deepwiki.com/stevearc/conform.nvim/3.3-lsp-integration)
             lsp_format = "fallback",
           })
+          require("utils.format_check").check(bufnr)
         end, { desc = "Format file / selection (template-aware)" })
+
+        -- No format-on-save: warn when a buffer is not formatted instead.
+        require("utils.format_check").setup()
       end,
     },
   },
